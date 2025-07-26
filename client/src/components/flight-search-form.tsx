@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plane, Calendar, User, Search } from "lucide-react";
+import { AirportAutocomplete } from "./airport-autocomplete.tsx";
+import { Calendar, User, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FlightSearchFormProps {
@@ -17,6 +18,8 @@ interface FlightSearchFormProps {
 
 export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps) {
   const [tripType, setTripType] = useState<"roundtrip" | "oneway" | "multicity">("roundtrip");
+  const [originIata, setOriginIata] = useState("");
+  const [destinationIata, setDestinationIata] = useState("");
 
   const form = useForm<FlightSearch>({
     resolver: zodResolver(flightSearchSchema),
@@ -31,7 +34,14 @@ export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps)
   });
 
   const onSubmit = (data: FlightSearch) => {
-    onSearch({ ...data, tripType });
+    // Use IATA codes if available, otherwise fall back to entered text
+    const searchData: FlightSearch = {
+      ...data,
+      tripType,
+      origin: originIata || data.origin,
+      destination: destinationIata || data.destination,
+    };
+    onSearch(searchData);
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -72,42 +82,32 @@ export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps)
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Origin */}
-              <div className="relative">
-                <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">From</Label>
-                <div className="relative">
-                  <Input
-                    {...form.register("origin")}
-                    placeholder="City or airport"
-                    className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white"
-                    data-testid="input-origin"
-                  />
-                  <Plane className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 rotate-45" />
-                </div>
-                {form.formState.errors.origin && (
-                  <p className="text-sm text-red-600 mt-1" data-testid="error-origin">
-                    {form.formState.errors.origin.message}
-                  </p>
-                )}
-              </div>
+              <AirportAutocomplete
+                label="From"
+                placeholder="City or airport"
+                value={form.watch("origin")}
+                onChange={(displayValue, iataCode) => {
+                  form.setValue("origin", displayValue);
+                  setOriginIata(iataCode);
+                }}
+                icon="departure"
+                error={form.formState.errors.origin?.message}
+                testId="input-origin"
+              />
 
               {/* Destination */}
-              <div className="relative">
-                <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">To</Label>
-                <div className="relative">
-                  <Input
-                    {...form.register("destination")}
-                    placeholder="City or airport"
-                    className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white"
-                    data-testid="input-destination"
-                  />
-                  <Plane className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 -rotate-45" />
-                </div>
-                {form.formState.errors.destination && (
-                  <p className="text-sm text-red-600 mt-1" data-testid="error-destination">
-                    {form.formState.errors.destination.message}
-                  </p>
-                )}
-              </div>
+              <AirportAutocomplete
+                label="To"
+                placeholder="City or airport"
+                value={form.watch("destination")}
+                onChange={(displayValue, iataCode) => {
+                  form.setValue("destination", displayValue);
+                  setDestinationIata(iataCode);
+                }}
+                icon="arrival"
+                error={form.formState.errors.destination?.message}
+                testId="input-destination"
+              />
 
               {/* Departure Date */}
               <div className="relative">

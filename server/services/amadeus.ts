@@ -226,14 +226,32 @@ export class AmadeusService {
 
   async getAirportSuggestions(query: string): Promise<Array<{ code: string; name: string; city: string }>> {
     if (!this.config.clientId || !this.config.clientSecret) {
-      return [];
+      // Return some sample airports for testing when no API credentials
+      const sampleAirports = [
+        { code: "LAX", name: "Los Angeles International Airport", city: "Los Angeles" },
+        { code: "JFK", name: "John F. Kennedy International Airport", city: "New York" },
+        { code: "LHR", name: "London Heathrow Airport", city: "London" },
+        { code: "CDG", name: "Charles de Gaulle Airport", city: "Paris" },
+        { code: "NRT", name: "Narita International Airport", city: "Tokyo" },
+        { code: "SFO", name: "San Francisco International Airport", city: "San Francisco" },
+        { code: "MIA", name: "Miami International Airport", city: "Miami" },
+        { code: "ORD", name: "O'Hare International Airport", city: "Chicago" },
+        { code: "DXB", name: "Dubai International Airport", city: "Dubai" },
+        { code: "SYD", name: "Sydney Kingsford Smith Airport", city: "Sydney" },
+      ];
+      
+      return sampleAirports.filter(airport => 
+        airport.city.toLowerCase().includes(query.toLowerCase()) ||
+        airport.name.toLowerCase().includes(query.toLowerCase()) ||
+        airport.code.toLowerCase().includes(query.toLowerCase())
+      );
     }
 
     try {
       const token = await this.getAccessToken();
       
       const response = await fetch(
-        `${this.config.baseUrl}/v1/reference-data/locations?subType=AIRPORT&keyword=${encodeURIComponent(query)}&page%5Blimit%5D=10`,
+        `${this.config.baseUrl}/v1/reference-data/locations?subType=AIRPORT,CITY&keyword=${encodeURIComponent(query)}&page%5Blimit%5D=20&sort=analytics.travelers.score&view=FULL`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -243,15 +261,29 @@ export class AmadeusService {
       );
 
       if (!response.ok) {
+        console.error(`Airport search API error: ${response.status} ${response.statusText}`);
         return [];
       }
 
       const data = await response.json();
-      return data.data?.map((location: any) => ({
-        code: location.iataCode,
-        name: location.name,
-        city: location.address?.cityName || "",
-      })) || [];
+      
+      return data.data?.map((location: any) => {
+        // Handle both airport and city results
+        if (location.subType === "AIRPORT") {
+          return {
+            code: location.iataCode,
+            name: location.name,
+            city: location.address?.cityName || location.name,
+          };
+        } else if (location.subType === "CITY") {
+          return {
+            code: location.iataCode,
+            name: `${location.name} - All Airports`,
+            city: location.name,
+          };
+        }
+        return null;
+      }).filter(Boolean) || [];
     } catch (error) {
       console.error("Error getting airport suggestions:", error);
       return [];

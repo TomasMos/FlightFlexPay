@@ -25,6 +25,7 @@ This is a full-stack web application built with a React frontend and Express.js 
 - **React Query** (@tanstack/react-query) for server state management
 - **Wouter** for client-side routing
 - **React Hook Form** with Zod validation for form handling
+- **Airport Autocomplete** component with Amadeus API integration for city/airport search
 
 ### Backend Architecture
 - **Express.js** server with TypeScript
@@ -49,11 +50,12 @@ The application uses four main tables:
 ## Data Flow
 
 ### Flight Search Flow
-1. User enters search criteria (origin, destination, dates, passengers)
-2. Frontend validates input using Zod schema
-3. Backend calls Amadeus API service for flight data
-4. Payment plan eligibility calculated for each flight
-5. Enhanced flight data returned with payment plan information
+1. User types in origin/destination with real-time autocomplete from Amadeus Airport API
+2. System provides airport and city suggestions with IATA codes
+3. Frontend validates input using Zod schema and sends IATA codes for search
+4. Backend calls Amadeus Flight Offers API for flight data
+5. Payment plan eligibility calculated for each flight
+6. Enhanced flight data returned with payment plan information
 
 ### Booking Flow
 1. User selects flight and payment option
