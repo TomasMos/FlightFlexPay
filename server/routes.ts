@@ -46,9 +46,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             const paymentPlan = PaymentPlanService.calculatePaymentPlan(baseCost, travelDate);
             
-            // Enhance individual flights with payment plan info - use original Amadeus prices for display
-            const outboundFlightPrice = PaymentPlanService.calculateFlightPrice(outboundPrice * searchParams.passengers, travelDate);
-            const returnFlightPrice = PaymentPlanService.calculateFlightPrice(returnPrice * searchParams.passengers, travelDate);
+            // Enhance individual flights with payment plan info - use per-person Amadeus prices
+            const outboundFlightPrice = PaymentPlanService.calculateFlightPrice(outboundPrice, travelDate);
+            const returnFlightPrice = PaymentPlanService.calculateFlightPrice(returnPrice, travelDate);
             
             const outboundWithPaymentPlan: FlightWithPaymentPlan = {
               ...outbound,
@@ -76,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: `${outbound.id}-${returnFlight.id}`,
               outboundFlight: outboundWithPaymentPlan,
               returnFlight: returnWithPaymentPlan,
-              totalPrice: paymentPlan.flightPrice,
+              totalPrice: paymentPlan.flightPrice / searchParams.passengers, // Per-person price for display
               paymentPlanEligible: paymentPlan.eligible,
               paymentPlan: paymentPlan.eligible ? {
                 depositAmount: paymentPlan.depositAmount!,
@@ -92,13 +92,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // For one-way flights, enhance with payment plan information
         const flightsWithPaymentPlans: FlightWithPaymentPlan[] = flights.map((flight) => {
           const travelDate = new Date(flight.departureTime);
-          const baseCost = parseFloat(flight.price.toString()) * searchParams.passengers;
+          const baseCostPerPerson = parseFloat(flight.price.toString());
+          const totalBaseCost = baseCostPerPerson * searchParams.passengers;
           
-          const paymentPlan = PaymentPlanService.calculatePaymentPlan(baseCost, travelDate);
+          const paymentPlan = PaymentPlanService.calculatePaymentPlan(totalBaseCost, travelDate);
+          const perPersonFlightPrice = PaymentPlanService.calculateFlightPrice(baseCostPerPerson, travelDate);
           
           return {
             ...flight,
-            price: paymentPlan.flightPrice.toString(), // Use calculated flight price with fees
+            price: perPersonFlightPrice.flightPrice.toString(), // Per-person price with fees
             paymentPlanEligible: paymentPlan.eligible,
             paymentPlan: paymentPlan.eligible ? {
               depositAmount: paymentPlan.depositAmount!,
