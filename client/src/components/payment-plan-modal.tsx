@@ -15,16 +15,23 @@ interface PaymentPlanModalProps {
 
 interface PaymentPlanDetails {
   eligible: boolean;
+  reason?: string;
+  flightPrice: number;
+  baseCost: number;
+  adminFee: number;
+  layByFee?: number;
   depositAmount?: number;
   installmentAmount?: number;
   installmentCount?: number;
+  installmentCadence?: 'weekly' | 'biweekly';
   schedule?: Array<{
     paymentNumber: number;
     dueDate: string;
     amount: number;
     description: string;
   }>;
-  totalAmount?: number;
+  daysUntilTravel: number;
+  weeksUntilTravel?: number;
 }
 
 export function PaymentPlanModal({ flight, isOpen, onClose }: PaymentPlanModalProps) {
@@ -161,7 +168,7 @@ export function PaymentPlanModal({ flight, isOpen, onClose }: PaymentPlanModalPr
                 <div className="flex justify-between items-center font-semibold">
                   <span className="text-flightpay-slate-900">Total</span>
                   <span className="text-lg text-flightpay-slate-900" data-testid="text-total-amount">
-                    ${paymentPlan.totalAmount?.toFixed(2)}
+                    ${paymentPlan.flightPrice?.toFixed(2)}
                   </span>
                 </div>
                 <div className="text-sm text-flightpay-slate-600 mt-1">No additional fees or interest</div>

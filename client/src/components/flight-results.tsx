@@ -325,12 +325,12 @@ function OneWayFlightCard({
                 <span className="text-sm font-medium text-flightpay-secondary">Payment Plan Available</span>
               </div>
               <div className="text-sm text-flightpay-slate-600">
-                Pay ${flight.paymentPlan.depositAmount.toFixed(0)} today, ${flight.paymentPlan.installmentAmount.toFixed(0)}/month × {flight.paymentPlan.installmentCount}
+                Pay ${flight.paymentPlan.depositAmount.toFixed(0)} today, from ${flight.paymentPlan.installmentAmount.toFixed(0)} per week
               </div>
             </div>
           ) : (
             <div className="text-sm text-flightpay-slate-500">
-              Full payment required
+              No payment plans available
             </div>
           )}
         </div>
@@ -533,12 +533,12 @@ function RoundTripFlightCard({
                   <span className="text-sm font-medium text-flightpay-secondary">Payment Plan Available</span>
                 </div>
                 <div className="text-sm text-flightpay-slate-600">
-                  Pay ${flight.paymentPlan.depositAmount.toFixed(0)} today, ${flight.paymentPlan.installmentAmount.toFixed(0)}/month × {flight.paymentPlan.installmentCount}
+                  Pay ${flight.paymentPlan.depositAmount.toFixed(0)} today, from ${flight.paymentPlan.installmentAmount.toFixed(0)} per week
                 </div>
               </div>
             ) : (
               <div className="text-sm text-flightpay-slate-500">
-                Full payment required
+                No payment plans available
               </div>
             )}
           </div>

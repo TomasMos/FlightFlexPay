@@ -8,81 +8,117 @@ export interface PaymentScheduleItem {
 export interface PaymentPlanCalculation {
   eligible: boolean;
   reason?: string;
+  flightPrice: number;
+  baseCost: number;
+  adminFee: number;
+  layByFee?: number;
   depositAmount?: number;
   installmentAmount?: number;
   installmentCount?: number;
+  installmentCadence?: 'weekly' | 'biweekly';
   schedule?: PaymentScheduleItem[];
-  totalAmount?: number;
+  daysUntilTravel: number;
+  weeksUntilTravel?: number;
 }
 
 export class PaymentPlanService {
+  private static readonly ADMIN_FEE_PERCENTAGE = 0.05; // 5% admin fee on all flights
+  private static readonly LAY_BY_FEE_PERCENTAGE = 0.10; // 10% lay by fee for flights > 14 days
   private static readonly DEPOSIT_PERCENTAGE = 0.20; // 20% deposit
-  private static readonly MINIMUM_ADVANCE_DAYS = 45; // Minimum days before travel for payment plan
-  private static readonly MINIMUM_AMOUNT = 300; // Minimum total amount for payment plan eligibility
+  private static readonly MINIMUM_ADVANCE_DAYS = 14; // Payment plans only available for flights > 14 days
+  private static readonly MAX_INSTALLMENT_WEEKS = 26; // Maximum 26 weeks of installments
 
-  static calculatePaymentPlan(
-    totalAmount: number,
-    travelDate: Date,
-    bookingDate: Date = new Date()
-  ): PaymentPlanCalculation {
-    // Check if amount is above minimum threshold
-    if (totalAmount < this.MINIMUM_AMOUNT) {
-      return {
-        eligible: false,
-        reason: `Payment plans are available for bookings of $${this.MINIMUM_AMOUNT} or more`,
-      };
-    }
-
-    // Check if travel date is far enough in advance
-    const daysUntilTravel = Math.ceil(
-      (travelDate.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (daysUntilTravel < this.MINIMUM_ADVANCE_DAYS) {
-      return {
-        eligible: false,
-        reason: "Travel date too soon for installment payments",
-      };
-    }
-
-    // Calculate payment plan
-    const depositAmount = Math.round(totalAmount * this.DEPOSIT_PERCENTAGE * 100) / 100;
-    const remainingAmount = totalAmount - depositAmount;
-
-    // Determine number of installments based on time until travel
-    let installmentCount: number;
-    if (daysUntilTravel >= 120) {
-      installmentCount = 4; // 4 monthly payments
-    } else if (daysUntilTravel >= 90) {
-      installmentCount = 3; // 3 monthly payments
-    } else {
-      installmentCount = 2; // 2 monthly payments
-    }
-
-    const installmentAmount = Math.round((remainingAmount / installmentCount) * 100) / 100;
-
-    // Generate payment schedule
-    const schedule = this.generatePaymentSchedule(
-      depositAmount,
-      installmentAmount,
-      installmentCount,
-      bookingDate,
-      travelDate
-    );
-
+  static calculateFlightPrice(baseCost: number, travelDate: Date) {
+    const today = new Date();
+    const daysUntilTravel = Math.ceil((travelDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Admin Fee: 5% on all flights
+    const adminFee = baseCost * this.ADMIN_FEE_PERCENTAGE;
+    
+    // Lay By Fee: 10% additional if departure > 14 days
+    const layByFee = daysUntilTravel > this.MINIMUM_ADVANCE_DAYS ? baseCost * this.LAY_BY_FEE_PERCENTAGE : 0;
+    
+    // Calculate Flight Price
+    const flightPrice = baseCost + adminFee + layByFee;
+    
     return {
-      eligible: true,
-      depositAmount,
-      installmentAmount,
-      installmentCount,
-      schedule,
-      totalAmount,
+      flightPrice,
+      baseCost,
+      adminFee,
+      layByFee,
+      daysUntilTravel
     };
   }
 
-  private static generatePaymentSchedule(
+  static calculatePaymentPlan(
+    baseCost: number,
+    travelDate: Date,
+    bookingDate: Date = new Date()
+  ): PaymentPlanCalculation {
+    const today = new Date();
+    const daysUntilTravel = Math.ceil((travelDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Calculate flight price with fees
+    const priceCalculation = this.calculateFlightPrice(baseCost, travelDate);
+    const { flightPrice, adminFee, layByFee } = priceCalculation;
+    
+    // Payment plans only available if departure > 14 days
+    const isEligible = daysUntilTravel > this.MINIMUM_ADVANCE_DAYS;
+    
+    if (!isEligible) {
+      return {
+        eligible: false,
+        reason: 'Payment plans not available for flights within 14 days',
+        flightPrice,
+        baseCost,
+        adminFee,
+        layByFee,
+        daysUntilTravel
+      };
+    }
+    
+    // Calculate installment period
+    const weeksUntilTravel = Math.floor(daysUntilTravel / 7);
+    const weeksUntilTwoWeeksBefore = Math.max(0, weeksUntilTravel - 2);
+    const installmentLengthWeeks = Math.min(this.MAX_INSTALLMENT_WEEKS, weeksUntilTwoWeeksBefore);
+    
+    // 20% deposit
+    const depositAmount = Math.round(flightPrice * this.DEPOSIT_PERCENTAGE * 100) / 100;
+    const remainingAmount = flightPrice - depositAmount;
+    
+    // Weekly installments
+    const weeklyInstallmentAmount = installmentLengthWeeks > 0 
+      ? Math.round((remainingAmount / installmentLengthWeeks) * 100) / 100 
+      : 0;
+    
+    // Generate payment schedule
+    const schedule = this.generateWeeklyPaymentSchedule(
+      depositAmount,
+      weeklyInstallmentAmount,
+      installmentLengthWeeks,
+      bookingDate,
+      travelDate
+    );
+    
+    return {
+      eligible: true,
+      flightPrice,
+      baseCost,
+      adminFee,
+      layByFee,
+      depositAmount,
+      installmentAmount: weeklyInstallmentAmount,
+      installmentCount: installmentLengthWeeks,
+      installmentCadence: 'weekly',
+      schedule,
+      daysUntilTravel,
+      weeksUntilTravel: installmentLengthWeeks
+    };
+  }
+
+  private static generateWeeklyPaymentSchedule(
     depositAmount: number,
-    installmentAmount: number,
+    weeklyInstallmentAmount: number,
     installmentCount: number,
     bookingDate: Date,
     travelDate: Date
@@ -97,31 +133,25 @@ export class PaymentPlanService {
       description: "Deposit - Due immediately",
     });
 
-    // Calculate installment dates
-    const totalDays = Math.ceil(
-      (travelDate.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const daysBetweenPayments = Math.floor(totalDays / (installmentCount + 1));
-
+    // Weekly installments
     for (let i = 1; i <= installmentCount; i++) {
       const dueDate = new Date(bookingDate);
-      dueDate.setDate(dueDate.getDate() + (daysBetweenPayments * i));
+      dueDate.setDate(dueDate.getDate() + (7 * i)); // Weekly payments
 
-      // Ensure last payment is at least 5 days before travel
-      if (i === installmentCount) {
-        const minLastPaymentDate = new Date(travelDate);
-        minLastPaymentDate.setDate(minLastPaymentDate.getDate() - 5);
-        if (dueDate > minLastPaymentDate) {
-          dueDate.setTime(minLastPaymentDate.getTime());
-        }
+      // Ensure payment is at least 2 weeks before travel
+      const twoWeeksBeforeTravel = new Date(travelDate);
+      twoWeeksBeforeTravel.setDate(twoWeeksBeforeTravel.getDate() - 14);
+      
+      if (dueDate > twoWeeksBeforeTravel) {
+        dueDate.setTime(twoWeeksBeforeTravel.getTime());
       }
 
-      const description = i === installmentCount ? "Final Payment" : `Payment ${i + 1}`;
+      const description = i === installmentCount ? "Final Payment" : `Weekly Payment ${i}`;
 
       schedule.push({
         paymentNumber: i + 1,
         dueDate: dueDate.toISOString().split('T')[0],
-        amount: installmentAmount,
+        amount: weeklyInstallmentAmount,
         description: `${description} - Due ${dueDate.toLocaleDateString('en-US', { 
           year: 'numeric', 
           month: 'long', 
@@ -133,8 +163,8 @@ export class PaymentPlanService {
     return schedule;
   }
 
-  static isEligibleForPaymentPlan(totalAmount: number, travelDate: Date): boolean {
-    const calculation = this.calculatePaymentPlan(totalAmount, travelDate);
+  static isEligibleForPaymentPlan(baseCost: number, travelDate: Date): boolean {
+    const calculation = this.calculatePaymentPlan(baseCost, travelDate);
     return calculation.eligible;
   }
 }
