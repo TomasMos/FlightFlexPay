@@ -74,10 +74,6 @@ export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps)
                 <RadioGroupItem value="oneway" id="oneway" data-testid="radio-oneway" />
                 <Label htmlFor="oneway" className="text-flightpay-slate-700">One way</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="multicity" id="multicity" data-testid="radio-multicity" />
-                <Label htmlFor="multicity" className="text-flightpay-slate-700">Multi-city</Label>
-              </div>
             </RadioGroup>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

@@ -17,6 +17,57 @@ export function FlightResults({ flights, isLoading, error }: FlightResultsProps)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState("best");
 
+  // Sort flights based on selected criteria
+  const sortedFlights = [...flights].sort((a, b) => {
+    const priceA = parseFloat(a.price.toString());
+    const priceB = parseFloat(b.price.toString());
+    
+    switch (sortBy) {
+      case "price":
+        return priceA - priceB;
+      case "duration":
+        const durationA = parseDurationToMinutes(a.duration);
+        const durationB = parseDurationToMinutes(b.duration);
+        return durationA - durationB;
+      case "departure":
+        return new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime();
+      case "best":
+      default:
+        // Best value: combination of price, payment plan availability, and stops
+        const scoreA = calculateBestScore(a);
+        const scoreB = calculateBestScore(b);
+        return scoreB - scoreA; // Higher score first
+    }
+  });
+
+  const parseDurationToMinutes = (duration: string): number => {
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+    if (!match) return 0;
+    const hours = match[1] ? parseInt(match[1]) : 0;
+    const minutes = match[2] ? parseInt(match[2]) : 0;
+    return hours * 60 + minutes;
+  };
+
+  const calculateBestScore = (flight: FlightWithPaymentPlan): number => {
+    let score = 0;
+    const price = parseFloat(flight.price.toString());
+    
+    // Lower price is better (max 50 points)
+    score += Math.max(0, 50 - (price / 20));
+    
+    // Payment plan availability adds points
+    if (flight.paymentPlanEligible) score += 30;
+    
+    // Fewer stops is better
+    score += Math.max(0, 20 - (flight.stops * 10));
+    
+    // Shorter duration is better (rough estimate)
+    const duration = parseDurationToMinutes(flight.duration);
+    score += Math.max(0, 20 - (duration / 30));
+    
+    return score;
+  };
+
   const handleSelectFlight = (flight: FlightWithPaymentPlan) => {
     setSelectedFlight(flight);
     if (flight.paymentPlanEligible) {
@@ -129,7 +180,7 @@ export function FlightResults({ flights, isLoading, error }: FlightResultsProps)
         </div>
 
         <div className="space-y-4">
-          {flights.map((flight) => {
+          {sortedFlights.map((flight) => {
             const airlineCode = getAirlineCode(flight.flightNumber);
             const totalPrice = parseFloat(flight.price.toString());
             
