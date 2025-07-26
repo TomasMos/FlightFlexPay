@@ -114,7 +114,8 @@ export function AirportAutocomplete({
   const handleBlur = (e: React.FocusEvent) => {
     // Delay closing to allow click on suggestions
     setTimeout(() => {
-      if (!e.currentTarget.contains(document.activeElement)) {
+      const activeElement = document.activeElement;
+      if (!activeElement || !e.currentTarget.contains(activeElement)) {
         setIsOpen(false);
         setSelectedIndex(-1);
       }
