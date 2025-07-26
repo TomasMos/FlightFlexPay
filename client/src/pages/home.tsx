@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FlightSearch, FlightWithPaymentPlan } from "@shared/schema";
+import { FlightSearch, FlightWithPaymentPlan, RoundTripFlightWithPaymentPlan } from "@shared/schema";
 import { Header } from "@/components/header";
 import { FlightSearchForm } from "@/components/flight-search-form";
 import { FlightResults } from "@/components/flight-results";
@@ -14,7 +14,7 @@ export default function Home() {
     data: flightData,
     isLoading,
     error,
-  } = useQuery<{ flights: FlightWithPaymentPlan[] }>({
+  } = useQuery<{ flights: (FlightWithPaymentPlan | RoundTripFlightWithPaymentPlan)[] }>({
     queryKey: ['/api/flights/search', searchParams],
     queryFn: async ({ queryKey }) => {
       const [, params] = queryKey;

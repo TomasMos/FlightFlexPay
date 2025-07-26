@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { amadeusService } from "./services/amadeus";
 import { PaymentPlanService } from "./services/paymentPlan";
-import { flightSearchSchema, FlightWithPaymentPlan } from "@shared/schema";
+import { flightSearchSchema, FlightWithPaymentPlan, RoundTripFlightWithPaymentPlan } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -21,25 +21,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const flights = await amadeusService.searchFlights(searchParams);
       
-      // Enhance flights with payment plan information
-      const flightsWithPaymentPlans: FlightWithPaymentPlan[] = flights.map((flight) => {
-        const travelDate = new Date(flight.departureTime);
-        const totalAmount = parseFloat(flight.price.toString()) * searchParams.passengers;
-        
-        const paymentPlan = PaymentPlanService.calculatePaymentPlan(totalAmount, travelDate);
-        
-        return {
-          ...flight,
-          paymentPlanEligible: paymentPlan.eligible,
-          paymentPlan: paymentPlan.eligible ? {
-            depositAmount: paymentPlan.depositAmount!,
-            installmentAmount: paymentPlan.installmentAmount!,
-            installmentCount: paymentPlan.installmentCount!,
-          } : undefined,
+      if (searchParams.tripType === "roundtrip" && searchParams.returnDate) {
+        // For round trip, get return flights and create combinations
+        const returnSearchParams = {
+          ...searchParams,
+          origin: searchParams.destination,
+          destination: searchParams.origin,
+          departureDate: searchParams.returnDate,
+          returnDate: undefined,
+          tripType: "oneway" as const,
         };
-      });
+        
+        const returnFlights = await amadeusService.searchFlights(returnSearchParams);
+        
+        // Create round trip combinations
+        const roundTripCombinations: RoundTripFlightWithPaymentPlan[] = [];
+        
+        flights.forEach((outbound) => {
+          returnFlights.forEach((returnFlight) => {
+            const outboundPrice = parseFloat(outbound.price.toString());
+            const returnPrice = parseFloat(returnFlight.price.toString());
+            const totalPrice = (outboundPrice + returnPrice) * searchParams.passengers;
+            const travelDate = new Date(outbound.departureTime);
+            
+            const paymentPlan = PaymentPlanService.calculatePaymentPlan(totalPrice, travelDate);
+            
+            // Enhance individual flights with payment plan info
+            const outboundWithPaymentPlan: FlightWithPaymentPlan = {
+              ...outbound,
+              paymentPlanEligible: paymentPlan.eligible,
+              paymentPlan: paymentPlan.eligible ? {
+                depositAmount: paymentPlan.depositAmount! / 2, // Split between outbound and return
+                installmentAmount: paymentPlan.installmentAmount!,
+                installmentCount: paymentPlan.installmentCount!,
+              } : undefined,
+            };
+            
+            const returnWithPaymentPlan: FlightWithPaymentPlan = {
+              ...returnFlight,
+              paymentPlanEligible: paymentPlan.eligible,
+              paymentPlan: paymentPlan.eligible ? {
+                depositAmount: paymentPlan.depositAmount! / 2, // Split between outbound and return
+                installmentAmount: paymentPlan.installmentAmount!,
+                installmentCount: paymentPlan.installmentCount!,
+              } : undefined,
+            };
+            
+            roundTripCombinations.push({
+              id: `${outbound.id}-${returnFlight.id}`,
+              outboundFlight: outboundWithPaymentPlan,
+              returnFlight: returnWithPaymentPlan,
+              totalPrice,
+              paymentPlanEligible: paymentPlan.eligible,
+              paymentPlan: paymentPlan.eligible ? {
+                depositAmount: paymentPlan.depositAmount!,
+                installmentAmount: paymentPlan.installmentAmount!,
+                installmentCount: paymentPlan.installmentCount!,
+              } : undefined,
+            });
+          });
+        });
+        
+        res.json({ flights: roundTripCombinations });
+      } else {
+        // For one-way flights, enhance with payment plan information
+        const flightsWithPaymentPlans: FlightWithPaymentPlan[] = flights.map((flight) => {
+          const travelDate = new Date(flight.departureTime);
+          const totalAmount = parseFloat(flight.price.toString()) * searchParams.passengers;
+          
+          const paymentPlan = PaymentPlanService.calculatePaymentPlan(totalAmount, travelDate);
+          
+          return {
+            ...flight,
+            paymentPlanEligible: paymentPlan.eligible,
+            paymentPlan: paymentPlan.eligible ? {
+              depositAmount: paymentPlan.depositAmount!,
+              installmentAmount: paymentPlan.installmentAmount!,
+              installmentCount: paymentPlan.installmentCount!,
+            } : undefined,
+          };
+        });
 
-      res.json({ flights: flightsWithPaymentPlans });
+        res.json({ flights: flightsWithPaymentPlans });
+      }
     } catch (error) {
       console.error("Flight search error:", error);
       res.status(400).json({ 

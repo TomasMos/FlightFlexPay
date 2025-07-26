@@ -101,3 +101,16 @@ export type FlightWithPaymentPlan = Flight & {
     installmentCount: number;
   };
 };
+
+export type RoundTripFlightWithPaymentPlan = {
+  id: string;
+  outboundFlight: FlightWithPaymentPlan;
+  returnFlight: FlightWithPaymentPlan;
+  totalPrice: number;
+  paymentPlanEligible: boolean;
+  paymentPlan?: {
+    depositAmount: number;
+    installmentAmount: number;
+    installmentCount: number;
+  };
+};
