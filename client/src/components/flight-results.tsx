@@ -26,48 +26,48 @@ export function FlightResults({ flights, isLoading, error }: FlightResultsProps)
     return hours * 60 + minutes;
   };
 
-  const calculateBestScore = (flight: FlightWithPaymentPlan): number => {
-    let score = 0;
-    const price = parseFloat(flight.price.toString());
-    
-    // Lower price is better (max 50 points)
-    score += Math.max(0, 50 - (price / 20));
-    
-    // Payment plan availability adds points
-    if (flight.paymentPlanEligible) score += 30;
-    
-    // Fewer stops is better
-    score += Math.max(0, 20 - (flight.stops * 10));
-    
-    // Shorter duration is better (rough estimate)
-    const duration = parseDurationToMinutes(flight.duration);
-    score += Math.max(0, 20 - (duration / 30));
-    
-    return score;
+  const calculateBestRanking = (): FlightWithPaymentPlan[] => {
+    if (flights.length === 0) return [];
+
+    // Sort by price (cheapest first) and assign ranks
+    const priceRanks = new Map<string, number>();
+    const sortedByPrice = [...flights].sort((a, b) => parseFloat(a.price.toString()) - parseFloat(b.price.toString()));
+    sortedByPrice.forEach((flight, index) => {
+      priceRanks.set(flight.id, index + 1);
+    });
+
+    // Sort by duration (shortest first) and assign ranks
+    const durationRanks = new Map<string, number>();
+    const sortedByDuration = [...flights].sort((a, b) => parseDurationToMinutes(a.duration) - parseDurationToMinutes(b.duration));
+    sortedByDuration.forEach((flight, index) => {
+      durationRanks.set(flight.id, index + 1);
+    });
+
+    // Calculate average rank for each flight
+    const flightsWithAvgRank = flights.map(flight => {
+      const priceRank = priceRanks.get(flight.id) || 1;
+      const durationRank = durationRanks.get(flight.id) || 1;
+      const avgRank = (priceRank + durationRank) / 2;
+      
+      return { ...flight, avgRank };
+    });
+
+    // Sort by average rank (lowest/best first)
+    return flightsWithAvgRank.sort((a, b) => a.avgRank - b.avgRank);
   };
 
   // Sort flights based on selected criteria
-  const sortedFlights = [...flights].sort((a, b) => {
-    const priceA = parseFloat(a.price.toString());
-    const priceB = parseFloat(b.price.toString());
-    
+  const sortedFlights = (() => {
     switch (sortBy) {
       case "price":
-        return priceA - priceB;
+        return [...flights].sort((a, b) => parseFloat(a.price.toString()) - parseFloat(b.price.toString()));
       case "duration":
-        const durationA = parseDurationToMinutes(a.duration);
-        const durationB = parseDurationToMinutes(b.duration);
-        return durationA - durationB;
-      case "departure":
-        return new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime();
+        return [...flights].sort((a, b) => parseDurationToMinutes(a.duration) - parseDurationToMinutes(b.duration));
       case "best":
       default:
-        // Best value: combination of price, payment plan availability, and stops
-        const scoreA = calculateBestScore(a);
-        const scoreB = calculateBestScore(b);
-        return scoreB - scoreA; // Higher score first
+        return calculateBestRanking();
     }
-  });
+  })();
 
   const handleSelectFlight = (flight: FlightWithPaymentPlan) => {
     setSelectedFlight(flight);
@@ -170,7 +170,6 @@ export function FlightResults({ flights, isLoading, error }: FlightResultsProps)
                 <SelectItem value="best">Sort by: Best</SelectItem>
                 <SelectItem value="price">Price: Low to High</SelectItem>
                 <SelectItem value="duration">Duration: Shortest</SelectItem>
-                <SelectItem value="departure">Departure Time</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" data-testid="button-filters">
