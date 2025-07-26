@@ -17,29 +17,7 @@ export function FlightResults({ flights, isLoading, error }: FlightResultsProps)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState("best");
 
-  // Sort flights based on selected criteria
-  const sortedFlights = [...flights].sort((a, b) => {
-    const priceA = parseFloat(a.price.toString());
-    const priceB = parseFloat(b.price.toString());
-    
-    switch (sortBy) {
-      case "price":
-        return priceA - priceB;
-      case "duration":
-        const durationA = parseDurationToMinutes(a.duration);
-        const durationB = parseDurationToMinutes(b.duration);
-        return durationA - durationB;
-      case "departure":
-        return new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime();
-      case "best":
-      default:
-        // Best value: combination of price, payment plan availability, and stops
-        const scoreA = calculateBestScore(a);
-        const scoreB = calculateBestScore(b);
-        return scoreB - scoreA; // Higher score first
-    }
-  });
-
+  // Helper functions defined first
   const parseDurationToMinutes = (duration: string): number => {
     const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
     if (!match) return 0;
@@ -67,6 +45,29 @@ export function FlightResults({ flights, isLoading, error }: FlightResultsProps)
     
     return score;
   };
+
+  // Sort flights based on selected criteria
+  const sortedFlights = [...flights].sort((a, b) => {
+    const priceA = parseFloat(a.price.toString());
+    const priceB = parseFloat(b.price.toString());
+    
+    switch (sortBy) {
+      case "price":
+        return priceA - priceB;
+      case "duration":
+        const durationA = parseDurationToMinutes(a.duration);
+        const durationB = parseDurationToMinutes(b.duration);
+        return durationA - durationB;
+      case "departure":
+        return new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime();
+      case "best":
+      default:
+        // Best value: combination of price, payment plan availability, and stops
+        const scoreA = calculateBestScore(a);
+        const scoreB = calculateBestScore(b);
+        return scoreB - scoreA; // Higher score first
+    }
+  });
 
   const handleSelectFlight = (flight: FlightWithPaymentPlan) => {
     setSelectedFlight(flight);

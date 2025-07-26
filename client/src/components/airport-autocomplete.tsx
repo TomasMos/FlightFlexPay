@@ -37,13 +37,15 @@ export function AirportAutocomplete({
   const listRef = useRef<HTMLUListElement>(null);
 
   const { data: airports = [] } = useQuery<Airport[]>({
-    queryKey: ['/api/airports/search', inputValue],
+    queryKey: ["/api/airports/search", inputValue],
     queryFn: async () => {
       if (inputValue.length < 2) return [];
-      
-      const response = await fetch(`/api/airports/search?q=${encodeURIComponent(inputValue)}`);
+
+      const response = await fetch(
+        `/api/airports/search?q=${encodeURIComponent(inputValue)}`,
+      );
       if (!response.ok) return [];
-      
+
       const data = await response.json();
       return data.airports || [];
     },
@@ -67,7 +69,7 @@ export function AirportAutocomplete({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
-    
+
     // If user clears the input, also clear the parent value
     if (newValue === "") {
       onChange("", "");
@@ -89,13 +91,13 @@ export function AirportAutocomplete({
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < airports.length - 1 ? prev + 1 : prev
+        setSelectedIndex((prev) =>
+          prev < airports.length - 1 ? prev + 1 : prev,
         );
         break;
       case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : prev);
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev));
         break;
       case "Enter":
         e.preventDefault();
@@ -114,22 +116,30 @@ export function AirportAutocomplete({
   // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (inputRef.current && !inputRef.current.contains(event.target as Node) && 
-          listRef.current && !listRef.current.contains(event.target as Node)) {
+      if (
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node) &&
+        listRef.current &&
+        !listRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
         setSelectedIndex(-1);
       }
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isOpen]);
 
-  const IconComponent = icon === "departure" ? 
-    <Plane className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 rotate-45" /> :
-    <Plane className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 -rotate-45" />;
+  const IconComponent =
+    icon === "departure" ? (
+      <Plane className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 rotate-45" />
+    ) : (
+      <Plane className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 -rotate-45" />
+    );
 
   return (
     <div className="relative">
@@ -143,12 +153,12 @@ export function AirportAutocomplete({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white w-full min-w-[240px]"
+          className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white w-full min-w-[140px]"
           data-testid={testId}
           autoComplete="off"
         />
         {IconComponent}
-        
+
         {isOpen && airports.length > 0 && (
           <ul
             ref={listRef}
@@ -160,7 +170,7 @@ export function AirportAutocomplete({
                 key={`${airport.code}-${index}`}
                 className={cn(
                   "px-4 py-3 cursor-pointer border-b border-flightpay-slate-100 last:border-b-0 hover:bg-flightpay-slate-50",
-                  selectedIndex === index && "bg-flightpay-primary/10"
+                  selectedIndex === index && "bg-flightpay-primary/10",
                 )}
                 onClick={() => handleSelectAirport(airport)}
                 data-testid={`${testId}-option-${airport.code}`}
@@ -190,9 +200,12 @@ export function AirportAutocomplete({
           </ul>
         )}
       </div>
-      
+
       {error && (
-        <p className="text-sm text-red-600 mt-1" data-testid={`${testId}-error`}>
+        <p
+          className="text-sm text-red-600 mt-1"
+          data-testid={`${testId}-error`}
+        >
           {error}
         </p>
       )}

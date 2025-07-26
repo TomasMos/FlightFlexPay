@@ -5,7 +5,13 @@ import { flightSearchSchema, type FlightSearch } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AirportAutocomplete } from "./airport-autocomplete.tsx";
 import { Calendar, User, Search } from "lucide-react";
@@ -16,8 +22,13 @@ interface FlightSearchFormProps {
   isLoading?: boolean;
 }
 
-export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps) {
-  const [tripType, setTripType] = useState<"roundtrip" | "oneway" | "multicity">("roundtrip");
+export function FlightSearchForm({
+  onSearch,
+  isLoading,
+}: FlightSearchFormProps) {
+  const [tripType, setTripType] = useState<
+    "roundtrip" | "oneway" | "multicity"
+  >("roundtrip");
   const [originIata, setOriginIata] = useState("");
   const [destinationIata, setDestinationIata] = useState("");
 
@@ -44,22 +55,33 @@ export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps)
     onSearch(searchData);
   };
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split("T")[0];
 
   return (
     <section className="bg-white border-b border-flightpay-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-flightpay-slate-900 mb-4" data-testid="title-main">
+          <h1
+            className="text-3xl md:text-4xl font-bold text-flightpay-slate-900 mb-4"
+            data-testid="title-main"
+          >
             Book Your Flight, Pay Over Time
           </h1>
-          <p className="text-lg text-flightpay-slate-600 max-w-2xl mx-auto" data-testid="text-subtitle">
-            Search and book flights with flexible payment plans. Pay just 20% upfront and spread the rest over easy installments.
+          <p
+            className="text-lg text-flightpay-slate-600 max-w-2xl mx-auto"
+            data-testid="text-subtitle"
+          >
+            Search and book flights with flexible payment plans. Pay just 20%
+            upfront and spread the rest over easy installments.
           </p>
         </div>
 
         <div className="bg-flightpay-slate-50 rounded-2xl p-6 shadow-sm border border-flightpay-slate-200">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" data-testid="form-flight-search">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4"
+            data-testid="form-flight-search"
+          >
             <RadioGroup
               value={tripType}
               onValueChange={(value) => setTripType(value as typeof tripType)}
@@ -67,12 +89,24 @@ export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps)
               data-testid="radiogroup-trip-type"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="roundtrip" id="roundtrip" data-testid="radio-roundtrip" />
-                <Label htmlFor="roundtrip" className="text-flightpay-slate-700">Round trip</Label>
+                <RadioGroupItem
+                  value="roundtrip"
+                  id="roundtrip"
+                  data-testid="radio-roundtrip"
+                />
+                <Label htmlFor="roundtrip" className="text-flightpay-slate-700">
+                  Round trip
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="oneway" id="oneway" data-testid="radio-oneway" />
-                <Label htmlFor="oneway" className="text-flightpay-slate-700">One way</Label>
+                <RadioGroupItem
+                  value="oneway"
+                  id="oneway"
+                  data-testid="radio-oneway"
+                />
+                <Label htmlFor="oneway" className="text-flightpay-slate-700">
+                  One way
+                </Label>
               </div>
             </RadioGroup>
 
@@ -107,7 +141,9 @@ export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps)
 
               {/* Departure Date */}
               <div className="relative">
-                <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">Departure</Label>
+                <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">
+                  Departure
+                </Label>
                 <div className="relative">
                   <Input
                     {...form.register("departureDate")}
@@ -119,7 +155,10 @@ export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps)
                   <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600" />
                 </div>
                 {form.formState.errors.departureDate && (
-                  <p className="text-sm text-red-600 mt-1" data-testid="error-departure-date">
+                  <p
+                    className="text-sm text-red-600 mt-1"
+                    data-testid="error-departure-date"
+                  >
                     {form.formState.errors.departureDate.message}
                   </p>
                 )}
@@ -127,10 +166,14 @@ export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps)
 
               {/* Return Date */}
               <div className="relative">
-                <Label className={cn(
-                  "block text-sm font-medium mb-1",
-                  tripType === "oneway" ? "text-flightpay-slate-400" : "text-flightpay-slate-700"
-                )}>
+                <Label
+                  className={cn(
+                    "block text-sm font-medium mb-1",
+                    tripType === "oneway"
+                      ? "text-flightpay-slate-400"
+                      : "text-flightpay-slate-700",
+                  )}
+                >
                   Return
                 </Label>
                 <div className="relative">
@@ -148,13 +191,20 @@ export function FlightSearchForm({ onSearch, isLoading }: FlightSearchFormProps)
 
               {/* Passengers */}
               <div className="relative">
-                <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">Passengers</Label>
+                <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">
+                  Passengers
+                </Label>
                 <div className="relative">
                   <Select
                     value={form.watch("passengers")?.toString()}
-                    onValueChange={(value) => form.setValue("passengers", parseInt(value))}
+                    onValueChange={(value) =>
+                      form.setValue("passengers", parseInt(value))
+                    }
                   >
-                    <SelectTrigger className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white" data-testid="select-passengers">
+                    <SelectTrigger
+                      className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white"
+                      data-testid="select-passengers"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
