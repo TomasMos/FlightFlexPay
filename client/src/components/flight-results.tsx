@@ -41,13 +41,26 @@ export function FlightResults({ flights, isLoading, error }: FlightResultsProps)
     const sortedByDuration = [...flights].sort((a, b) => parseDurationToMinutes(a.duration) - parseDurationToMinutes(b.duration));
     sortedByDuration.forEach((flight, index) => {
       durationRanks.set(flight.id, index + 1);
+      console.log(`Duration`, durationRanks)
     });
+
+    // Debug logging
+    console.log("All flights:", flights.map(f => ({ id: f.id, price: f.price, duration: f.duration })));
+    console.log("Price ranks map:", priceRanks);
+    console.log("Duration ranks map:", durationRanks);
 
     // Calculate average rank for each flight
     const flightsWithAvgRank = flights.map(flight => {
-      const priceRank = priceRanks.get(flight.id) || 1;
-      const durationRank = durationRanks.get(flight.id) || 1;
-      const avgRank = (priceRank + durationRank) / 2;
+      const priceRank = priceRanks.get(flight.id);
+      const durationRank = durationRanks.get(flight.id);
+      
+      console.log(`Flight ${flight.id}: priceRank=${priceRank}, durationRank=${durationRank}`);
+      
+      const finalPriceRank = priceRank || 1;
+      const finalDurationRank = durationRank || 1;
+      const avgRank = (finalPriceRank + finalDurationRank) / 2;
+      
+      console.log(`Flight ${flight.id}: avgRank=${avgRank}`);
       
       return { ...flight, avgRank };
     });
@@ -167,9 +180,9 @@ export function FlightResults({ flights, isLoading, error }: FlightResultsProps)
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="best">Sort by: Best</SelectItem>
-                <SelectItem value="price">Price: Low to High</SelectItem>
-                <SelectItem value="duration">Duration: Shortest</SelectItem>
+                <SelectItem value="best">Best</SelectItem>
+                <SelectItem value="price">Price</SelectItem>
+                <SelectItem value="duration">Duration</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" data-testid="button-filters">
