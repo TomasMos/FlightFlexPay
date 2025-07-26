@@ -80,7 +80,7 @@ export function AirportAutocomplete({
     onChange(displayValue, airport.code);
     setIsOpen(false);
     setSelectedIndex(-1);
-    inputRef.current?.blur();
+    // Don't blur here to avoid the focus issue
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -111,16 +111,21 @@ export function AirportAutocomplete({
     }
   };
 
-  const handleBlur = (e: React.FocusEvent) => {
-    // Delay closing to allow click on suggestions
-    setTimeout(() => {
-      const activeElement = document.activeElement;
-      if (!activeElement || !e.currentTarget.contains(activeElement)) {
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (inputRef.current && !inputRef.current.contains(event.target as Node) && 
+          listRef.current && !listRef.current.contains(event.target as Node)) {
         setIsOpen(false);
         setSelectedIndex(-1);
       }
-    }, 150);
-  };
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
 
   const IconComponent = icon === "departure" ? 
     <Plane className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 rotate-45" /> :
@@ -131,7 +136,7 @@ export function AirportAutocomplete({
       <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">
         {label}
       </Label>
-      <div className="relative" onBlur={handleBlur}>
+      <div className="relative">
         <Input
           ref={inputRef}
           value={inputValue}
