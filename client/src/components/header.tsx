@@ -8,7 +8,7 @@ export function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-2">
             <Plane className="text-flightpay-primary text-2xl" data-testid="logo-icon" />
-            <span className="font-bold text-xl text-flightpay-slate-900" data-testid="brand-name">FlightPay</span>
+            <span className="font-bold text-xl text-flightpay-slate-900" data-testid="brand-name">Splickets</span>
             <span className="bg-flightpay-secondary text-white text-xs px-2 py-1 rounded-full" data-testid="brand-tagline">
               Pay Later
             </span>
