@@ -143,7 +143,7 @@ export function AirportAutocomplete({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white"
+          className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white w-full min-w-[240px]"
           data-testid={testId}
           autoComplete="off"
         />
@@ -152,7 +152,7 @@ export function AirportAutocomplete({
         {isOpen && airports.length > 0 && (
           <ul
             ref={listRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-flightpay-slate-300 rounded-md shadow-lg max-h-60 overflow-auto"
+            className="absolute z-50 w-full min-w-[320px] mt-1 bg-white border border-flightpay-slate-300 rounded-md shadow-lg max-h-60 overflow-auto"
             data-testid={`${testId}-suggestions`}
           >
             {airports.map((airport, index) => (
