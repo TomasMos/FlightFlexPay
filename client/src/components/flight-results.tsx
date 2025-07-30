@@ -30,6 +30,27 @@ export function FlightResults({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState("best");
 
+  // Helper functions
+  const formatTime = (date: Date | string) => {
+    return new Date(date).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const formatDuration = (duration: string) => {
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+    if (!match) return duration;
+
+    const hours = match[1] ? parseInt(match[1]) : 0;
+    const minutes = match[2] ? parseInt(match[2]) : 0;
+
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
+    return `${hours}h ${minutes}m`;
+  };
+
   // Helper functions for enhanced flights
   const parseDurationToMinutes = (duration: string): number => {
     const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
@@ -331,57 +352,128 @@ function OneWayFlightCard({
             </span>
           </div>
 
-          <div className="flex items-center justify-center flex-grow ">
-            <div className="text-center ">
-              <div
-                className="text-lg font-bold text-flightpay-slate-900"
-                data-testid={`text-departure-time-${flight.id}`}
-              >
-                {formatTime(flight.departureTime)}
-              </div>
-              <div
-                className="text-sm text-flightpay-slate-500"
-                data-testid={`text-origin-${flight.id}`}
-              >
-                {flight.itineraries[0]?.segments[0]?.departure.airportName || flight.origin}
-              </div>
-            </div>
-            <div className="flex-1 mx-4">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
-                <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
-                <div
-                  className="text-xs text-flightpay-slate-500"
-                  data-testid={`text-duration-${flight.id}`}
-                >
-                  {formatDuration(flight.duration)}
+          <div className="flex flex-col gap-4">
+            {/* Outbound Flight */}
+            <div className="flex items-center justify-center flex-grow">
+              {flight.itineraries.length > 1 && (
+                <div className="mr-4">
+                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                    Outbound
+                  </Badge>
                 </div>
-                <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
-                <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+              )}
+              <div className="text-center">
+                <div
+                  className="text-lg font-bold text-flightpay-slate-900"
+                  data-testid={`text-departure-time-${flight.id}`}
+                >
+                  {formatTime(flight.departureTime)}
+                </div>
+                <div
+                  className="text-sm text-flightpay-slate-500"
+                  data-testid={`text-origin-${flight.id}`}
+                >
+                  {flight.itineraries[0]?.segments[0]?.departure.airportName || flight.origin}
+                </div>
               </div>
-              <div
-                className="text-center text-xs text-flightpay-slate-500 mt-1"
-                data-testid={`text-stops-${flight.id}`}
-              >
-                {(flight.itineraries[0]?.segments.length - 1) === 0
-                  ? "Nonstop"
-                  : `${flight.itineraries[0]?.segments.length - 1} stop${(flight.itineraries[0]?.segments.length - 1) > 1 ? "s" : ""}`}
+              <div className="flex-1 mx-4">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                  <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                  <div
+                    className="text-xs text-flightpay-slate-500"
+                    data-testid={`text-duration-${flight.id}`}
+                  >
+                    {formatDuration(flight.itineraries[0]?.duration || flight.duration)}
+                  </div>
+                  <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                  <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                </div>
+                <div
+                  className="text-center text-xs text-flightpay-slate-500 mt-1"
+                  data-testid={`text-stops-${flight.id}`}
+                >
+                  {(flight.itineraries[0]?.segments.length - 1) === 0
+                    ? "Nonstop"
+                    : `${flight.itineraries[0]?.segments.length - 1} stop${(flight.itineraries[0]?.segments.length - 1) > 1 ? "s" : ""}`}
+                </div>
+              </div>
+              <div className="text-center">
+                <div
+                  className="text-lg font-bold text-flightpay-slate-900"
+                  data-testid={`text-arrival-time-${flight.id}`}
+                >
+                  {formatTime(new Date(flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.at || flight.arrivalTime))}
+                </div>
+                <div
+                  className="text-sm text-flightpay-slate-500"
+                  data-testid={`text-destination-${flight.id}`}
+                >
+                  {flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.airportName || flight.destination}
+                </div>
               </div>
             </div>
-            <div className="text-center">
-              <div
-                className="text-lg font-bold text-flightpay-slate-900"
-                data-testid={`text-arrival-time-${flight.id}`}
-              >
-                {formatTime(flight.arrivalTime)}
+
+            {/* Return Flight (if exists) */}
+            {flight.itineraries.length > 1 && (
+              <div className="flex items-center justify-center flex-grow border-t pt-4">
+                <div className="mr-4">
+                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                    Return
+                  </Badge>
+                </div>
+                <div className="text-center">
+                  <div
+                    className="text-lg font-bold text-flightpay-slate-900"
+                    data-testid={`text-return-departure-time-${flight.id}`}
+                  >
+                    {formatTime(new Date(flight.itineraries[1].segments[0].departure.at))}
+                  </div>
+                  <div
+                    className="text-sm text-flightpay-slate-500"
+                    data-testid={`text-return-origin-${flight.id}`}
+                  >
+                    {flight.itineraries[1].segments[0].departure.airportName}
+                  </div>
+                </div>
+                <div className="flex-1 mx-4">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                    <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                    <div
+                      className="text-xs text-flightpay-slate-500"
+                      data-testid={`text-return-duration-${flight.id}`}
+                    >
+                      {formatDuration(flight.itineraries[1].duration)}
+                    </div>
+                    <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                    <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                  </div>
+                  <div
+                    className="text-center text-xs text-flightpay-slate-500 mt-1"
+                    data-testid={`text-return-stops-${flight.id}`}
+                  >
+                    {(flight.itineraries[1].segments.length - 1) === 0
+                      ? "Nonstop"
+                      : `${flight.itineraries[1].segments.length - 1} stop${(flight.itineraries[1].segments.length - 1) > 1 ? "s" : ""}`}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div
+                    className="text-lg font-bold text-flightpay-slate-900"
+                    data-testid={`text-return-arrival-time-${flight.id}`}
+                  >
+                    {formatTime(new Date(flight.itineraries[1].segments[flight.itineraries[1].segments.length - 1].arrival.at))}
+                  </div>
+                  <div
+                    className="text-sm text-flightpay-slate-500"
+                    data-testid={`text-return-destination-${flight.id}`}
+                  >
+                    {flight.itineraries[1].segments[flight.itineraries[1].segments.length - 1].arrival.airportName}
+                  </div>
+                </div>
               </div>
-              <div
-                className="text-sm text-flightpay-slate-500"
-                data-testid={`text-destination-${flight.id}`}
-              >
-                {flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.airportName || flight.destination}
-              </div>
-            </div>
+            )}
           </div>
         </div>
         <div className="flex flex-col items-center lg:items-end gap-4">
