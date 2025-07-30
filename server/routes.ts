@@ -29,7 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const flights = await amadeusService.searchFlights(searchParams);
 
       console.error(
-        "routes.ts - Enhanced Flight Data:",
+        "routes.ts - 31 - Enhanced Flight Data:",
         JSON.stringify(flights, null, 2),
       );
 
@@ -56,6 +56,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } : undefined,
         };
       });
+
+      console.log(`routes.ts - 61 - Flights with Payment Plans:`, JSON.stringify(flightsWithPaymentPlans, null, 2))
 
       res.json({ flights: flightsWithPaymentPlans });
     } catch (error) {
