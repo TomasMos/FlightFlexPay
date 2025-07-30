@@ -1,4 +1,4 @@
-import { Flight, FlightSearch } from "@shared/schema";
+import { Flight, FlightSearch, EnhancedFlight, FlightSegment, FlightItinerary } from "@shared/schema";
 
 interface AmadeusConfig {
   clientId: string;
@@ -150,7 +150,7 @@ export class AmadeusService {
     }
   }
 
-  async searchFlights(searchParams: FlightSearch): Promise<Flight[]> {
+  async searchFlights(searchParams: FlightSearch): Promise<EnhancedFlight[]> {
     // If no API credentials, return empty array with informative error
     if (!this.config.clientId || !this.config.clientSecret) {
       throw new Error("Amadeus API credentials not configured. Please set AMADEUS_CLIENT_ID and AMADEUS_CLIENT_SECRET environment variables.");
@@ -164,7 +164,7 @@ export class AmadeusService {
         destinationLocationCode: searchParams.destination,
         departureDate: searchParams.departureDate,
         adults: searchParams.passengers.toString(),
-        max: "10", // Limit results
+        max: "5", // Increased for better results
         currencyCode: "USD",
       });
 
@@ -181,22 +181,97 @@ export class AmadeusService {
           },
         }
       );
-
       if (!response.ok) {
         throw new Error(`Amadeus API error: ${response.status} ${response.statusText}`);
       }
 
       const data: AmadeusFlightResponse = await response.json();
-      return this.transformAmadeusResponse(data, searchParams);
+      console.log(`Amadeus.ts - Enhanced Response:`, JSON.stringify(data, null, 2))
+      const transformedData = this.transformEnhancedAmadeusResponse(data, searchParams);
+      console.log(`Amadeus.ts - Enhanced Transform:`, transformedData)
+      return transformedData
     } catch (error) {
       console.error("Error searching flights:", error);
       throw error;
     }
   }
 
+  private transformEnhancedAmadeusResponse(response: AmadeusFlightResponse, searchParams: FlightSearch): EnhancedFlight[] {
+    return response.data.map((offer) => {
+      // Transform itineraries preserving Amadeus structure
+      const itineraries: FlightItinerary[] = offer.itineraries.map((itinerary) => ({
+        duration: itinerary.duration,
+        segments: itinerary.segments.map((segment) => {
+          // Get airport/city names from dictionaries
+          const departureLocation = response.dictionaries.locations?.[segment.departure.iataCode];
+          const arrivalLocation = response.dictionaries.locations?.[segment.arrival.iataCode];
+          
+          return {
+            departure: {
+              ...segment.departure,
+              airportName: departureLocation?.cityCode || segment.departure.iataCode,
+              cityName: departureLocation?.cityCode || segment.departure.iataCode,
+            },
+            arrival: {
+              ...segment.arrival,
+              airportName: arrivalLocation?.cityCode || segment.arrival.iataCode,
+              cityName: arrivalLocation?.cityCode || segment.arrival.iataCode,
+            },
+            carrierCode: segment.carrierCode,
+            number: segment.number,
+            aircraft: segment.aircraft,
+            operating: segment.operating,
+            duration: segment.duration,
+            id: segment.id,
+            numberOfStops: segment.numberOfStops,
+          };
+        }),
+      }));
+
+      // Calculate computed display fields
+      const firstItinerary = itineraries[0];
+      const firstSegment = firstItinerary?.segments[0];
+      const lastSegment = firstItinerary?.segments[firstItinerary.segments.length - 1];
+      
+      const carrierCode = firstSegment?.carrierCode || "XX";
+      const carrierName = response.dictionaries.carriers?.[carrierCode] || "Unknown Airline";
+      
+      // Calculate total stops across all segments in first itinerary
+      const totalStops = firstItinerary?.segments.reduce((sum, segment) => sum + segment.numberOfStops, 0) || 0;
+
+      return {
+        id: offer.id,
+        source: offer.source,
+        lastTicketingDate: offer.lastTicketingDate,
+        numberOfBookableSeats: offer.numberOfBookableSeats,
+        itineraries,
+        price: {
+          currency: offer.price.currency,
+          total: offer.price.total,
+          base: offer.price.base,
+        },
+        validatingAirlineCodes: offer.validatingAirlineCodes,
+        
+        // Computed display fields
+        airline: carrierName,
+        flightNumber: `${carrierCode} ${firstSegment?.number || "000"}`,
+        origin: firstSegment?.departure.cityName || searchParams.origin,
+        destination: lastSegment?.arrival.cityName || searchParams.destination,
+        departureTime: new Date(firstSegment?.departure.at || new Date()),
+        arrivalTime: new Date(lastSegment?.arrival.at || new Date()),
+        duration: firstItinerary?.duration || "PT0H0M",
+        stops: Math.max(0, firstItinerary?.segments.length - 1 || 0), // segments.length - 1 = number of stops
+        cabin: offer.travelerPricings[0]?.fareDetailsBySegment[0]?.cabin || "ECONOMY",
+        availableSeats: offer.numberOfBookableSeats,
+      };
+    });
+  }
+  
+  // Legacy method for backward compatibility
   private transformAmadeusResponse(response: AmadeusFlightResponse, searchParams: FlightSearch): Flight[] {
     return response.data.map((offer) => {
       const segment = offer.itineraries[0]?.segments[0];
+      console.log(`Amadeus.ts - 202 - segment:`, segment)
       const lastSegment = offer.itineraries[0]?.segments[offer.itineraries[0].segments.length - 1];
       
       const carrierCode = segment?.carrierCode || "XX";

@@ -3,7 +3,14 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { amadeusService } from "./services/amadeus";
 import { PaymentPlanService } from "./services/paymentPlan";
-import { flightSearchSchema, FlightWithPaymentPlan, RoundTripFlightWithPaymentPlan } from "@shared/schema";
+import {
+  flightSearchSchema,
+  FlightWithPaymentPlan,
+  RoundTripFlightWithPaymentPlan,
+  EnhancedFlightWithPaymentPlan,
+  EnhancedFlight,
+  FlightSearch,
+} from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -20,103 +27,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const flights = await amadeusService.searchFlights(searchParams);
-      
-      if (searchParams.tripType === "roundtrip" && searchParams.returnDate) {
-        // For round trip, get return flights and create combinations
-        const returnSearchParams = {
-          ...searchParams,
-          origin: searchParams.destination,
-          destination: searchParams.origin,
-          departureDate: searchParams.returnDate,
-          returnDate: undefined,
-          tripType: "oneway" as const,
-        };
-        
-        const returnFlights = await amadeusService.searchFlights(returnSearchParams);
-        
-        // Create round trip combinations
-        const roundTripCombinations: RoundTripFlightWithPaymentPlan[] = [];
-        
-        flights.forEach((outbound) => {
-          returnFlights.forEach((returnFlight) => {
-            const outboundPrice = parseFloat(outbound.price.toString());
-            const returnPrice = parseFloat(returnFlight.price.toString());
-            const baseCost = (outboundPrice + returnPrice) * searchParams.passengers;
-            const travelDate = new Date(outbound.departureTime);
-            
-            const paymentPlan = PaymentPlanService.calculatePaymentPlan(baseCost, travelDate);
-            
-            // Enhance individual flights with payment plan info - use per-person Amadeus prices
-            const outboundFlightPrice = PaymentPlanService.calculateFlightPrice(outboundPrice, travelDate);
-            const returnFlightPrice = PaymentPlanService.calculateFlightPrice(returnPrice, travelDate);
-            
-            const outboundWithPaymentPlan: FlightWithPaymentPlan = {
-              ...outbound,
-              price: outboundFlightPrice.flightPrice.toString(),
-              paymentPlanEligible: paymentPlan.eligible,
-              paymentPlan: paymentPlan.eligible ? {
-                depositAmount: paymentPlan.depositAmount! / 2, // Split between outbound and return
-                installmentAmount: paymentPlan.installmentAmount!,
-                installmentCount: paymentPlan.installmentCount!,
-              } : undefined,
-            };
-            
-            const returnWithPaymentPlan: FlightWithPaymentPlan = {
-              ...returnFlight,
-              price: returnFlightPrice.flightPrice.toString(),
-              paymentPlanEligible: paymentPlan.eligible,
-              paymentPlan: paymentPlan.eligible ? {
-                depositAmount: paymentPlan.depositAmount! / 2, // Split between outbound and return
-                installmentAmount: paymentPlan.installmentAmount!,
-                installmentCount: paymentPlan.installmentCount!,
-              } : undefined,
-            };
-            
-            roundTripCombinations.push({
-              id: `${outbound.id}-${returnFlight.id}`,
-              outboundFlight: outboundWithPaymentPlan,
-              returnFlight: returnWithPaymentPlan,
-              totalPrice: paymentPlan.flightPrice / searchParams.passengers, // Per-person price for display
-              paymentPlanEligible: paymentPlan.eligible,
-              paymentPlan: paymentPlan.eligible ? {
-                depositAmount: paymentPlan.depositAmount!,
-                installmentAmount: paymentPlan.installmentAmount!,
-                installmentCount: paymentPlan.installmentCount!,
-              } : undefined,
-            });
-          });
-        });
-        
-        res.json({ flights: roundTripCombinations });
-      } else {
-        // For one-way flights, enhance with payment plan information
-        const flightsWithPaymentPlans: FlightWithPaymentPlan[] = flights.map((flight) => {
-          const travelDate = new Date(flight.departureTime);
-          const baseCostPerPerson = parseFloat(flight.price.toString());
-          const totalBaseCost = baseCostPerPerson * searchParams.passengers;
-          
-          const paymentPlan = PaymentPlanService.calculatePaymentPlan(totalBaseCost, travelDate);
-          const perPersonFlightPrice = PaymentPlanService.calculateFlightPrice(baseCostPerPerson, travelDate);
-          
-          return {
-            ...flight,
-            price: perPersonFlightPrice.flightPrice.toString(), // Per-person price with fees
-            paymentPlanEligible: paymentPlan.eligible,
-            paymentPlan: paymentPlan.eligible ? {
-              depositAmount: paymentPlan.depositAmount!,
-              installmentAmount: paymentPlan.installmentAmount!,
-              installmentCount: paymentPlan.installmentCount!,
-            } : undefined,
-          };
-        });
 
-        res.json({ flights: flightsWithPaymentPlans });
-      }
+      console.error(
+        "routes.ts - Enhanced Flight Data:",
+        JSON.stringify(flights, null, 2),
+      );
+
+      // Transform enhanced flights to include payment plan information
+      const flightsWithPaymentPlans: EnhancedFlightWithPaymentPlan[] = flights.map((flight) => {
+        const travelDate = new Date(flight.departureTime);
+        const baseCostPerPerson = parseFloat(flight.price.total);
+        const totalBaseCost = baseCostPerPerson * searchParams.passengers;
+        
+        const paymentPlan = PaymentPlanService.calculatePaymentPlan(totalBaseCost, travelDate);
+        const perPersonFlightPrice = PaymentPlanService.calculateFlightPrice(baseCostPerPerson, travelDate);
+        
+        return {
+          ...flight,
+          price: {
+            ...flight.price,
+            total: perPersonFlightPrice.flightPrice.toString(), // Per-person price with fees
+          },
+          paymentPlanEligible: paymentPlan.eligible,
+          paymentPlan: paymentPlan.eligible ? {
+            depositAmount: paymentPlan.depositAmount!,
+            installmentAmount: paymentPlan.installmentAmount!,
+            installmentCount: paymentPlan.installmentCount!,
+          } : undefined,
+        };
+      });
+
+      res.json({ flights: flightsWithPaymentPlans });
     } catch (error) {
       console.error("Flight search error:", error);
-      res.status(400).json({ 
-        message: error instanceof Error ? error.message : "Failed to search flights",
-        flights: []
+      res.status(400).json({
+        message:
+          error instanceof Error ? error.message : "Failed to search flights",
+        flights: [],
       });
     }
   });
@@ -133,9 +80,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ airports });
     } catch (error) {
       console.error("Airport search error:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: "Failed to search airports",
-        airports: []
+        airports: [],
       });
     }
   });
@@ -144,15 +91,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/payment-plan/calculate", async (req, res) => {
     try {
       const { flightId, passengers, travelDate } = req.body;
-      
+
       // For demo purposes, use mock base cost since we're not storing flights
       // In a real implementation, you would fetch the flight from storage
       const mockBaseCost = 500;
       const baseCost = mockBaseCost * passengers;
-      
+
       const paymentPlan = PaymentPlanService.calculatePaymentPlan(
-        baseCost, 
-        new Date(travelDate)
+        baseCost,
+        new Date(travelDate),
       );
 
       res.json(paymentPlan);
@@ -166,7 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/bookings", async (req, res) => {
     try {
       const bookingData = req.body;
-      
+
       // Validate flight exists
       const flight = await storage.getFlight(bookingData.flightId);
       if (!flight) {
@@ -187,7 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (bookingData.paymentPlanEnabled) {
         const paymentPlan = PaymentPlanService.calculatePaymentPlan(
           parseFloat(bookingData.totalAmount),
-          new Date(bookingData.travelDate)
+          new Date(bookingData.travelDate),
         );
 
         if (paymentPlan.eligible) {
@@ -218,7 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const flight = await storage.getFlight(booking.flightId);
-      const paymentPlan = booking.paymentPlanEnabled 
+      const paymentPlan = booking.paymentPlanEnabled
         ? await storage.getPaymentPlanByBooking(booking.id)
         : null;
 

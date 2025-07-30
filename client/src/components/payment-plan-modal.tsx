@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { FlightWithPaymentPlan } from "@shared/schema";
+import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Shield, X } from "lucide-react";
@@ -8,7 +8,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface PaymentPlanModalProps {
-  flight: FlightWithPaymentPlan;
+  flight: EnhancedFlightWithPaymentPlan;
   isOpen: boolean;
   onClose: () => void;
 }

@@ -114,3 +114,72 @@ export type RoundTripFlightWithPaymentPlan = {
     installmentCount: number;
   };
 };
+
+// Enhanced Amadeus-compatible flight structures
+export interface FlightSegment {
+  departure: {
+    iataCode: string;
+    terminal?: string;
+    at: string;
+    airportName?: string;
+    cityName?: string;
+  };
+  arrival: {
+    iataCode: string;
+    terminal?: string;
+    at: string;
+    airportName?: string;
+    cityName?: string;
+  };
+  carrierCode: string;
+  number: string;
+  aircraft: {
+    code: string;
+  };
+  operating?: {
+    carrierCode: string;
+  };
+  duration: string;
+  id: string;
+  numberOfStops: number;
+}
+
+export interface FlightItinerary {
+  duration: string;
+  segments: FlightSegment[];
+}
+
+export interface EnhancedFlight {
+  id: string;
+  source: string;
+  lastTicketingDate?: string;
+  numberOfBookableSeats: number;
+  itineraries: FlightItinerary[];
+  price: {
+    currency: string;
+    total: string;
+    base: string;
+  };
+  validatingAirlineCodes: string[];
+  
+  // Computed fields for display
+  airline: string;
+  flightNumber: string;
+  origin: string;
+  destination: string;
+  departureTime: Date;
+  arrivalTime: Date;
+  duration: string;
+  stops: number;
+  cabin: string;
+  availableSeats: number;
+}
+
+export type EnhancedFlightWithPaymentPlan = EnhancedFlight & {
+  paymentPlanEligible: boolean;
+  paymentPlan?: {
+    depositAmount: number;
+    installmentAmount: number;
+    installmentCount: number;
+  };
+};

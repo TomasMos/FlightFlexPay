@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   FlightWithPaymentPlan,
   RoundTripFlightWithPaymentPlan,
+  EnhancedFlightWithPaymentPlan,
 } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,7 @@ import { Shield, CreditCard, Filter } from "lucide-react";
 import { PaymentPlanModal } from "./payment-plan-modal.tsx";
 
 interface FlightResultsProps {
-  flights: (FlightWithPaymentPlan | RoundTripFlightWithPaymentPlan)[];
+  flights: (EnhancedFlightWithPaymentPlan | RoundTripFlightWithPaymentPlan)[];
   isLoading: boolean;
   error?: string;
 }
@@ -27,13 +28,13 @@ export function FlightResults({
   error,
 }: FlightResultsProps) {
   const [selectedFlight, setSelectedFlight] =
-    useState<FlightWithPaymentPlan | null>(null);
+    useState<EnhancedFlightWithPaymentPlan | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState("best");
 
   // Helper functions defined first
   const isRoundTripFlight = (
-    flight: FlightWithPaymentPlan | RoundTripFlightWithPaymentPlan,
+    flight: EnhancedFlightWithPaymentPlan | RoundTripFlightWithPaymentPlan,
   ): flight is RoundTripFlightWithPaymentPlan => {
     return "outboundFlight" in flight && "returnFlight" in flight;
   };
@@ -47,16 +48,16 @@ export function FlightResults({
   };
 
   const getFlightPrice = (
-    flight: FlightWithPaymentPlan | RoundTripFlightWithPaymentPlan,
+    flight: EnhancedFlightWithPaymentPlan | RoundTripFlightWithPaymentPlan,
   ): number => {
     if (isRoundTripFlight(flight)) {
       return flight.totalPrice;
     }
-    return parseFloat(flight.price.toString());
+    return parseFloat(flight.price.total);
   };
 
   const getFlightDuration = (
-    flight: FlightWithPaymentPlan | RoundTripFlightWithPaymentPlan,
+    flight: EnhancedFlightWithPaymentPlan | RoundTripFlightWithPaymentPlan,
   ): number => {
     if (isRoundTripFlight(flight)) {
       return (
@@ -286,8 +287,8 @@ function OneWayFlightCard({
   flight,
   onSelect,
 }: {
-  flight: FlightWithPaymentPlan;
-  onSelect: (flight: FlightWithPaymentPlan) => void;
+  flight: EnhancedFlightWithPaymentPlan;
+  onSelect: (flight: EnhancedFlightWithPaymentPlan) => void;
 }) {
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleTimeString("en-US", {
@@ -331,7 +332,7 @@ function OneWayFlightCard({
   };
 
   const airlineCode = getAirlineCode(flight.flightNumber);
-  const totalPrice = parseFloat(flight.price.toString());
+  const totalPrice = parseFloat(flight.price.total);
 
   return (
     <div
@@ -340,7 +341,7 @@ function OneWayFlightCard({
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
         {/* Flight Details */}
-        <div className="lg:col-span-2  h-full flex flex-col pr-20">
+        <div className="lg:col-span-2  h-full flex flex-col">
           <div className="flex items-center gap-4 mb-4 ">
             <div
               className={`w-8 h-8 ${getAirlineLogo(airlineCode)} rounded-full flex items-center justify-center`}
@@ -378,7 +379,7 @@ function OneWayFlightCard({
                 className="text-sm text-flightpay-slate-500"
                 data-testid={`text-origin-${flight.id}`}
               >
-                {flight.origin}
+                {flight.itineraries[0]?.segments[0]?.departure.airportName || flight.origin}
               </div>
             </div>
             <div className="flex-1 mx-4">
@@ -398,9 +399,9 @@ function OneWayFlightCard({
                 className="text-center text-xs text-flightpay-slate-500 mt-1"
                 data-testid={`text-stops-${flight.id}`}
               >
-                {flight.stops === 0
+                {(flight.itineraries[0]?.segments.length - 1) === 0
                   ? "Nonstop"
-                  : `${flight.stops} stop${flight.stops > 1 ? "s" : ""}`}
+                  : `${flight.itineraries[0]?.segments.length - 1} stop${(flight.itineraries[0]?.segments.length - 1) > 1 ? "s" : ""}`}
               </div>
             </div>
             <div className="text-center">
@@ -414,7 +415,7 @@ function OneWayFlightCard({
                 className="text-sm text-flightpay-slate-500"
                 data-testid={`text-destination-${flight.id}`}
               >
-                {flight.destination}
+                {flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.airportName || flight.destination}
               </div>
             </div>
           </div>
