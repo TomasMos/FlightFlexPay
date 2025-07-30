@@ -338,7 +338,7 @@ function OneWayFlightCard({
       className="bg-white rounded-xl shadow-md border border-flightpay-slate-200 hover:shadow-md transition-shadow p-6"
       data-testid={`card-flight-${flight.id}`}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
         {/* Flight Details */}
         <div className="lg:col-span-2  h-full flex flex-col pr-20">
           <div className="flex items-center gap-4 mb-4 ">
@@ -364,15 +364,6 @@ function OneWayFlightCard({
             >
               {flight.flightNumber}
             </span>
-            {totalPrice > 500 && (
-              <Badge
-                variant="secondary"
-                className="bg-flightpay-accent text-white"
-                data-testid={`badge-best-value-${flight.id}`}
-              >
-                Best Value
-              </Badge>
-            )}
           </div>
 
           <div className="flex items-center justify-center flex-grow ">
@@ -428,7 +419,7 @@ function OneWayFlightCard({
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col items-center lg:items-end gap-4">
           {/* Pricing */}
           <div className="text-center lg:text-left items-center flex flex-row justify-between gap-6">
             <div>
@@ -459,13 +450,14 @@ function OneWayFlightCard({
               </div>
             ) : (
               <div className="text-sm text-flightpay-slate-500">
-                No payment plans available
+                No payment plans available <br />
+                (start date is within 14 days)
               </div>
             )}
           </div>
 
           {/* Action Button */}
-          <div className="flex flex-col gap-2">
+          <div className="w-1/2 flex flex-col gap-2">
             <Button
               onClick={() => onSelect(flight)}
               className="w-full bg-flightpay-primary hover:bg-flightpay-primary/90 text-white"
@@ -539,119 +531,121 @@ function RoundTripFlightCard({
       className="bg-white rounded-xl shadow-sm border border-flightpay-slate-200 hover:shadow-md transition-shadow p-6"
       data-testid={`card-roundtrip-flight-${flight.id}`}
     >
-      <div className="space-y-6">
-        {/* Outbound Flight */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-          <div className="lg:col-span-2">
-            <div className="flex items-center gap-4 mb-4">
-              <div
-                className={`w-8 h-8 ${getAirlineLogo(outboundCode)} rounded-full flex items-center justify-center`}
-              >
-                <span className="text-white text-sm font-bold">
-                  {outboundCode}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+        <div className="lg:col-span-2  h-full flex flex-col  gap-6">
+          {/* Outbound Flight */}
+          <div className="">
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-4 mb-4">
+                <div
+                  className={`w-8 h-8 ${getAirlineLogo(outboundCode)} rounded-full flex items-center justify-center`}
+                >
+                  <span className="text-white text-sm font-bold">
+                    {outboundCode}
+                  </span>
+                </div>
+                <span className="font-medium text-flightpay-slate-900">
+                  {flight.outboundFlight.airline}
                 </span>
+                <span className="text-sm text-flightpay-slate-500">
+                  {flight.outboundFlight.flightNumber}
+                </span>
+                <Badge variant="outline" className="text-xs">
+                  Outbound
+                </Badge>
               </div>
-              <span className="font-medium text-flightpay-slate-900">
-                {flight.outboundFlight.airline}
-              </span>
-              <span className="text-sm text-flightpay-slate-500">
-                {flight.outboundFlight.flightNumber}
-              </span>
-              <Badge variant="outline" className="text-xs">
-                Outbound
-              </Badge>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div className="text-center">
-                <div className="text-lg font-bold text-flightpay-slate-900">
-                  {formatTime(flight.outboundFlight.departureTime)}
-                </div>
-                <div className="text-sm text-flightpay-slate-500">
-                  {flight.outboundFlight.origin}
-                </div>
-              </div>
-              <div className="flex-1 mx-4">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
-                  <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
-                  <div className="text-xs text-flightpay-slate-500">
-                    {formatDuration(flight.outboundFlight.duration)}
+              <div className="flex items-center justify-between">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-flightpay-slate-900">
+                    {formatTime(flight.outboundFlight.departureTime)}
                   </div>
-                  <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
-                  <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                  <div className="text-sm text-flightpay-slate-500">
+                    {flight.outboundFlight.origin}
+                  </div>
                 </div>
-                <div className="text-center text-xs text-flightpay-slate-500 mt-1">
-                  {flight.outboundFlight.stops === 0
-                    ? "Nonstop"
-                    : `${flight.outboundFlight.stops} stop${flight.outboundFlight.stops > 1 ? "s" : ""}`}
+                <div className="flex-1 mx-4">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                    <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                    <div className="text-xs text-flightpay-slate-500">
+                      {formatDuration(flight.outboundFlight.duration)}
+                    </div>
+                    <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                    <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                  </div>
+                  <div className="text-center text-xs text-flightpay-slate-500 mt-1">
+                    {flight.outboundFlight.stops === 0
+                      ? "Nonstop"
+                      : `${flight.outboundFlight.stops} stop${flight.outboundFlight.stops > 1 ? "s" : ""}`}
+                  </div>
                 </div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-flightpay-slate-900">
-                  {formatTime(flight.outboundFlight.arrivalTime)}
-                </div>
-                <div className="text-sm text-flightpay-slate-500">
-                  {flight.outboundFlight.destination}
+                <div className="text-center">
+                  <div className="text-lg font-bold text-flightpay-slate-900">
+                    {formatTime(flight.outboundFlight.arrivalTime)}
+                  </div>
+                  <div className="text-sm text-flightpay-slate-500">
+                    {flight.outboundFlight.destination}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Return Flight */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-          <div className="lg:col-span-2">
-            <div className="flex items-center gap-4 mb-4">
-              <div
-                className={`w-8 h-8 ${getAirlineLogo(returnCode)} rounded-full flex items-center justify-center`}
-              >
-                <span className="text-white text-sm font-bold">
-                  {returnCode}
+          {/* Return Flight */}
+          <div className="">
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-4 mb-4">
+                <div
+                  className={`w-8 h-8 ${getAirlineLogo(returnCode)} rounded-full flex items-center justify-center`}
+                >
+                  <span className="text-white text-sm font-bold">
+                    {returnCode}
+                  </span>
+                </div>
+                <span className="font-medium text-flightpay-slate-900">
+                  {flight.returnFlight.airline}
                 </span>
+                <span className="text-sm text-flightpay-slate-500">
+                  {flight.returnFlight.flightNumber}
+                </span>
+                <Badge variant="outline" className="text-xs">
+                  Return
+                </Badge>
               </div>
-              <span className="font-medium text-flightpay-slate-900">
-                {flight.returnFlight.airline}
-              </span>
-              <span className="text-sm text-flightpay-slate-500">
-                {flight.returnFlight.flightNumber}
-              </span>
-              <Badge variant="outline" className="text-xs">
-                Return
-              </Badge>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div className="text-center">
-                <div className="text-lg font-bold text-flightpay-slate-900">
-                  {formatTime(flight.returnFlight.departureTime)}
-                </div>
-                <div className="text-sm text-flightpay-slate-500">
-                  {flight.returnFlight.origin}
-                </div>
-              </div>
-              <div className="flex-1 mx-4">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
-                  <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
-                  <div className="text-xs text-flightpay-slate-500">
-                    {formatDuration(flight.returnFlight.duration)}
+              <div className="flex items-center justify-between">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-flightpay-slate-900">
+                    {formatTime(flight.returnFlight.departureTime)}
                   </div>
-                  <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
-                  <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                  <div className="text-sm text-flightpay-slate-500">
+                    {flight.returnFlight.origin}
+                  </div>
                 </div>
-                <div className="text-center text-xs text-flightpay-slate-500 mt-1">
-                  {flight.returnFlight.stops === 0
-                    ? "Nonstop"
-                    : `${flight.returnFlight.stops} stop${flight.returnFlight.stops > 1 ? "s" : ""}`}
+                <div className="flex-1 mx-4">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                    <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                    <div className="text-xs text-flightpay-slate-500">
+                      {formatDuration(flight.returnFlight.duration)}
+                    </div>
+                    <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                    <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                  </div>
+                  <div className="text-center text-xs text-flightpay-slate-500 mt-1">
+                    {flight.returnFlight.stops === 0
+                      ? "Nonstop"
+                      : `${flight.returnFlight.stops} stop${flight.returnFlight.stops > 1 ? "s" : ""}`}
+                  </div>
                 </div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-flightpay-slate-900">
-                  {formatTime(flight.returnFlight.arrivalTime)}
-                </div>
-                <div className="text-sm text-flightpay-slate-500">
-                  {flight.returnFlight.destination}
+                <div className="text-center">
+                  <div className="text-lg font-bold text-flightpay-slate-900">
+                    {formatTime(flight.returnFlight.arrivalTime)}
+                  </div>
+                  <div className="text-sm text-flightpay-slate-500">
+                    {flight.returnFlight.destination}
+                  </div>
                 </div>
               </div>
             </div>
@@ -659,8 +653,8 @@ function RoundTripFlightCard({
         </div>
 
         {/* Pricing and Action */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center pt-4 border-t border-flightpay-slate-100">
-          <div className="text-center lg:text-left">
+        <div className="flex flex-col gap-4 justify-between">
+          <div className="flex flex-col items-center lg:items-end">
             <div
               className="text-2xl font-bold text-flightpay-slate-900 mb-1"
               data-testid={`text-price-${flight.id}`}
@@ -673,7 +667,7 @@ function RoundTripFlightCard({
 
             {flight.paymentPlanEligible && flight.paymentPlan ? (
               <div
-                className="bg-flightpay-secondary/10 rounded-lg p-3 border border-flightpay-secondary/20"
+                className="w-fit bg-flightpay-secondary/10 rounded-lg p-3 border border-flightpay-secondary/20"
                 data-testid={`payment-plan-preview-${flight.id}`}
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -689,15 +683,16 @@ function RoundTripFlightCard({
               </div>
             ) : (
               <div className="text-sm text-flightpay-slate-500">
-                No payment plans available
+                No payment plans available <br />
+                (start date is within 14 days)
               </div>
             )}
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 items-center lg:items-end">
             <Button
               onClick={() => onSelect(flight.outboundFlight)}
-              className="w-full bg-flightpay-primary hover:bg-flightpay-primary/90 text-white"
+              className="w-1/2 bg-flightpay-primary hover:bg-flightpay-primary/90 text-white"
               data-testid={`button-select-${flight.id}`}
             >
               {flight.paymentPlanEligible
