@@ -1,0 +1,106 @@
+Here's a step-by-step breakdown of how you can provide local airport timezones in your application, incorporating the changes we've made to `amadeus.ts` and `flight-card.tsx`:
+
+### Step 1: Ensure `EnhancedFlight` and `FlightSegment` Interfaces are Updated
+
+Make sure your shared schema file (e.g., `@shared/schema.ts` or similar) has the updated interfaces to include the `timeZoneOffset` properties.
+
+```typescript
+// @shared/schema (or wherever your shared interfaces are defined)
+
+interface FlightSegment {
+  departure: {
+    iataCode: string;
+    terminal?: string;
+    at: string; // UTC ISO string with 'Z'
+    airportName?: string;
+    cityName?: string;
+    timeZoneOffset?: string; // Add this
+  };
+  arrival: {
+    iataCode: string;
+    terminal?: string;
+    at: string; // UTC ISO string with 'Z'
+    airportName?: string;
+    cityName?: string;
+    timeZoneOffset?: string; // Add this
+  };
+  carrierCode: string;
+  number: string;
+  duration: string;
+}
+
+interface EnhancedFlight {
+  id: string;
+  source: string;
+  lastTicketingDate: string;
+  numberOfBookableSeats: number;
+  itineraries: FlightItinerary[];
+  price: {
+    currency: string;
+    total: string;
+    base: string;
+  };
+  validatingAirlineCodes: string[];
+  airline: string;
+  flightNumber: string;
+  origin: string;
+  destination: string;
+  departureTime: string; // UTC ISO string with 'Z'
+  arrivalTime: string;   // UTC ISO string with 'Z'
+  departureTimeZoneOffset?: string; // Add this
+  arrivalTimeZoneOffset?: string;   // Add this
+  duration: string;
+  stops: number;
+  cabin: string;
+  availableSeats: number;
+  paymentPlanEligible?: boolean;
+  paymentPlan?: {
+    depositAmount: number;
+    installmentAmount: number;
+    numberOfInstallments: number;
+    installmentFrequency: string;
+  };
+}
+
+// ... other interfaces like FlightItinerary, FlightSearch etc.
+```
+
+### Step 2: Implement Timezone Fetching and Storage in `amadeus.ts`
+
+The `amadeus.ts` file should handle calling the Amadeus Location API to get the timezone offsets and store them. This has already been provided in our previous response, but ensure the code is correctly integrated.
+
+**Key points in `amadeus.ts`:**
+
+  * **`AmadeusResponse` Interface:** Ensure the `timeZoneOffset` is explicitly added to the `locations` dictionary type within `AmadeusResponse`.
+  * **`timeZoneOffsetsCache` Map:** This private map (`private timeZoneOffsetsCache: Map<string, string> = new Map();`) is used to store the IATA code and its corresponding timezone offset (e.g., `LHR -> '+01:00'`).
+  * **`_fetchAirportTimeZoneOffset` Method:** This new private helper function will:
+      * Check if the timezone offset for a given IATA code is already in the `timeZoneOffsetsCache`. If so, it returns the cached value.
+      * If not, it makes an API call to `this.amadeus.referenceData.locations.get()` using the IATA code, `subType: 'AIRPORT'`, and crucially `view: 'FULL'` to ensure the `timeZoneOffset` is returned.
+      * It then stores the fetched `timeZoneOffset` in the `timeZoneOffsetsCache` before returning it.
+  * **Populating the Cache in `searchFlights`:**
+      * Before transforming the flight data, `searchFlights` identifies all unique departure and arrival IATA codes from all flight segments.
+      * It then uses `Promise.all` with calls to `_fetchAirportTimeZoneOffset` for each unique IATA code. This ensures all necessary timezone offsets are fetched and cached concurrently before the data transformation begins.
+  * **Assigning Offsets in `transformEnhancedAmadeusResponse`:**
+      * When creating `FlightSegment` objects, `transformEnhancedAmadeusResponse` retrieves the `timeZoneOffset` from the `this.timeZoneOffsetsCache` for both departure and arrival airports and assigns it to `segment.departure.timeZoneOffset` and `segment.arrival.timeZoneOffset`.
+      * Similarly, for the top-level `EnhancedFlight` object, the `departureTimeZoneOffset` and `arrivalTimeZoneOffset` are populated using the cached values for the first departure and last arrival airports of the main itinerary.
+  * **Standardizing `at` times to UTC ISO strings:** All `at` properties (`amadeusSegment.departure.at`, `amadeusSegment.arrival.at`, and the top-level `flight.departureTime`, `flight.arrivalTime`) are converted to UTC ISO strings (ending with 'Z') for consistency in `amadeus.ts`. This simplifies time calculations on the front end by providing a consistent baseline.
+
+### Step 3: Update `flight-card.tsx` to Display Local Airport Times
+
+The `flight-card.tsx` file needs to be modified to use the `timeZoneOffset` when formatting and displaying the times. This has already been provided in our previous response.
+
+**Key points in `flight-card.tsx`:**
+
+  * **Updated `formatTime` function:**
+      * The `formatTime` function now accepts two arguments: `dateString: string` (which is expected to be a UTC ISO string with 'Z') and `offsetString?: string` (the timezone offset like `'+01:00'` or `'-04:00'`).
+      * It parses the `offsetString` to calculate the total offset in milliseconds.
+      * It then takes the UTC milliseconds from the `dateString`, adds the `offsetMilliseconds` to it, and creates a new `Date` object from this adjusted timestamp.
+      * Finally, it uses `toLocaleTimeString` on this *adjusted* `Date` object, which will correctly display the time in the specified local airport timezone relative to the user's system locale settings.
+      * Includes a fallback to the user's local timezone if the `offsetString` is not available or if there's an error in parsing.
+  * **Calling `formatTime` with `timeZoneOffset`:**
+      * All calls to `formatTime` within the `FlightCard` component (for departure, arrival, return departure, and return arrival times) are updated to pass the respective `timeZoneOffset` property from the `flight` object. For example:
+          * `formatTime(flight.departureTime, flight.departureTimeZoneOffset)`
+          * `formatTime(new Date(flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.at || flight.arrivalTime), flight.arrivalTimeZoneOffset)`
+          * And similarly for return flights, using the segment-level `timeZoneOffset`.
+
+By following these steps and ensuring the code from the previous responses is correctly implemented, your application will now fetch and display flight times in their respective local airport timezones.

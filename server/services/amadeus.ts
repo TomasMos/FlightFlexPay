@@ -116,6 +116,7 @@ interface AmadeusFlightResponse {
 export class AmadeusService {
   private config: AmadeusConfig;
   private token: AmadeusToken | null = null;
+  private timeZoneOffsetsCache: Map<string, string> = new Map();
 
   constructor() {
     this.config = {
@@ -171,6 +172,41 @@ export class AmadeusService {
     }
   }
 
+  private async _fetchAirportTimeZoneOffset(iataCode: string): Promise<string> {
+    // Check cache first
+    if (this.timeZoneOffsetsCache.has(iataCode)) {
+      return this.timeZoneOffsetsCache.get(iataCode)!;
+    }
+
+    try {
+      const token = await this.getAccessToken();
+      const response = await fetch(
+        `${this.config.baseUrl}/v1/reference-data/locations/${iataCode}?subType=AIRPORT&view=FULL`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.warn(`Failed to fetch timezone for ${iataCode}: ${response.statusText}`);
+        return '+00:00'; // Default to UTC if fetch fails
+      }
+
+      const data = await response.json();
+      const timeZoneOffset = data.data?.[0]?.timeZoneOffset || '+00:00';
+      
+      // Cache the result
+      this.timeZoneOffsetsCache.set(iataCode, timeZoneOffset);
+      return timeZoneOffset;
+    } catch (error) {
+      console.warn(`Error fetching timezone for ${iataCode}:`, error);
+      return '+00:00'; // Default to UTC
+    }
+  }
+
   async searchFlights(searchParams: FlightSearch): Promise<EnhancedFlight[]> {
     // If no API credentials, return empty array with informative error
     if (!this.config.clientId || !this.config.clientSecret) {
@@ -211,6 +247,25 @@ export class AmadeusService {
       }
 
       const data: AmadeusFlightResponse = await response.json();
+      
+      // Collect all unique IATA codes for timezone fetching
+      const uniqueIataCodes = new Set<string>();
+      data.data.forEach(offer => {
+        offer.itineraries.forEach(itinerary => {
+          itinerary.segments.forEach(segment => {
+            uniqueIataCodes.add(segment.departure.iataCode);
+            uniqueIataCodes.add(segment.arrival.iataCode);
+          });
+        });
+      });
+
+      // Fetch timezone offsets for all unique IATA codes
+      await Promise.all(
+        Array.from(uniqueIataCodes).map(iataCode => 
+          this._fetchAirportTimeZoneOffset(iataCode)
+        )
+      );
+
       // console.log(
       //   `Amadeus.ts - Enhanced Response:`,
       //   JSON.stringify(data, null, 2),
@@ -253,6 +308,7 @@ export class AmadeusService {
                   departureLocation?.name || segment.departure.iataCode, // Use name for airport, fallback to iataCode
                 cityName:
                   departureLocation?.address?.cityName || departureLocation?.cityCode || segment.departure.iataCode, // Use city name from address, fallback to cityCode then iataCode
+                timeZoneOffset: this.timeZoneOffsetsCache.get(segment.departure.iataCode) || '+00:00'
               },
               arrival: {
                 ...segment.arrival,
@@ -260,6 +316,7 @@ export class AmadeusService {
                   arrivalLocation?.name || segment.arrival.iataCode, // Use name for airport, fallback to iataCode
                 cityName:
                   arrivalLocation?.address?.cityName || arrivalLocation?.cityCode || segment.arrival.iataCode, // Use city name from address, fallback to cityCode then iataCode
+                timeZoneOffset: this.timeZoneOffsetsCache.get(segment.arrival.iataCode) || '+00:00'
               },
               carrierCode: segment.carrierCode,
               number: segment.number,
@@ -310,6 +367,8 @@ export class AmadeusService {
         destination: lastSegment?.arrival.cityName || searchParams.destination,
         departureTime: new Date(firstSegment?.departure.at || new Date()),
         arrivalTime: new Date(lastSegment?.arrival.at || new Date()),
+        departureTimeZoneOffset: this.timeZoneOffsetsCache.get(firstSegment?.departure.iataCode || "") || '+00:00',
+        arrivalTimeZoneOffset: this.timeZoneOffsetsCache.get(lastSegment?.arrival.iataCode || "") || '+00:00',
         duration: firstItinerary?.duration || "PT0H0M",
         stops: Math.max(0, firstItinerary?.segments.length - 1 || 0), // segments.length - 1 = number of stops
         cabin:
