@@ -104,7 +104,7 @@ export function FlightCard({
                   className="text-lg font-bold text-flightpay-slate-900"
                   data-testid={`text-departure-time-${flight.id}`}
                 >
-                  {formatTime(flight.departureTime)}
+                  {formatTime(new Date(flight.itineraries[0]?.segments[0]?.departure.at))}
                 </div>
                 <div
                   className="text-sm text-flightpay-slate-500"
@@ -140,7 +140,7 @@ export function FlightCard({
                   className="text-lg font-bold text-flightpay-slate-900 "
                   data-testid={`text-arrival-time-${flight.id}`}
                 >
-                  {formatTime(new Date(flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.at || flight.arrivalTime))}
+                  {formatTime(new Date(flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.at))}
                 </div>
                 <div
                   className="text-sm text-flightpay-slate-500"
@@ -213,10 +213,10 @@ export function FlightCard({
         <div className="flex flex-col items-center lg:items-end gap-4">
 
           {/* Pricing */}
-          <div className="items-center lg:items-end flex flex-col justify-between gap-6">
+          <div className="items-center lg:items-end flex flex-col gap-6">
             <div>
               <div
-                className="text-2xl font-bold text-flightpay-slate-900 mb-1"
+                className="text-2xl text-center lg:text-right font-bold text-flightpay-slate-900 mb-1"
                 data-testid={`text-price-${flight.id}`}
               >
                 ${totalPrice.toFixed(0)}
@@ -244,7 +244,7 @@ export function FlightCard({
             ) : (
               <div className="text-sm text-flightpay-slate-500">
                 No payment plans available <br />
-                (start date is within 14 days)
+                (departure is within 14 days)
               </div>
             )}
 
