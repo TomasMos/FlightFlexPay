@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   FlightSearch,
   EnhancedFlightWithPaymentPlan,
-  RoundTripFlightWithPaymentPlan,
 } from "@shared/schema";
 import { Header } from "@/components/header";
 import { FlightSearchForm } from "@/components/flight-search-form";
@@ -19,7 +18,7 @@ export default function Home() {
     isLoading,
     error,
   } = useQuery<{
-    flights: (EnhancedFlightWithPaymentPlan | RoundTripFlightWithPaymentPlan)[];
+    flights: (EnhancedFlightWithPaymentPlan)[];
   }>({
     queryKey: ["/api/flights/search", searchParams],
     queryFn: async ({ queryKey }) => {

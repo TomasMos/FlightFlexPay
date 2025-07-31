@@ -33,15 +33,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const flightsWithPaymentPlans: EnhancedFlightWithPaymentPlan[] =
         flights.map((flight) => {
           const travelDate = new Date(flight.departureTime);
-          const baseCostPerPerson = parseFloat(flight.price.total);
-          const totalBaseCost = baseCostPerPerson * searchParams.passengers;
+          const totalBaseCost = parseFloat(flight.price.total);
 
           const paymentPlan = PaymentPlanService.calculatePaymentPlan(
             totalBaseCost,
             travelDate,
           );
           const perPersonFlightPrice = PaymentPlanService.calculateFlightPrice(
-            baseCostPerPerson,
+            totalBaseCost,
             travelDate,
           );
 
