@@ -5,11 +5,7 @@ import { amadeusService } from "./services/amadeus";
 import { PaymentPlanService } from "./services/paymentPlan";
 import {
   flightSearchSchema,
-  FlightWithPaymentPlan,
-  RoundTripFlightWithPaymentPlan,
   EnhancedFlightWithPaymentPlan,
-  EnhancedFlight,
-  FlightSearch,
 } from "@shared/schema";
 import { z } from "zod";
 

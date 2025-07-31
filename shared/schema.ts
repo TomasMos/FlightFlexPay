@@ -92,28 +92,7 @@ export type PaymentPlan = typeof paymentPlans.$inferSelect;
 
 export type FlightSearch = z.infer<typeof flightSearchSchema>;
 
-// Extended types for API responses
-export type FlightWithPaymentPlan = Flight & {
-  paymentPlanEligible: boolean;
-  paymentPlan?: {
-    depositAmount: number;
-    installmentAmount: number;
-    installmentCount: number;
-  };
-};
 
-export type RoundTripFlightWithPaymentPlan = {
-  id: string;
-  outboundFlight: FlightWithPaymentPlan;
-  returnFlight: FlightWithPaymentPlan;
-  totalPrice: number;
-  paymentPlanEligible: boolean;
-  paymentPlan?: {
-    depositAmount: number;
-    installmentAmount: number;
-    installmentCount: number;
-  };
-};
 
 // Enhanced Amadeus-compatible flight structures
 export interface FlightSegment {
