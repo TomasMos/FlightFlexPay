@@ -149,10 +149,15 @@ export function FlightSearchForm({
                     {...form.register("departureDate")}
                     type="date"
                     min={today}
-                    className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white"
+                  className="hide-date-icon pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
                     data-testid="input-departure-date"
+                    // CORRECTED: Use e.target to access the input element
+                    onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                   />
-                  <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600" />
+                  <Calendar
+                    // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-flightpay-slate-600 pointer-events-none"
+                  />
                 </div>
                 {form.formState.errors.departureDate && (
                   <p
@@ -182,10 +187,15 @@ export function FlightSearchForm({
                     type="date"
                     min={form.watch("departureDate") || today}
                     disabled={tripType === "oneway"}
-                    className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white disabled:bg-flightpay-slate-100 disabled:text-flightpay-slate-400"
-                    data-testid="input-return-date"
+                  className="hide-date-icon pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
+                    data-testid="input-departure-date"
+                    // CORRECTED: Use e.target to access the input element
+                    onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                   />
-                  <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600" />
+                  <Calendar
+                    // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-flightpay-slate-600 pointer-events-none"
+                  />
                 </div>
               </div>
 

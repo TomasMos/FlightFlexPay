@@ -28,36 +28,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const flights = await amadeusService.searchFlights(searchParams);
 
-      console.error(
-        "routes.ts - 31 - Enhanced Flight Data:",
-        JSON.stringify(flights, null, 2),
-      );
+      // console.error(
+      //   "routes.ts - 31 - Enhanced Flight Data:",
+      //   JSON.stringify(flights, null, 2),
+      // );
 
       // Transform enhanced flights to include payment plan information
-      const flightsWithPaymentPlans: EnhancedFlightWithPaymentPlan[] = flights.map((flight) => {
-        const travelDate = new Date(flight.departureTime);
-        const baseCostPerPerson = parseFloat(flight.price.total);
-        const totalBaseCost = baseCostPerPerson * searchParams.passengers;
-        
-        const paymentPlan = PaymentPlanService.calculatePaymentPlan(totalBaseCost, travelDate);
-        const perPersonFlightPrice = PaymentPlanService.calculateFlightPrice(baseCostPerPerson, travelDate);
-        
-        return {
-          ...flight,
-          price: {
-            ...flight.price,
-            total: perPersonFlightPrice.flightPrice.toString(), // Per-person price with fees
-          },
-          paymentPlanEligible: paymentPlan.eligible,
-          paymentPlan: paymentPlan.eligible ? {
-            depositAmount: paymentPlan.depositAmount!,
-            installmentAmount: paymentPlan.installmentAmount!,
-            installmentCount: paymentPlan.installmentCount!,
-          } : undefined,
-        };
-      });
+      const flightsWithPaymentPlans: EnhancedFlightWithPaymentPlan[] =
+        flights.map((flight) => {
+          const travelDate = new Date(flight.departureTime);
+          const baseCostPerPerson = parseFloat(flight.price.total);
+          const totalBaseCost = baseCostPerPerson * searchParams.passengers;
 
-      console.log(`routes.ts - 61 - Flights with Payment Plans:`, JSON.stringify(flightsWithPaymentPlans, null, 2))
+          const paymentPlan = PaymentPlanService.calculatePaymentPlan(
+            totalBaseCost,
+            travelDate,
+          );
+          const perPersonFlightPrice = PaymentPlanService.calculateFlightPrice(
+            baseCostPerPerson,
+            travelDate,
+          );
+
+          return {
+            ...flight,
+            price: {
+              ...flight.price,
+              total: perPersonFlightPrice.flightPrice.toString(), // Per-person price with fees
+            },
+            paymentPlanEligible: paymentPlan.eligible,
+            paymentPlan: paymentPlan.eligible
+              ? {
+                  depositAmount: paymentPlan.depositAmount!,
+                  installmentAmount: paymentPlan.installmentAmount!,
+                  installmentCount: paymentPlan.installmentCount!,
+                }
+              : undefined,
+          };
+        });
+
+      // console.log(`routes.ts - 61 - Flights with Payment Plans:`, JSON.stringify(flightsWithPaymentPlans, null, 2))
 
       res.json({ flights: flightsWithPaymentPlans });
     } catch (error) {

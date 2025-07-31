@@ -239,10 +239,10 @@ export function FlightResults({
                 <SelectItem value="duration">Duration</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" data-testid="button-filters">
+            {/* <Button variant="outline" size="sm" data-testid="button-filters">
               <Filter className="w-4 h-4 mr-1" />
               Filters
-            </Button>
+            </Button> */}
           </div>
         </div>
 

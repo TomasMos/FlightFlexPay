@@ -32,8 +32,9 @@
   --flightpay-slate-100: hsl(210, 40%, 96%);
   --flightpay-slate-200: hsl(214, 32%, 91%);
   --flightpay-slate-300: hsl(213, 27%, 84%);
+  --flightpay-slate-700: hsl(0, 0%, 0%);
   --flightpay-slate-600: hsl(215, 16%, 47%);
-  --flightpay-slate-700: hsl(215, 19%, 35%);
+  --flightpay-slate-400: hsl(215, 19%, 35%);
   --flightpay-slate-900: hsl(222, 84%, 5%);
 }
 
@@ -69,9 +70,48 @@
     @apply font-sans antialiased bg-background text-foreground;
     font-family: 'Inter', sans-serif;
   }
+
+  /* Prevent highlighting/selection in date input fields after selection */
+  input[type="date"]::-webkit-datetime-edit-day-field:focus,
+  input[type="date"]::-webkit-datetime-edit-month-field:focus,
+  input[type="date"]::-webkit-datetime-edit-year-field:focus,
+  input[type="date"]::-webkit-datetime-edit-text:focus {
+    background-color: transparent !important; /* Makes the background transparent when focused */
+    color: inherit !important; /* Ensures text color remains consistent */
+    outline: none !important; /* Removes the focus outline */
+  }
+
+  /* Also ensure no text selection background */
+  input[type="date"]::selection {
+    background-color: transparent !important;
+    color: inherit !important;
+  }
+
+  input[type="date"]::-moz-selection { /* For Firefox */
+    background-color: transparent !important;
+    color: inherit !important;
+  }
+
+  /* You might also want to explicitly remove the user-select on the input if it's causing issues,
+     though be careful with this as it can affect accessibility.
+     For date inputs, it's usually less problematic. */
+  input[type="date"] {
+    user-select: none; /* Prevents user from manually selecting the text */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
 }
 
 @layer utilities {
+
+  .hide-date-icon::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+  .hide-date-icon::-moz-calendar-picker-indicator {
+    display: none;
+  }
+  
   .bg-flightpay-primary {
     background-color: var(--flightpay-primary);
   }
@@ -98,6 +138,9 @@
   }
   .bg-flightpay-slate-200 {
     background-color: var(--flightpay-slate-200);
+  }
+  .text-flightpay-slate-400 {
+    color: var(--flightpay-slate-400);
   }
   .text-flightpay-slate-600 {
     color: var(--flightpay-slate-600);
