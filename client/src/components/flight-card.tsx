@@ -1,0 +1,271 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Shield } from "lucide-react";
+import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
+
+interface FlightCardProps {
+  flight: EnhancedFlightWithPaymentPlan;
+  onSelect: (flight: EnhancedFlightWithPaymentPlan) => void;
+}
+
+// Component for one-way flights
+export function FlightCard({
+  flight,
+  onSelect,
+}: {
+  flight: EnhancedFlightWithPaymentPlan;
+  onSelect: (flight: EnhancedFlightWithPaymentPlan) => void;
+}) {
+  const formatTime = (date: Date) => {
+    return new Date(date).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const formatDuration = (duration: string) => {
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+    if (!match) return duration;
+
+    const hours = match[1] ? parseInt(match[1]) : 0;
+    const minutes = match[2] ? parseInt(match[2]) : 0;
+
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
+    return `${hours}h ${minutes}m`;
+  };
+
+  const getAirlineCode = (flightNumber: string) => {
+    return flightNumber.split(" ")[0] || "XX";
+  };
+
+  const getAirlineLogo = (code: string) => {
+    const logos: Record<string, string> = {
+      AA: "bg-blue-600",
+      DL: "bg-red-600",
+      UA: "bg-blue-800",
+      WN: "bg-orange-600",
+      B6: "bg-blue-500",
+      AS: "bg-green-600",
+      F9: "bg-green-500",
+      NK: "bg-yellow-500",
+      G4: "bg-purple-600",
+      TP: "bg-green-700",
+      TS: "bg-blue-700",
+    };
+    return logos[code] || "bg-flightpay-slate-600";
+  };
+
+  const airlineCode = getAirlineCode(flight.flightNumber);
+  const totalPrice = parseFloat(flight.price.total);
+
+  return (
+    <div
+      className="bg-white rounded-xl shadow-md border border-flightpay-slate-200 hover:shadow-md transition-shadow p-6"
+      data-testid={`card-flight-${flight.id}`}
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+        {/* Flight Details */}
+        <div className="lg:col-span-2  h-full flex flex-col">
+
+          {/*Airline & Flight Information  */}
+          <div className="flex items-center gap-4 mb-4 ">
+            <div
+              className={`w-8 h-8 ${getAirlineLogo(airlineCode)} rounded-full flex items-center justify-center`}
+            >
+              <span
+                className="text-white text-sm font-bold"
+                data-testid={`text-airline-code-${flight.id}`}
+              >
+                {airlineCode}
+              </span>
+            </div>
+            <span
+              className="font-medium text-flightpay-slate-900"
+              data-testid={`text-airline-name-${flight.id}`}
+            >
+              {flight.airline}
+            </span>
+            <span
+              className="text-sm text-flightpay-slate-500"
+              data-testid={`text-flight-number-${flight.id}`}
+            >
+              {flight.flightNumber}
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-4 h-full">
+            {/* Outbound Flight */}
+            <div className="flex items-center justify-center flex-grow">
+
+              <div className="text-left w-[100px] ">
+                <div
+                  className="text-lg font-bold text-flightpay-slate-900"
+                  data-testid={`text-departure-time-${flight.id}`}
+                >
+                  {formatTime(flight.departureTime)}
+                </div>
+                <div
+                  className="text-sm text-flightpay-slate-500"
+                  data-testid={`text-origin-${flight.id}`}
+                >
+                  {flight.itineraries[0]?.segments[0]?.departure.airportName || flight.origin}
+                </div>
+              </div>
+              <div className="flex-1 mx-4">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                  <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                  <div
+                    className="text-xs text-flightpay-slate-500"
+                    data-testid={`text-duration-${flight.id}`}
+                  >
+                    {formatDuration(flight.itineraries[0]?.duration || flight.duration)}
+                  </div>
+                  <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                  <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                </div>
+                <div
+                  className="text-center text-xs text-flightpay-slate-500 mt-1"
+                  data-testid={`text-stops-${flight.id}`}
+                >
+                  {(flight.itineraries[0]?.segments.length - 1) === 0
+                    ? "Nonstop"
+                    : `${flight.itineraries[0]?.segments.length - 1} stop${(flight.itineraries[0]?.segments.length - 1) > 1 ? "s" : ""}`}
+                </div>
+              </div>
+              <div className="text-right w-[100px]">
+                <div
+                  className="text-lg font-bold text-flightpay-slate-900 "
+                  data-testid={`text-arrival-time-${flight.id}`}
+                >
+                  {formatTime(new Date(flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.at || flight.arrivalTime))}
+                </div>
+                <div
+                  className="text-sm text-flightpay-slate-500"
+                  data-testid={`text-destination-${flight.id}`}
+                >
+                  {flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.airportName || flight.destination}
+                </div>
+              </div>
+            </div>
+
+            {/* Return Flight (if exists) */}
+            {flight.itineraries.length > 1 && (
+              <div className="flex items-center justify-center flex-grow border-t pt-4">
+
+                <div className="text-left w-[100px]">
+                  <div
+                    className="text-lg font-bold text-flightpay-slate-900"
+                    data-testid={`text-return-departure-time-${flight.id}`}
+                  >
+                    {formatTime(new Date(flight.itineraries[1].segments[0].departure.at))}
+                  </div>
+                  <div
+                    className="text-sm text-flightpay-slate-500"
+                    data-testid={`text-return-origin-${flight.id}`}
+                  >
+                    {flight.itineraries[1].segments[0].departure.airportName}
+                  </div>
+                </div>
+
+                <div className="flex-1 mx-4">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                    <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                    <div
+                      className="text-xs text-flightpay-slate-500"
+                      data-testid={`text-return-duration-${flight.id}`}
+                    >
+                      {formatDuration(flight.itineraries[1].duration)}
+                    </div>
+                    <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                    <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                  </div>
+                  <div
+                    className="text-center text-xs text-flightpay-slate-500 mt-1"
+                    data-testid={`text-return-stops-${flight.id}`}
+                  >
+                    {(flight.itineraries[1].segments.length - 1) === 0
+                      ? "Nonstop"
+                      : `${flight.itineraries[1].segments.length - 1} stop${(flight.itineraries[1].segments.length - 1) > 1 ? "s" : ""}`}
+                  </div>
+                </div>
+                <div className="text-right w-[100px]">
+                  <div
+                    className="text-lg font-bold text-flightpay-slate-900"
+                    data-testid={`text-return-arrival-time-${flight.id}`}
+                  >
+                    {formatTime(new Date(flight.itineraries[1].segments[flight.itineraries[1].segments.length - 1].arrival.at))}
+                  </div>
+                  <div
+                    className="text-sm text-flightpay-slate-500"
+                    data-testid={`text-return-destination-${flight.id}`}
+                  >
+                    {flight.itineraries[1].segments[flight.itineraries[1].segments.length - 1].arrival.airportName}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col items-center lg:items-end gap-4">
+
+          {/* Pricing */}
+          <div className="items-center lg:items-end flex flex-col justify-between gap-6">
+            <div>
+              <div
+                className="text-2xl font-bold text-flightpay-slate-900 mb-1"
+                data-testid={`text-price-${flight.id}`}
+              >
+                ${totalPrice.toFixed(0)}
+              </div>
+              <div className="text-sm text-flightpay-slate-500">per person</div>
+            </div>
+
+            {flight.paymentPlanEligible && flight.paymentPlan ? (
+              <div
+                className="bg-flightpay-secondary/10 rounded-lg p-3 border border-flightpay-secondary/20"
+                data-testid={`payment-plan-preview-${flight.id}`}
+              >
+
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="w-4 h-4 text-flightpay-secondary" />
+                  <span className="text-sm font-medium text-flightpay-secondary">
+                    Payment Plan Available
+                  </span>
+                </div>
+                <div className="text-sm text-flightpay-slate-600">
+                  Pay ${flight.paymentPlan.depositAmount.toFixed(0)} today, from
+                  ${flight.paymentPlan.installmentAmount.toFixed(0)} per week
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-flightpay-slate-500">
+                No payment plans available <br />
+                (start date is within 14 days)
+              </div>
+            )}
+
+
+
+          </div>
+
+          {/* Action Button */}
+          <div className="w-full flex flex-col items-center lg:items-end gap-2 ">
+            <Button
+              onClick={() => onSelect(flight)}
+              className="min-w-[100px] px-8 bg-flightpay-primary hover:bg-flightpay-primary/90 text-white"
+              data-testid={`button-select-${flight.id}`}
+            >
+              {flight.paymentPlanEligible
+                ? "View Payment Options"
+                : "Select Flight"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
