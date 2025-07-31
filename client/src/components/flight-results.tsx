@@ -32,45 +32,12 @@ export function FlightResults({
   const [sortBy, setSortBy] = useState("best");
 
   // Helper functions
-  const formatTime = (dateString: Date | string, offsetString?: string) => {
-    try {
-      // Convert to string if it's a Date object
-      const dateStr = typeof dateString === 'string' ? dateString : dateString.toISOString();
-      
-      if (offsetString) {
-        // Parse the offset string (e.g., '+01:00', '-05:00')
-        const offsetMatch = offsetString.match(/([+-])(\d{2}):(\d{2})/);
-        if (offsetMatch) {
-          const [, sign, hours, minutes] = offsetMatch;
-          const offsetMilliseconds = (parseInt(hours) * 60 + parseInt(minutes)) * 60 * 1000;
-          const multiplier = sign === '+' ? 1 : -1;
-          
-          // Get UTC time and apply offset
-          const utcTime = new Date(dateStr).getTime();
-          const localTime = new Date(utcTime + (offsetMilliseconds * multiplier));
-          
-          return localTime.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          });
-        }
-      }
-      
-      // Fallback to user's local timezone if offset not available
-      return new Date(dateStr).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-    } catch (error) {
-      console.error('Error formatting time:', error);
-      return new Date(dateString).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-    }
+  const formatTime = (date: Date | string) => {
+    return new Date(date).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   const formatDuration = (duration: string) => {

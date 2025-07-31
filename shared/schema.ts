@@ -123,7 +123,6 @@ export interface FlightSegment {
     at: string;
     airportName?: string;
     cityName?: string;
-    timeZoneOffset?: string;
   };
   arrival: {
     iataCode: string;
@@ -131,7 +130,6 @@ export interface FlightSegment {
     at: string;
     airportName?: string;
     cityName?: string;
-    timeZoneOffset?: string;
   };
   carrierCode: string;
   number: string;
@@ -171,8 +169,6 @@ export interface EnhancedFlight {
   destination: string;
   departureTime: Date;
   arrivalTime: Date;
-  departureTimeZoneOffset?: string;
-  arrivalTimeZoneOffset?: string;
   duration: string;
   stops: number;
   cabin: string;
