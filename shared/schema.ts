@@ -173,6 +173,7 @@ export interface EnhancedFlight {
   stops: number;
   cabin: string;
   availableSeats: number;
+  numberOfPassengers?: number;
 }
 
 export type EnhancedFlightWithPaymentPlan = EnhancedFlight & {

@@ -58,7 +58,8 @@ export function FlightCard({
   };
 
   const airlineCode = getAirlineCode(flight.flightNumber);
-  const totalPrice = parseFloat(flight.price.total);
+  const pricePerTraveller =
+    parseFloat(flight.price.total) / (flight?.numberOfPassengers || 1);
 
   return (
     <div
@@ -68,7 +69,6 @@ export function FlightCard({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
         {/* Flight Details */}
         <div className="lg:col-span-2  h-full flex flex-col">
-
           {/*Airline & Flight Information  */}
           <div className="flex items-center gap-4 mb-4 ">
             <div
@@ -98,19 +98,21 @@ export function FlightCard({
           <div className="flex flex-col gap-4 h-full">
             {/* Outbound Flight */}
             <div className="flex items-center justify-center flex-grow">
-
               <div className="text-left w-[100px] ">
                 <div
                   className="text-lg font-bold text-flightpay-slate-900"
                   data-testid={`text-departure-time-${flight.id}`}
                 >
-                  {formatTime(new Date(flight.itineraries[0]?.segments[0]?.departure.at))}
+                  {formatTime(
+                    new Date(flight.itineraries[0]?.segments[0]?.departure.at),
+                  )}
                 </div>
                 <div
                   className="text-sm text-flightpay-slate-500"
                   data-testid={`text-origin-${flight.id}`}
                 >
-                  {flight.itineraries[0]?.segments[0]?.departure.airportName || flight.origin}
+                  {flight.itineraries[0]?.segments[0]?.departure.airportName ||
+                    flight.origin}
                 </div>
               </div>
               <div className="flex-1 mx-4">
@@ -121,7 +123,9 @@ export function FlightCard({
                     className="text-xs text-flightpay-slate-500"
                     data-testid={`text-duration-${flight.id}`}
                   >
-                    {formatDuration(flight.itineraries[0]?.duration || flight.duration)}
+                    {formatDuration(
+                      flight.itineraries[0]?.duration || flight.duration,
+                    )}
                   </div>
                   <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
                   <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
@@ -130,9 +134,9 @@ export function FlightCard({
                   className="text-center text-xs text-flightpay-slate-500 mt-1"
                   data-testid={`text-stops-${flight.id}`}
                 >
-                  {(flight.itineraries[0]?.segments.length - 1) === 0
+                  {flight.itineraries[0]?.segments.length - 1 === 0
                     ? "Nonstop"
-                    : `${flight.itineraries[0]?.segments.length - 1} stop${(flight.itineraries[0]?.segments.length - 1) > 1 ? "s" : ""}`}
+                    : `${flight.itineraries[0]?.segments.length - 1} stop${flight.itineraries[0]?.segments.length - 1 > 1 ? "s" : ""}`}
                 </div>
               </div>
               <div className="text-right w-[100px]">
@@ -140,13 +144,21 @@ export function FlightCard({
                   className="text-lg font-bold text-flightpay-slate-900 "
                   data-testid={`text-arrival-time-${flight.id}`}
                 >
-                  {formatTime(new Date(flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.at))}
+                  {formatTime(
+                    new Date(
+                      flight.itineraries[0]?.segments[
+                        flight.itineraries[0].segments.length - 1
+                      ]?.arrival.at,
+                    ),
+                  )}
                 </div>
                 <div
                   className="text-sm text-flightpay-slate-500"
                   data-testid={`text-destination-${flight.id}`}
                 >
-                  {flight.itineraries[0]?.segments[flight.itineraries[0].segments.length - 1]?.arrival.airportName || flight.destination}
+                  {flight.itineraries[0]?.segments[
+                    flight.itineraries[0].segments.length - 1
+                  ]?.arrival.airportName || flight.destination}
                 </div>
               </div>
             </div>
@@ -154,13 +166,14 @@ export function FlightCard({
             {/* Return Flight (if exists) */}
             {flight.itineraries.length > 1 && (
               <div className="flex items-center justify-center flex-grow border-t pt-4">
-
                 <div className="text-left w-[100px]">
                   <div
                     className="text-lg font-bold text-flightpay-slate-900"
                     data-testid={`text-return-departure-time-${flight.id}`}
                   >
-                    {formatTime(new Date(flight.itineraries[1].segments[0].departure.at))}
+                    {formatTime(
+                      new Date(flight.itineraries[1].segments[0].departure.at),
+                    )}
                   </div>
                   <div
                     className="text-sm text-flightpay-slate-500"
@@ -187,9 +200,9 @@ export function FlightCard({
                     className="text-center text-xs text-flightpay-slate-500 mt-1"
                     data-testid={`text-return-stops-${flight.id}`}
                   >
-                    {(flight.itineraries[1].segments.length - 1) === 0
+                    {flight.itineraries[1].segments.length - 1 === 0
                       ? "Nonstop"
-                      : `${flight.itineraries[1].segments.length - 1} stop${(flight.itineraries[1].segments.length - 1) > 1 ? "s" : ""}`}
+                      : `${flight.itineraries[1].segments.length - 1} stop${flight.itineraries[1].segments.length - 1 > 1 ? "s" : ""}`}
                   </div>
                 </div>
                 <div className="text-right w-[100px]">
@@ -197,13 +210,23 @@ export function FlightCard({
                     className="text-lg font-bold text-flightpay-slate-900"
                     data-testid={`text-return-arrival-time-${flight.id}`}
                   >
-                    {formatTime(new Date(flight.itineraries[1].segments[flight.itineraries[1].segments.length - 1].arrival.at))}
+                    {formatTime(
+                      new Date(
+                        flight.itineraries[1].segments[
+                          flight.itineraries[1].segments.length - 1
+                        ].arrival.at,
+                      ),
+                    )}
                   </div>
                   <div
                     className="text-sm text-flightpay-slate-500"
                     data-testid={`text-return-destination-${flight.id}`}
                   >
-                    {flight.itineraries[1].segments[flight.itineraries[1].segments.length - 1].arrival.airportName}
+                    {
+                      flight.itineraries[1].segments[
+                        flight.itineraries[1].segments.length - 1
+                      ].arrival.airportName
+                    }
                   </div>
                 </div>
               </div>
@@ -211,17 +234,41 @@ export function FlightCard({
           </div>
         </div>
         <div className="flex flex-col items-center lg:items-end gap-4">
-
           {/* Pricing */}
           <div className="items-center lg:items-end flex flex-col gap-6">
-            <div>
-              <div
-                className="text-2xl text-center lg:text-right font-bold text-flightpay-slate-900 mb-1"
-                data-testid={`text-price-${flight.id}`}
-              >
-                ${totalPrice.toFixed(0)}
+            <div
+              className={` flex flex-row w-full  ${
+                flight?.numberOfPassengers && flight.numberOfPassengers > 1
+                  ? "lg:justify-end lg:gap-10 justify-around"
+                  : "lg:justify-end justify-center"
+              }`}
+            >
+              <div className="">
+                <div
+                  className="text-2xl text-center lg:text-right font-bold text-flightpay-slate-900  mb-1"
+                  data-testid={`text-price-${flight.id}`}
+                >
+                  ${pricePerTraveller.toFixed(0)}
+                </div>
+                <div className="text-sm text-flightpay-slate-500 lg:text-right">
+                  per person
+                </div>
               </div>
-              <div className="text-sm text-flightpay-slate-500">per person</div>
+              {flight?.numberOfPassengers && flight.numberOfPassengers > 1 ? (
+                <div className=" text-center">
+                  <div
+                    className="text-2xl text-center lg:text-right font-bold text-flightpay-slate-900  mb-1"
+                    data-testid={`text-price-${flight.id}`}
+                  >
+                    ${parseFloat(flight.price.total).toFixed(0)}
+                  </div>
+                  <div className="text-sm text-flightpay-slate-500 lg:text-right">
+                    in total
+                  </div>
+                </div>
+              ) : (
+                <></>
+              )}
             </div>
 
             {flight.paymentPlanEligible && flight.paymentPlan ? (
@@ -229,7 +276,6 @@ export function FlightCard({
                 className="bg-flightpay-secondary/10 rounded-lg p-3 border border-flightpay-secondary/20"
                 data-testid={`payment-plan-preview-${flight.id}`}
               >
-
                 <div className="flex items-center gap-2 mb-2">
                   <Shield className="w-4 h-4 text-flightpay-secondary" />
                   <span className="text-sm font-medium text-flightpay-secondary">
@@ -247,9 +293,6 @@ export function FlightCard({
                 (departure is within 14 days)
               </div>
             )}
-
-
-
           </div>
 
           {/* Action Button */}

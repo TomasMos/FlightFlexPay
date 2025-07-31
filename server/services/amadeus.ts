@@ -187,7 +187,7 @@ export class AmadeusService {
         destinationLocationCode: searchParams.destination,
         departureDate: searchParams.departureDate,
         adults: searchParams.passengers.toString(),
-        max: "5", // Increased for better results
+        max: "1", // Increased for better results
         currencyCode: "USD",
       });
 
@@ -211,18 +211,18 @@ export class AmadeusService {
       }
 
       const data: AmadeusFlightResponse = await response.json();
-      // console.log(
-      //   `Amadeus.ts - Enhanced Response:`,
-      //   JSON.stringify(data, null, 2),
-      // );
+      console.log(
+        `Amadeus.ts - 215 - RAW:`,
+        JSON.stringify(data, null, 2),
+      );
       const transformedData = this.transformEnhancedAmadeusResponse(
         data,
         searchParams,
       );
-      // console.log(
-      //   `Amadeus.ts - Enhanced Transform:`,
-      //   JSON.stringify(transformedData, null, 2),
-      // );
+      console.log(
+        `Amadeus.ts - 223 - Transformed:`,
+        JSON.stringify(transformedData, null, 2),
+      );
       return transformedData;
     } catch (error) {
       console.error("Error searching flights:", error);
@@ -316,6 +316,7 @@ export class AmadeusService {
           offer.travelerPricings[0]?.fareDetailsBySegment[0]?.cabin ||
           "ECONOMY",
         availableSeats: offer.numberOfBookableSeats,
+        numberOfPassengers: offer?.travelerPricings.length
       };
     });
   }
