@@ -63,7 +63,6 @@ export class PaymentPlanService {
     // Calculate flight price with fees
     const priceCalculation = this.calculateFlightPrice(baseCost, travelDate);
 
-    console.log(`paymentPlan - 64 -flight price with fees`, priceCalculation)
     
     const { flightPrice, adminFee, layByFee } = priceCalculation;
     
@@ -104,6 +103,8 @@ export class PaymentPlanService {
       bookingDate,
       travelDate
     );
+    
+    console.log(`paymentPlan.ts - 107 -flight price with fees`, schedule)
     
     return {
       eligible: true,

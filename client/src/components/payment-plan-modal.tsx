@@ -38,6 +38,12 @@ export function PaymentPlanModal({ flight, isOpen, onClose }: PaymentPlanModalPr
   const { toast } = useToast();
   const [passengers] = useState(1); // This would come from search context
 
+  console.log(`payment-plan-modal - 41 - flight`, flight)
+  console.log(`payment-plan-modal - 41 - isOpen`, isOpen)
+  console.log(`payment-plan-modal - 41 - onClose`, onClose)
+
+  
+
   const { data: paymentPlan, isLoading } = useQuery<PaymentPlanDetails>({
     queryKey: ['/api/payment-plan/calculate', flight.id],
     queryFn: async () => {
