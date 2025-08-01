@@ -171,7 +171,6 @@ export interface EnhancedFlight {
 
   // Computed fields for display
   airline: string;
-  flightNumber: string;
   origin: string;
   destination: string;
   departureTime: Date;
