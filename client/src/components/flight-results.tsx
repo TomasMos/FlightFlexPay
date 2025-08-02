@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Shield, CreditCard, Filter } from "lucide-react";
-import { PaymentPlanModal } from "./payment-plan-modal.tsx";
+import { ItineraryModal } from "./itinerary-modal";
 import { FlightCard } from "@/components/flight-card.tsx"
 
 interface FlightResultsProps {
@@ -257,7 +257,7 @@ export function FlightResults({
         </div>
 
         {selectedFlight && (
-          <PaymentPlanModal
+          <ItineraryModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             flight={selectedFlight}

@@ -16,39 +16,12 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
 
   if (!isOpen) return null;
 
-  const formatTime = (dateString: string, offsetString?: string) => {
-    try {
-      if (offsetString) {
-        const offsetMatch = offsetString.match(/([+-])(\d{2}):(\d{2})/);
-        if (offsetMatch) {
-          const [, sign, hours, minutes] = offsetMatch;
-          const offsetMilliseconds = (parseInt(hours) * 60 + parseInt(minutes)) * 60 * 1000;
-          const multiplier = sign === '+' ? 1 : -1;
-          
-          const utcTime = new Date(dateString).getTime();
-          const localTime = new Date(utcTime + (offsetMilliseconds * multiplier));
-          
-          return localTime.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          });
-        }
-      }
-      
-      return new Date(dateString).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-    } catch (error) {
-      console.error('Error formatting time:', error);
-      return new Date(dateString).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-    }
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -171,7 +144,7 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                         {firstSegment.departure.cityName}
                       </div>
                       <div className="text-lg font-medium text-flightpay-slate-900 mt-1">
-                        {formatTime(firstSegment.departure.at, firstSegment.departure.timeZoneOffset)}
+                        {formatTime(firstSegment.departure.at)}
                       </div>
                     </div>
 
@@ -201,7 +174,7 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                         {lastSegment.arrival.cityName}
                       </div>
                       <div className="text-lg font-medium text-flightpay-slate-900 mt-1">
-                        {formatTime(lastSegment.arrival.at, lastSegment.arrival.timeZoneOffset)}
+                        {formatTime(lastSegment.arrival.at)}
                       </div>
                     </div>
                   </div>
@@ -237,7 +210,7 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                                   <div>
                                     <div className="flex items-center gap-2 mb-2">
                                       <div className="text-lg font-bold text-flightpay-slate-900">
-                                        {formatTime(segment.departure.at, segment.departure.timeZoneOffset)}
+                                        {formatTime(segment.departure.at)}
                                       </div>
                                       <div className="text-sm text-flightpay-slate-600">
                                         {formatDate(segment.departure.at)}
@@ -263,7 +236,7 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                                   <div>
                                     <div className="flex items-center gap-2 mb-2">
                                       <div className="text-lg font-bold text-flightpay-slate-900">
-                                        {formatTime(segment.arrival.at, segment.arrival.timeZoneOffset)}
+                                        {formatTime(segment.arrival.at)}
                                       </div>
                                       <div className="text-sm text-flightpay-slate-600">
                                         {formatDate(segment.arrival.at)}
