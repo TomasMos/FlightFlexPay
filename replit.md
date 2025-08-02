@@ -26,6 +26,7 @@ This is a full-stack web application built with a React frontend and Express.js 
 - **Wouter** for client-side routing
 - **React Hook Form** with Zod validation for form handling
 - **Airport Autocomplete** component with Amadeus API integration for city/airport search
+- **Detailed Flight Modal** (itinerary-modal.tsx) with comprehensive flight information display
 
 ### Backend Architecture
 - **Express.js** server with TypeScript
@@ -46,6 +47,13 @@ The application uses four main tables:
 - **Minimum Requirements**: $300 minimum booking, 45+ days before travel
 - **Payment Structure**: 20% deposit, remaining amount split into installments
 - **Schedule Generation**: Automatic payment date calculation based on travel date
+
+### Flight Modal System
+- **Detailed Itinerary Display**: Comprehensive flight information modal following airline ticket design
+- **Multi-Itinerary Support**: Separate sections for outbound and return flights
+- **Collapsible Details**: Expandable flight segments with departure/arrival information
+- **Flight Inclusions**: Baggage, flexibility, and refund policy information
+- **Multiple Airline Handling**: Displays "Multiple Airlines" when flight uses different carriers
 
 ## Data Flow
 

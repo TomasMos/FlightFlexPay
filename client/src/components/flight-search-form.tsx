@@ -151,8 +151,6 @@ export function FlightSearchForm({
                     min={today}
                   className="hide-date-icon pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
                     data-testid="input-departure-date"
-                    // CORRECTED: Use e.target to access the input element
-                    onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                   />
                   <Calendar
                     // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
@@ -188,9 +186,7 @@ export function FlightSearchForm({
                     min={form.watch("departureDate") || today}
                     disabled={tripType === "oneway"}
                   className="hide-date-icon pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
-                    data-testid="input-departure-date"
-                    // CORRECTED: Use e.target to access the input element
-                    onClick={(e) => (e.target as HTMLInputElement).showPicker()}
+                    data-testid="input-return-date"
                   />
                   <Calendar
                     // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
