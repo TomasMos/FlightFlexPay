@@ -1,0 +1,503 @@
+{
+  "meta": {
+    "count": 1,
+    "links": {
+      "self": "https://api.amadeus.com/v2/shopping/flight-offers?originLocationCode=DUR&destinationLocationCode=NYC&departureDate=2025-12-02&adults=3&max=1&currencyCode=USD&returnDate=2025-12-16"
+    }
+  },
+  "data": [
+    {
+      "type": "flight-offer",
+      "id": "1",
+      "source": "GDS",
+      "instantTicketingRequired": false,
+      "nonHomogeneous": false,
+      "oneWay": false,
+      "isUpsellOffer": false,
+      "lastTicketingDate": "2025-12-02",
+      "lastTicketingDateTime": "2025-12-02",
+      "numberOfBookableSeats": 9,
+      "itineraries": [
+        {
+          "duration": "PT30H45M",
+          "segments": [
+            {
+              "departure": {
+                "iataCode": "DUR",
+                "at": "2025-12-02T08:10:00"
+              },
+              "arrival": {
+                "iataCode": "JNB",
+                "terminal": "B",
+                "at": "2025-12-02T09:20:00"
+              },
+              "carrierCode": "ET",
+              "number": "1821",
+              "aircraft": {
+                "code": "320"
+              },
+              "operating": {
+                "carrierCode": "SA"
+              },
+              "duration": "PT1H10M",
+              "id": "1",
+              "numberOfStops": 0,
+              "blacklistedInEU": false
+            },
+            {
+              "departure": {
+                "iataCode": "JNB",
+                "terminal": "A",
+                "at": "2025-12-02T14:30:00"
+              },
+              "arrival": {
+                "iataCode": "ADD",
+                "terminal": "2",
+                "at": "2025-12-02T20:45:00"
+              },
+              "carrierCode": "ET",
+              "number": "808",
+              "aircraft": {
+                "code": "350"
+              },
+              "operating": {
+                "carrierCode": "ET"
+              },
+              "duration": "PT5H15M",
+              "id": "2",
+              "numberOfStops": 0,
+              "blacklistedInEU": false
+            },
+            {
+              "departure": {
+                "iataCode": "ADD",
+                "terminal": "2",
+                "at": "2025-12-02T22:50:00"
+              },
+              "arrival": {
+                "iataCode": "EWR",
+                "terminal": "B",
+                "at": "2025-12-03T07:55:00"
+              },
+              "carrierCode": "ET",
+              "number": "508",
+              "aircraft": {
+                "code": "787"
+              },
+              "operating": {
+                "carrierCode": "ET"
+              },
+              "duration": "PT17H5M",
+              "stops": [
+                {
+                  "iataCode": "FCO",
+                  "duration": "PT1H",
+                  "arrivalAt": "2025-12-03T03:25:00",
+                  "departureAt": "2025-12-03T04:25:00"
+                }
+              ],
+              "id": "3",
+              "numberOfStops": 1,
+              "blacklistedInEU": false
+            }
+          ]
+        },
+        {
+          "duration": "PT27H25M",
+          "segments": [
+            {
+              "departure": {
+                "iataCode": "EWR",
+                "at": "2025-12-16T21:15:00"
+              },
+              "arrival": {
+                "iataCode": "ADD",
+                "terminal": "2",
+                "at": "2025-12-17T21:25:00"
+              },
+              "carrierCode": "ET",
+              "number": "515",
+              "aircraft": {
+                "code": "787"
+              },
+              "operating": {
+                "carrierCode": "ET"
+              },
+              "duration": "PT16H10M",
+              "stops": [
+                {
+                  "iataCode": "LFW",
+                  "duration": "PT1H",
+                  "arrivalAt": "2025-12-17T12:00:00",
+                  "departureAt": "2025-12-17T13:00:00"
+                }
+              ],
+              "id": "4",
+              "numberOfStops": 1,
+              "blacklistedInEU": false
+            },
+            {
+              "departure": {
+                "iataCode": "ADD",
+                "terminal": "2",
+                "at": "2025-12-17T23:30:00"
+              },
+              "arrival": {
+                "iataCode": "JNB",
+                "terminal": "A",
+                "at": "2025-12-18T03:55:00"
+              },
+              "carrierCode": "ET",
+              "number": "859",
+              "aircraft": {
+                "code": "788"
+              },
+              "operating": {
+                "carrierCode": "ET"
+              },
+              "duration": "PT5H25M",
+              "id": "5",
+              "numberOfStops": 0,
+              "blacklistedInEU": false
+            },
+            {
+              "departure": {
+                "iataCode": "JNB",
+                "terminal": "B",
+                "at": "2025-12-18T06:30:00"
+              },
+              "arrival": {
+                "iataCode": "DUR",
+                "at": "2025-12-18T07:40:00"
+              },
+              "carrierCode": "ET",
+              "number": "1822",
+              "aircraft": {
+                "code": "320"
+              },
+              "operating": {
+                "carrierCode": "SA"
+              },
+              "duration": "PT1H10M",
+              "id": "6",
+              "numberOfStops": 0,
+              "blacklistedInEU": false
+            }
+          ]
+        }
+      ],
+      "price": {
+        "currency": "USD",
+        "total": "3513.99",
+        "base": "798.00",
+        "fees": [
+          {
+            "amount": "0.00",
+            "type": "SUPPLIER"
+          },
+          {
+            "amount": "0.00",
+            "type": "TICKETING"
+          }
+        ],
+        "grandTotal": "3513.99"
+      },
+      "pricingOptions": {
+        "fareType": [
+          "PUBLISHED"
+        ],
+        "includedCheckedBagsOnly": true
+      },
+      "validatingAirlineCodes": [
+        "ET"
+      ],
+      "travelerPricings": [
+        {
+          "travelerId": "1",
+          "fareOption": "STANDARD",
+          "travelerType": "ADULT",
+          "price": {
+            "currency": "USD",
+            "total": "1171.33",
+            "base": "266.00"
+          },
+          "fareDetailsBySegment": [
+            {
+              "segmentId": "1",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "2",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "3",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "4",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "5",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "6",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        {
+          "travelerId": "2",
+          "fareOption": "STANDARD",
+          "travelerType": "ADULT",
+          "price": {
+            "currency": "USD",
+            "total": "1171.33",
+            "base": "266.00"
+          },
+          "fareDetailsBySegment": [
+            {
+              "segmentId": "1",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "2",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "3",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "4",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "5",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "6",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        {
+          "travelerId": "3",
+          "fareOption": "STANDARD",
+          "travelerType": "ADULT",
+          "price": {
+            "currency": "USD",
+            "total": "1171.33",
+            "base": "266.00"
+          },
+          "fareDetailsBySegment": [
+            {
+              "segmentId": "1",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "2",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "3",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "4",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "5",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            },
+            {
+              "segmentId": "6",
+              "cabin": "ECONOMY",
+              "fareBasis": "OHXPRZA",
+              "class": "O",
+              "includedCheckedBags": {
+                "quantity": 2
+              },
+              "includedCabinBags": {
+                "quantity": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dictionaries": {
+    "locations": {
+      "DUR": {
+        "cityCode": "DUR",
+        "countryCode": "ZA"
+      },
+      "EWR": {
+        "cityCode": "NYC",
+        "countryCode": "US"
+      },
+      "ADD": {
+        "cityCode": "ADD",
+        "countryCode": "ET"
+      },
+      "JNB": {
+        "cityCode": "JNB",
+        "countryCode": "ZA"
+      }
+    },
+    "aircraft": {
+      "320": "AIRBUS A320",
+      "350": "AIRBUS INDUSTRIE A350",
+      "787": "787  ALL SERIES PASSENGER",
+      "788": "BOEING 787-8"
+    },
+    "currencies": {
+      "USD": "US DOLLAR"
+    },
+    "carriers": {
+      "SA": "SOUTH AFRICAN AIRWAYS",
+      "ET": "ETHIOPIAN AIRLINES"
+    }
+  }
+}

@@ -201,7 +201,7 @@ export class AmadeusService {
         destinationLocationCode: searchParams.destination,
         departureDate: searchParams.departureDate,
         adults: searchParams.passengers.toString(),
-        // max: "1", // Increased for better results
+        max: "1", // Increased for better results
         currencyCode: "USD",
       });
 
@@ -225,15 +225,15 @@ export class AmadeusService {
       }
 
       const data: AmadeusFlightResponse = await response.json();
-      // console.log(`Amadeus.ts - 215 - RAW:`, JSON.stringify(data, null, 2));
+      console.log(`Amadeus.ts - 215 - RAW:`, JSON.stringify(data, null, 2));
       const transformedData = this.transformEnhancedAmadeusResponse(
         data,
         searchParams,
       );
-      // console.log(
-      //   `Amadeus.ts - 223 - Transformed:`,
-      //   JSON.stringify(transformedData, null, 2),
-      // );
+      console.log(
+        `Amadeus.ts - 223 - Transformed:`,
+        JSON.stringify(transformedData, null, 2),
+      );
       return transformedData;
     } catch (error) {
       console.error("Error searching flights:", error);
@@ -331,6 +331,15 @@ export class AmadeusService {
           "ECONOMY",
         availableSeats: offer.numberOfBookableSeats,
         numberOfPassengers: offer?.travelerPricings.length,
+        
+        // Additional data for modal
+        pricingOptions: {
+          fareType: offer.pricingOptions?.fareType || [],
+          includedCheckedBagsOnly: offer.pricingOptions?.includedCheckedBagsOnly || false,
+          refundableFare: (offer.pricingOptions as any)?.refundableFare || false,
+          noPenaltyFare: (offer.pricingOptions as any)?.noPenaltyFare || false,
+        },
+        fareDetailsBySegment: offer.travelerPricings[0]?.fareDetailsBySegment || [],
       };
     });
   }

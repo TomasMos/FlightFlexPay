@@ -1,0 +1,204 @@
+{
+    "id": "1",
+    "source": "GDS",
+    "lastTicketingDate": "2025-12-02",
+    "numberOfBookableSeats": 9,
+    "itineraries": [
+      {
+        "duration": "PT30H45M",
+        "segments": [
+          {
+            "departure": {
+              "iataCode": "DUR",
+              "at": "2025-12-02T08:10:00",
+              "airportName": "DUR",
+              "cityName": "DUR"
+            },
+            "arrival": {
+              "iataCode": "JNB",
+              "terminal": "B",
+              "at": "2025-12-02T09:20:00",
+              "airportName": "JNB",
+              "cityName": "JNB"
+            },
+            "carrierCode": "ET",
+            "airline": "SOUTH AFRICAN AIRWAYS",
+            "number": "1821",
+            "aircraft": {
+              "code": "320"
+            },
+            "operating": {
+              "carrierCode": "SA"
+            },
+            "duration": "PT1H10M",
+            "id": "1",
+            "numberOfStops": 0
+          },
+          {
+            "departure": {
+              "iataCode": "JNB",
+              "terminal": "A",
+              "at": "2025-12-02T14:30:00",
+              "airportName": "JNB",
+              "cityName": "JNB"
+            },
+            "arrival": {
+              "iataCode": "ADD",
+              "terminal": "2",
+              "at": "2025-12-02T20:45:00",
+              "airportName": "ADD",
+              "cityName": "ADD"
+            },
+            "carrierCode": "ET",
+            "airline": "ETHIOPIAN AIRLINES",
+            "number": "808",
+            "aircraft": {
+              "code": "350"
+            },
+            "operating": {
+              "carrierCode": "ET"
+            },
+            "duration": "PT5H15M",
+            "id": "2",
+            "numberOfStops": 0
+          },
+          {
+            "departure": {
+              "iataCode": "ADD",
+              "terminal": "2",
+              "at": "2025-12-02T22:50:00",
+              "airportName": "ADD",
+              "cityName": "ADD"
+            },
+            "arrival": {
+              "iataCode": "EWR",
+              "terminal": "B",
+              "at": "2025-12-03T07:55:00",
+              "airportName": "EWR",
+              "cityName": "NYC"
+            },
+            "carrierCode": "ET",
+            "airline": "ETHIOPIAN AIRLINES",
+            "number": "508",
+            "aircraft": {
+              "code": "787"
+            },
+            "operating": {
+              "carrierCode": "ET"
+            },
+            "duration": "PT17H5M",
+            "id": "3",
+            "numberOfStops": 1
+          }
+        ]
+      },
+      {
+        "duration": "PT27H25M",
+        "segments": [
+          {
+            "departure": {
+              "iataCode": "EWR",
+              "at": "2025-12-16T21:15:00",
+              "airportName": "EWR",
+              "cityName": "NYC"
+            },
+            "arrival": {
+              "iataCode": "ADD",
+              "terminal": "2",
+              "at": "2025-12-17T21:25:00",
+              "airportName": "ADD",
+              "cityName": "ADD"
+            },
+            "carrierCode": "ET",
+            "airline": "ETHIOPIAN AIRLINES",
+            "number": "515",
+            "aircraft": {
+              "code": "787"
+            },
+            "operating": {
+              "carrierCode": "ET"
+            },
+            "duration": "PT16H10M",
+            "id": "4",
+            "numberOfStops": 1
+          },
+          {
+            "departure": {
+              "iataCode": "ADD",
+              "terminal": "2",
+              "at": "2025-12-17T23:30:00",
+              "airportName": "ADD",
+              "cityName": "ADD"
+            },
+            "arrival": {
+              "iataCode": "JNB",
+              "terminal": "A",
+              "at": "2025-12-18T03:55:00",
+              "airportName": "JNB",
+              "cityName": "JNB"
+            },
+            "carrierCode": "ET",
+            "airline": "ETHIOPIAN AIRLINES",
+            "number": "859",
+            "aircraft": {
+              "code": "788"
+            },
+            "operating": {
+              "carrierCode": "ET"
+            },
+            "duration": "PT5H25M",
+            "id": "5",
+            "numberOfStops": 0
+          },
+          {
+            "departure": {
+              "iataCode": "JNB",
+              "terminal": "B",
+              "at": "2025-12-18T06:30:00",
+              "airportName": "JNB",
+              "cityName": "JNB"
+            },
+            "arrival": {
+              "iataCode": "DUR",
+              "at": "2025-12-18T07:40:00",
+              "airportName": "DUR",
+              "cityName": "DUR"
+            },
+            "carrierCode": "ET",
+            "airline": "SOUTH AFRICAN AIRWAYS",
+            "number": "1822",
+            "aircraft": {
+              "code": "320"
+            },
+            "operating": {
+              "carrierCode": "SA"
+            },
+            "duration": "PT1H10M",
+            "id": "6",
+            "numberOfStops": 0
+          }
+        ]
+      }
+    ],
+    "price": {
+      "currency": "USD",
+      "total": "3513.99",
+      "base": "798.00"
+    },
+    "validatingAirlineCodes": [
+      "ET"
+    ],
+    "airlines": [
+      "SOUTH AFRICAN AIRWAYS",
+      "ETHIOPIAN AIRLINES"
+    ],
+    "origin": "DUR",
+    "destination": "NYC",
+    "departureTime": "2025-12-02T08:10:00.000Z",
+    "arrivalTime": "2025-12-03T07:55:00.000Z",
+    "duration": "PT30H45M",
+    "stops": 2,
+    "cabin": "ECONOMY",
+    "availableSeats": 9,
+    "numberOfPassengers": 3
+  }

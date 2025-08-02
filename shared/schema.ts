@@ -102,6 +102,7 @@ export interface FlightSegment {
     at: string;
     airportName?: string;
     cityName?: string;
+    timeZoneOffset?: string;
   };
   arrival: {
     iataCode: string;
@@ -109,6 +110,7 @@ export interface FlightSegment {
     at: string;
     airportName?: string;
     cityName?: string;
+    timeZoneOffset?: string;
   };
   carrierCode: string;
   airline: string;
@@ -142,12 +144,34 @@ export interface EnhancedFlight {
   };
   validatingAirlineCodes: string[];
   
+  // Additional data for modal
+  pricingOptions?: {
+    fareType: string[];
+    includedCheckedBagsOnly: boolean;
+    refundableFare?: boolean;
+    noPenaltyFare?: boolean;
+  };
+  fareDetailsBySegment?: Array<{
+    segmentId: string;
+    cabin: string;
+    fareBasis: string;
+    class: string;
+    includedCheckedBags: {
+      quantity: number;
+    };
+    includedCabinBags?: {
+      quantity: number;
+    };
+  }>;
+  
   // Computed fields for display
   airlines: string[];
   origin: string;
   destination: string;
   departureTime: Date;
   arrivalTime: Date;
+  departureTimeZoneOffset?: string;
+  arrivalTimeZoneOffset?: string;
   duration: string;
   stops: number;
   cabin: string;

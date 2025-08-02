@@ -38,8 +38,9 @@ export function FlightCard({
 
   return (
     <div
-      className="bg-white rounded-xl shadow-md border border-flightpay-slate-200 hover:shadow-md transition-shadow p-6"
+      className="bg-white rounded-xl shadow-md border border-flightpay-slate-200 hover:shadow-md transition-shadow p-6 cursor-pointer"
       data-testid={`card-flight-${flight.id}`}
+      onClick={() => onSelect(flight)}
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
         {/* Flight Details */}

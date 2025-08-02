@@ -1,0 +1,447 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { X, ChevronDown, ChevronUp, Check, AlertTriangle, Clock, Plane } from "lucide-react";
+import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
+import { useState } from "react";
+
+interface ItineraryModalProps {
+  flight: EnhancedFlightWithPaymentPlan;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps) {
+  const [expandedDetails, setExpandedDetails] = useState<{ [key: number]: boolean }>({});
+  const [expandedInclusions, setExpandedInclusions] = useState<{ [key: number]: boolean }>({});
+
+  if (!isOpen) return null;
+
+  const formatTime = (dateString: string, offsetString?: string) => {
+    try {
+      if (offsetString) {
+        const offsetMatch = offsetString.match(/([+-])(\d{2}):(\d{2})/);
+        if (offsetMatch) {
+          const [, sign, hours, minutes] = offsetMatch;
+          const offsetMilliseconds = (parseInt(hours) * 60 + parseInt(minutes)) * 60 * 1000;
+          const multiplier = sign === '+' ? 1 : -1;
+          
+          const utcTime = new Date(dateString).getTime();
+          const localTime = new Date(utcTime + (offsetMilliseconds * multiplier));
+          
+          return localTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+        }
+      }
+      
+      return new Date(dateString).toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return new Date(dateString).toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long"
+    });
+  };
+
+  const formatDuration = (duration: string) => {
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+    if (!match) return duration;
+
+    const hours = match[1] ? parseInt(match[1]) : 0;
+    const minutes = match[2] ? parseInt(match[2]) : 0;
+
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
+    return `${hours}h ${minutes}m`;
+  };
+
+  const getCarrierDisplayName = () => {
+    if (flight.airlines && flight.airlines.length > 1) {
+      return "Multiple Airlines";
+    }
+    return flight.airlines?.[0] || "Unknown Airline";
+  };
+
+  const getCarrierSubtext = () => {
+    if (flight.airlines && flight.airlines.length > 1) {
+      return flight.airlines.join(", ");
+    }
+    return null;
+  };
+
+  const toggleDetails = (itineraryIndex: number) => {
+    setExpandedDetails(prev => ({
+      ...prev,
+      [itineraryIndex]: !prev[itineraryIndex]
+    }));
+  };
+
+  const toggleInclusions = (itineraryIndex: number) => {
+    setExpandedInclusions(prev => ({
+      ...prev,
+      [itineraryIndex]: !prev[itineraryIndex]
+    }));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-flightpay-slate-200">
+          <div>
+            <h2 className="text-xl font-semibold text-flightpay-slate-900">
+              {getCarrierDisplayName()}
+            </h2>
+            <p className="text-sm text-flightpay-slate-500">
+              {flight.origin} → {flight.destination}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-flightpay-slate-100 rounded-lg"
+            data-testid="button-close-modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="overflow-y-auto max-h-[70vh]">
+          <div className="p-6 space-y-6">
+            {/* Render each itinerary */}
+            {flight.itineraries.map((itinerary, itineraryIndex) => {
+              const isOutbound = itineraryIndex === 0;
+              const firstSegment = itinerary.segments[0];
+              const lastSegment = itinerary.segments[itinerary.segments.length - 1];
+              const stops = itinerary.segments.length - 1;
+
+              return (
+                <div 
+                  key={itineraryIndex} 
+                  className="bg-flightpay-slate-50 rounded-lg p-6 border border-flightpay-slate-200"
+                  data-testid={`itinerary-section-${itineraryIndex}`}
+                >
+                  {/* Itinerary Header */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-4 mb-2">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                        <Plane className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-flightpay-slate-900">
+                          {getCarrierDisplayName()}
+                        </p>
+                        {getCarrierSubtext() && (
+                          <p className="text-sm font-light text-flightpay-slate-600">
+                            {getCarrierSubtext()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-sm text-flightpay-slate-600 ml-12">
+                      {formatDate(firstSegment.departure.at)}
+                    </p>
+                  </div>
+
+                  {/* Route Overview */}
+                  <div className="flex items-center justify-between mb-6">
+                    {/* Origin */}
+                    <div className="text-left">
+                      <div className="text-2xl font-bold text-flightpay-slate-900">
+                        {firstSegment.departure.iataCode}
+                      </div>
+                      <div className="text-sm text-flightpay-slate-600">
+                        {firstSegment.departure.cityName}
+                      </div>
+                      <div className="text-lg font-medium text-flightpay-slate-900 mt-1">
+                        {formatTime(firstSegment.departure.at, firstSegment.departure.timeZoneOffset)}
+                      </div>
+                    </div>
+
+                    {/* Flight info */}
+                    <div className="flex-1 mx-8 text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                        <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                        <Plane className="w-4 h-4 text-green-600" />
+                        <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                        <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                      </div>
+                      <div className="text-sm text-flightpay-slate-600 mb-1">
+                        {stops === 0 ? "Nonstop" : `${stops} stop${stops > 1 ? "s" : ""}`}
+                      </div>
+                      <div className="text-sm text-flightpay-slate-500">
+                        {formatDuration(itinerary.duration)}
+                      </div>
+                    </div>
+
+                    {/* Destination */}
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-flightpay-slate-900">
+                        {lastSegment.arrival.iataCode}
+                      </div>
+                      <div className="text-sm text-flightpay-slate-600">
+                        {lastSegment.arrival.cityName}
+                      </div>
+                      <div className="text-lg font-medium text-flightpay-slate-900 mt-1">
+                        {formatTime(lastSegment.arrival.at, lastSegment.arrival.timeZoneOffset)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Flight Details Collapsible */}
+                  <div className="border-t border-flightpay-slate-200 pt-4">
+                    <button
+                      onClick={() => toggleDetails(itineraryIndex)}
+                      className="flex items-center justify-between w-full p-3 hover:bg-flightpay-slate-100 rounded-lg"
+                      data-testid={`button-toggle-details-${itineraryIndex}`}
+                    >
+                      <span className="text-sm font-medium text-flightpay-slate-700">
+                        {expandedDetails[itineraryIndex] ? "Hide details" : "Show details"}
+                      </span>
+                      {expandedDetails[itineraryIndex] ? 
+                        <ChevronUp className="w-4 h-4" /> : 
+                        <ChevronDown className="w-4 h-4" />
+                      }
+                    </button>
+
+                    {expandedDetails[itineraryIndex] && (
+                      <div className="mt-4 space-y-4" data-testid={`details-content-${itineraryIndex}`}>
+                        {itinerary.segments.map((segment, segmentIndex) => (
+                          <div key={segment.id}>
+                            {/* Segment details */}
+                            <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-flightpay-slate-200">
+                              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                <Plane className="w-3 h-3 text-white" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {/* Departure */}
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <div className="text-lg font-bold text-flightpay-slate-900">
+                                        {formatTime(segment.departure.at, segment.departure.timeZoneOffset)}
+                                      </div>
+                                      <div className="text-sm text-flightpay-slate-600">
+                                        {formatDate(segment.departure.at)}
+                                      </div>
+                                    </div>
+                                    <div className="text-sm text-flightpay-slate-900 font-medium">
+                                      {segment.departure.airportName} ({segment.departure.iataCode})
+                                    </div>
+                                    {segment.departure.terminal && (
+                                      <div className="text-xs text-flightpay-slate-500">
+                                        Terminal {segment.departure.terminal}
+                                      </div>
+                                    )}
+                                    <div className="text-sm text-flightpay-slate-600 mt-1">
+                                      {segment.carrierCode} {segment.number} • {formatDuration(segment.duration)}
+                                    </div>
+                                    <div className="text-xs text-flightpay-slate-500">
+                                      {segment.aircraft.code} • Economy
+                                    </div>
+                                  </div>
+
+                                  {/* Arrival */}
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <div className="text-lg font-bold text-flightpay-slate-900">
+                                        {formatTime(segment.arrival.at, segment.arrival.timeZoneOffset)}
+                                      </div>
+                                      <div className="text-sm text-flightpay-slate-600">
+                                        {formatDate(segment.arrival.at)}
+                                      </div>
+                                    </div>
+                                    <div className="text-sm text-flightpay-slate-900 font-medium">
+                                      {segment.arrival.airportName} ({segment.arrival.iataCode})
+                                    </div>
+                                    {segment.arrival.terminal && (
+                                      <div className="text-xs text-flightpay-slate-500">
+                                        Terminal {segment.arrival.terminal}
+                                      </div>
+                                    )}
+                                    <div className="text-sm text-flightpay-slate-600 mt-1">
+                                      {segment.airline}
+                                    </div>
+                                    <div className="text-xs text-flightpay-slate-500">
+                                      Aircraft: {segment.aircraft.code}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Stopover indicator */}
+                            {segmentIndex < itinerary.segments.length - 1 && (
+                              <div className="flex items-center justify-center py-3">
+                                <div className="flex items-center gap-2 px-3 py-1 bg-flightpay-slate-100 rounded-full">
+                                  <Clock className="w-3 h-3 text-flightpay-slate-500" />
+                                  <span className="text-xs text-flightpay-slate-600">
+                                    Stopover at {itinerary.segments[segmentIndex + 1].departure.iataCode}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Flight Inclusions Collapsible */}
+                  <div className="border-t border-flightpay-slate-200 pt-4 mt-4">
+                    <button
+                      onClick={() => toggleInclusions(itineraryIndex)}
+                      className="flex items-center justify-between w-full p-3 hover:bg-flightpay-slate-100 rounded-lg"
+                      data-testid={`button-toggle-inclusions-${itineraryIndex}`}
+                    >
+                      <span className="text-sm font-medium text-flightpay-slate-700">
+                        Flight Inclusions
+                      </span>
+                      {expandedInclusions[itineraryIndex] ? 
+                        <ChevronUp className="w-4 h-4" /> : 
+                        <ChevronDown className="w-4 h-4" />
+                      }
+                    </button>
+
+                    {expandedInclusions[itineraryIndex] && (
+                      <div className="mt-4 space-y-4" data-testid={`inclusions-content-${itineraryIndex}`}>
+                        {itinerary.segments.map((segment, segmentIndex) => {
+                          const fareDetails = flight.fareDetailsBySegment?.find(f => f.segmentId === segment.id);
+                          return (
+                            <div key={segment.id} className="p-4 bg-white rounded-lg border border-flightpay-slate-200">
+                              <div className="mb-4">
+                                <h4 className="font-medium text-flightpay-slate-900 mb-2">
+                                  {segment.departure.iataCode} → {segment.arrival.iataCode}
+                                </h4>
+                                <p className="text-sm text-flightpay-slate-600">
+                                  Cabin: {fareDetails?.cabin || "Economy"}
+                                </p>
+                                <p className="text-xs text-flightpay-slate-500">
+                                  Branded fare: {fareDetails?.fareBasis || "ECONOMY LIGHTBAG"}
+                                </p>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Flexibility */}
+                                <div>
+                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">Flexibility</h5>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      {flight.pricingOptions?.refundableFare ? (
+                                        <>
+                                          <Check className="w-4 h-4 text-green-600" />
+                                          <span className="text-sm text-green-600">Refundable</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <X className="w-4 h-4 text-red-600" />
+                                          <span className="text-sm text-red-600">Non-refundable</span>
+                                        </>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      {flight.pricingOptions?.noPenaltyFare ? (
+                                        <>
+                                          <Check className="w-4 h-4 text-green-600" />
+                                          <span className="text-sm text-green-600">Change available (for a fee)</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                                          <span className="text-sm text-yellow-600">Cancellation not allowed</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Baggage */}
+                                <div>
+                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">Bag</h5>
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <Check className="w-4 h-4 text-green-600" />
+                                      <span className="text-sm text-flightpay-slate-600">
+                                        {fareDetails?.includedCabinBags?.quantity || 1} piece(s) of carry-on baggage
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Check className="w-4 h-4 text-green-600" />
+                                      <span className="text-sm text-flightpay-slate-600">
+                                        {fareDetails?.includedCheckedBags?.quantity || 1} piece(s) of checked baggage
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Additional Services */}
+                                <div>
+                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">Additional</h5>
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <Check className="w-4 h-4 text-green-600" />
+                                      <span className="text-sm text-flightpay-slate-600">Seat selection</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Check className="w-4 h-4 text-green-600" />
+                                      <span className="text-sm text-flightpay-slate-600">Flexible fare</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer with pricing and select button */}
+        <div className="border-t border-flightpay-slate-200 p-6 bg-flightpay-slate-900">
+          <div className="flex items-center justify-between">
+            <div className="text-white">
+              <div className="text-2xl font-bold">
+                ${parseFloat(flight.price.total).toFixed(2)}
+              </div>
+              {flight.paymentPlanEligible && (
+                <div className="text-flightpay-slate-300 text-sm">
+                  ${flight.paymentPlan?.installmentAmount?.toFixed(2) || '0.00'}/week
+                </div>
+              )}
+            </div>
+            <Button 
+              size="lg" 
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+              data-testid="button-select-flight"
+            >
+              Select
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
