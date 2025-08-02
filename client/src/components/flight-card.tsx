@@ -294,7 +294,7 @@ export function FlightCard({
             )}
           </div>
 
-          {/* Action Button */}
+          {/* 
           <div className="w-full flex flex-col items-center lg:items-end gap-2 ">
             <Button
               onClick={() => onSelect(flight)}
@@ -305,7 +305,7 @@ export function FlightCard({
                 ? "View Payment Options"
                 : "Select Flight"}
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
