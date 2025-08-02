@@ -225,15 +225,15 @@ export class AmadeusService {
       }
 
       const data: AmadeusFlightResponse = await response.json();
-      console.log(`Amadeus.ts - 215 - RAW:`, JSON.stringify(data, null, 2));
+      // console.log(`Amadeus.ts - 215 - RAW:`, JSON.stringify(data, null, 2));
       const transformedData = this.transformEnhancedAmadeusResponse(
         data,
         searchParams,
       );
-      console.log(
-        `Amadeus.ts - 223 - Transformed:`,
-        JSON.stringify(transformedData, null, 2),
-      );
+      // console.log(
+      //   `Amadeus.ts - 223 - Transformed:`,
+      //   JSON.stringify(transformedData, null, 2),
+      // );
       return transformedData;
     } catch (error) {
       console.error("Error searching flights:", error);
@@ -301,7 +301,8 @@ export class AmadeusService {
         });
       });
 
-      const airlines = Array.from(airlineSet).join(', ')
+      const airlines = Array.from(airlineSet)
+      console.log(`printing airlineSet`, airlineSet);
       console.log(`printing airlines`, airlines);
 
       return {

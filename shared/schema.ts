@@ -143,7 +143,7 @@ export interface EnhancedFlight {
   validatingAirlineCodes: string[];
   
   // Computed fields for display
-  airlines: string;
+  airlines: string[];
   origin: string;
   destination: string;
   departureTime: Date;
