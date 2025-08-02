@@ -22,7 +22,7 @@ export interface PaymentPlanCalculation {
 }
 
 export class PaymentPlanService {
-  private static readonly ADMIN_FEE_PERCENTAGE = 0; // 0% admin fee on all flights
+  private static readonly ADMIN_FEE_PERCENTAGE = 0.05; // 5% admin fee on all flights
   private static readonly LAY_BY_FEE_PERCENTAGE = 0.10; // 10% lay by fee for flights > 14 days
   private static readonly DEPOSIT_PERCENTAGE = 0.20; // 20% deposit
   private static readonly MINIMUM_ADVANCE_DAYS = 14; // Payment plans only available for flights > 14 days
@@ -63,7 +63,7 @@ export class PaymentPlanService {
     // Calculate flight price with fees
     const priceCalculation = this.calculateFlightPrice(baseCost, travelDate);
 
-    console.log(`paymentPlan - 64 -flight price with fees`, priceCalculation)
+    // console.log(`paymentPlan - 64 -flight price with fees`, priceCalculation)
     
     const { flightPrice, adminFee, layByFee } = priceCalculation;
     

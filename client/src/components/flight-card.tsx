@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
+import { toTitleCase } from "@/utils/titlecase"
 
 interface FlightCardProps {
   flight: EnhancedFlightWithPaymentPlan;
@@ -36,28 +37,8 @@ export function FlightCard({
     return `${hours}h ${minutes}m`;
   };
 
-  const getAirlineCode = (flightNumber: string) => {
-    return flightNumber.split(" ")[0] || "XX";
-  };
 
-  const getAirlineLogo = (code: string) => {
-    const logos: Record<string, string> = {
-      AA: "bg-blue-600",
-      DL: "bg-red-600",
-      UA: "bg-blue-800",
-      WN: "bg-orange-600",
-      B6: "bg-blue-500",
-      AS: "bg-green-600",
-      F9: "bg-green-500",
-      NK: "bg-yellow-500",
-      G4: "bg-purple-600",
-      TP: "bg-green-700",
-      TS: "bg-blue-700",
-    };
-    return logos[code] || "bg-flightpay-slate-600";
-  };
-
-  const airlineCode = getAirlineCode(flight.flightNumber);
+  
   const pricePerTraveller =
     parseFloat(flight.price.total) / (flight?.numberOfPassengers || 1);
 
@@ -71,7 +52,7 @@ export function FlightCard({
         <div className="lg:col-span-2  h-full flex flex-col">
           {/*Airline & Flight Information  */}
           <div className="flex items-center gap-4 mb-4 ">
-            <div
+            {/* <div
               className={`w-8 h-8 ${getAirlineLogo(airlineCode)} rounded-full flex items-center justify-center`}
             >
               <span
@@ -80,18 +61,12 @@ export function FlightCard({
               >
                 {airlineCode}
               </span>
-            </div>
+            </div> */}
             <span
               className="font-medium text-flightpay-slate-900"
               data-testid={`text-airline-name-${flight.id}`}
             >
-              {flight.airline}
-            </span>
-            <span
-              className="text-sm text-flightpay-slate-500"
-              data-testid={`text-flight-number-${flight.id}`}
-            >
-              {flight.flightNumber}
+              {toTitleCase(flight.airlines)}
             </span>
           </div>
 

@@ -111,6 +111,7 @@ export interface FlightSegment {
     cityName?: string;
   };
   carrierCode: string;
+  airline: string;
   number: string;
   aircraft: {
     code: string;
@@ -142,8 +143,7 @@ export interface EnhancedFlight {
   validatingAirlineCodes: string[];
   
   // Computed fields for display
-  airline: string;
-  flightNumber: string;
+  airlines: string;
   origin: string;
   destination: string;
   departureTime: Date;
