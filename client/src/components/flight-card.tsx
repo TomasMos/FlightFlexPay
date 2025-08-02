@@ -57,6 +57,7 @@ export function FlightCard({
     return logos[code] || "bg-flightpay-slate-600";
   };
 
+  const airlineCode = getAirlineCode(flight.flightNumber);
   const pricePerTraveller =
     parseFloat(flight.price.total) / (flight?.numberOfPassengers || 1);
 
@@ -70,28 +71,28 @@ export function FlightCard({
         <div className="lg:col-span-2  h-full flex flex-col">
           {/*Airline & Flight Information  */}
           <div className="flex items-center gap-4 mb-4 ">
-            {/* <div
-              className={`w-8 h-8 ${getAirlineLogo('AA')} rounded-full flex items-center BG-RED-500 justify-center`}
+            <div
+              className={`w-8 h-8 ${getAirlineLogo(airlineCode)} rounded-full flex items-center justify-center`}
             >
               <span
                 className="text-white text-sm font-bold"
                 data-testid={`text-airline-code-${flight.id}`}
               >
-                {'airlineCode'}
+                {airlineCode}
               </span>
-            </div> */}
+            </div>
             <span
               className="font-medium text-flightpay-slate-900"
               data-testid={`text-airline-name-${flight.id}`}
             >
               {flight.airline}
             </span>
-            {/* <span
+            <span
               className="text-sm text-flightpay-slate-500"
               data-testid={`text-flight-number-${flight.id}`}
             >
-              {'flight.flightNumber'}
-            </span> */}
+              {flight.flightNumber}
+            </span>
           </div>
 
           <div className="flex flex-col gap-4 h-full">
@@ -294,8 +295,7 @@ export function FlightCard({
             )}
           </div>
 
-          {/* 
-          <div className="w-full flex flex-col items-center lg:items-end gap-2 ">
+          {/* <div className="w-full flex flex-col items-center lg:items-end gap-2 ">
             <Button
               onClick={() => onSelect(flight)}
               className="min-w-[100px] px-8 bg-flightpay-primary hover:bg-flightpay-primary/90 text-white"

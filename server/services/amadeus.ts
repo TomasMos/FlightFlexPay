@@ -104,7 +104,7 @@ interface AmadeusFlightResponse {
         name?: string; // Airport name
         address?: {
           cityName?: string; // City name for airports
-        };
+        }
       }
     >;
     aircraft: Record<string, string>;
@@ -113,32 +113,23 @@ interface AmadeusFlightResponse {
   };
 }
 
-interface AirlineName {
-  iataCode: string;
-  commonName: string;
-  businessName: string;
-  allianceCode: string;
-}
-
 export class AmadeusService {
   private config: AmadeusConfig;
   private token: AmadeusToken | null = null;
-  private airlineNameCache: Map<string, string> = new Map();
 
   constructor() {
     // Temporarily using production credentials for testing
-    // const useProd = false; 
     const useProd = process.env.AMADEUS_PROD_CLIENT_ID && process.env.AMADEUS_PROD_CLIENT_SECRET;
 
     this.config = {
-      clientId: useProd
+      clientId: useProd 
         ? process.env.AMADEUS_PROD_CLIENT_ID || ""
         : process.env.AMADEUS_CLIENT_ID || process.env.AMADEUS_API_KEY || "",
-      clientSecret: useProd
+      clientSecret: useProd 
         ? process.env.AMADEUS_PROD_CLIENT_SECRET || ""
         : process.env.AMADEUS_CLIENT_SECRET || process.env.AMADEUS_SECRET || "",
-      baseUrl: useProd
-        ? "https://api.amadeus.com" // Production endpoint
+      baseUrl: useProd 
+        ? "https://api.amadeus.com"  // Production endpoint
         : "https://test.api.amadeus.com", // Test endpoint
     };
 
@@ -147,9 +138,7 @@ export class AmadeusService {
         "Amadeus API credentials not found. Flight search will return sample data.",
       );
     } else {
-      console.log(
-        `Amadeus API configured for ${useProd ? "PRODUCTION" : "TEST"} environment`,
-      );
+      console.log(`Amadeus API configured for ${useProd ? 'PRODUCTION' : 'TEST'} environment`);
       console.log(`Base URL: ${this.config.baseUrl}`);
     }
   }
@@ -189,52 +178,6 @@ export class AmadeusService {
     } catch (error) {
       console.error("Error getting Amadeus access token:", error);
       throw error;
-    }
-  }
-
-  private async getAirlineName(airlineCode: string): Promise<string> {
-    if (this.airlineNameCache.has(airlineCode)) {
-      return this.airlineNameCache.get(airlineCode)!;
-    }
-    try {
-      const token = await this.getAccessToken();
-      const response = await fetch(
-        `${this.config.baseUrl}/v1/reference-data/airlines?airlineCodes=${airlineCode}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      if (!response.ok) {
-        // Fallback to the carrier code if the lookup fails
-        console.warn(
-          `Failed to get airline name for code ${airlineCode}. Status: ${response.status}`,
-        );
-        this.airlineNameCache.set(airlineCode, airlineCode);
-        return airlineCode;
-      }
-
-      const data = await response.json();
-      const airlineData: AirlineName[] = data.data;
-
-      if (airlineData && airlineData.length > 0) {
-        const airlineName =
-          airlineData[0].commonName ||
-          airlineData[0].businessName ||
-          airlineCode;
-        this.airlineNameCache.set(airlineCode, airlineName);
-        return airlineName;
-      } else {
-        this.airlineNameCache.set(airlineCode, airlineCode);
-        return airlineCode;
-      }
-    } catch (error) {
-      console.error(`Error fetching airline name for ${airlineCode}:`, error);
-      this.airlineNameCache.set(airlineCode, airlineCode);
-      return airlineCode;
     }
   }
 
@@ -278,15 +221,18 @@ export class AmadeusService {
       }
 
       const data: AmadeusFlightResponse = await response.json();
-      const transformedData = await this.transformEnhancedAmadeusResponse(
+      // console.log(
+      //   `Amadeus.ts - 215 - RAW:`,
+      //   JSON.stringify(data, null, 2),
+      // );
+      const transformedData = this.transformEnhancedAmadeusResponse(
         data,
         searchParams,
       );
-
-      console.log(
-        `amadeus.ts - 270 - Transformed Response:`,
-        JSON.stringify(transformedData, null, 2),
-      );
+      // console.log(
+      //   `Amadeus.ts - 223 - Transformed:`,
+      //   JSON.stringify(transformedData, null, 2),
+      // );
       return transformedData;
     } catch (error) {
       console.error("Error searching flights:", error);
@@ -294,129 +240,95 @@ export class AmadeusService {
     }
   }
 
-  private async transformEnhancedAmadeusResponse(
+  private transformEnhancedAmadeusResponse(
     response: AmadeusFlightResponse,
     searchParams: FlightSearch,
-  ): Promise<EnhancedFlight[]> {
-    // Collect all unique carrier codes to fetch their names in parallel
-    const allCarrierCodes = new Set<string>();
-    response.data.forEach((offer) => {
-      offer.itineraries.forEach((itinerary) => {
-        itinerary.segments.forEach((segment) => {
-          allCarrierCodes.add(segment.carrierCode);
-        });
-      });
-    });
+  ): EnhancedFlight[] {
+    return response.data.map((offer) => {
+      // Transform itineraries preserving Amadeus structure
+      const itineraries: FlightItinerary[] = offer.itineraries.map(
+        (itinerary) => ({
+          duration: itinerary.duration,
+          segments: itinerary.segments.map((segment) => {
+            // Get airport/city names from dictionaries
+            const departureLocation =
+              response.dictionaries.locations?.[segment.departure.iataCode];
+            const arrivalLocation =
+              response.dictionaries.locations?.[segment.arrival.iataCode];
 
-    // Fetch all airline names concurrently
-    const airlineNamePromises = Array.from(allCarrierCodes).map((code) =>
-      this.getAirlineName(code),
-    );
-    await Promise.all(airlineNamePromises);
-
-    return Promise.all(
-      response.data.map(async (offer) => {
-        // Transform itineraries preserving Amadeus structure
-        const itineraries: FlightItinerary[] = await Promise.all(
-          offer.itineraries.map(async (itinerary) => {
-            const segments: FlightSegment[] = await Promise.all(
-              itinerary.segments.map(async (segment) => {
-                // Get airport/city names from dictionaries
-                const departureLocation =
-                  response.dictionaries.locations?.[segment.departure.iataCode];
-                const arrivalLocation =
-                  response.dictionaries.locations?.[segment.arrival.iataCode];
-
-                // Get airline common name
-                const airlineName =
-                  this.airlineNameCache.get(segment.carrierCode) ||
-                  segment.carrierCode;
-
-                return {
-                  departure: {
-                    ...segment.departure,
-                    airportName:
-                      departureLocation?.name || segment.departure.iataCode,
-                    cityName:
-                      departureLocation?.address?.cityName ||
-                      departureLocation?.cityCode ||
-                      segment.departure.iataCode,
-                  },
-                  arrival: {
-                    ...segment.arrival,
-                    airportName:
-                      arrivalLocation?.name || segment.arrival.iataCode,
-                    cityName:
-                      arrivalLocation?.address?.cityName ||
-                      arrivalLocation?.cityCode ||
-                      segment.arrival.iataCode,
-                  },
-                  carrierCode: segment.carrierCode,
-                  airlineName: airlineName, // Add the airline name here
-                  number: segment.number,
-                  aircraft: segment.aircraft,
-                  operating: segment.operating,
-                  duration: segment.duration,
-                  id: segment.id,
-                  numberOfStops: segment.numberOfStops,
-                };
-              }),
-            );
-            return { ...itinerary, segments };
+            return {
+              departure: {
+                ...segment.departure,
+                airportName:
+                  departureLocation?.name || segment.departure.iataCode, // Use name for airport, fallback to iataCode
+                cityName:
+                  departureLocation?.address?.cityName || departureLocation?.cityCode || segment.departure.iataCode, // Use city name from address, fallback to cityCode then iataCode
+              },
+              arrival: {
+                ...segment.arrival,
+                airportName:
+                  arrivalLocation?.name || segment.arrival.iataCode, // Use name for airport, fallback to iataCode
+                cityName:
+                  arrivalLocation?.address?.cityName || arrivalLocation?.cityCode || segment.arrival.iataCode, // Use city name from address, fallback to cityCode then iataCode
+              },
+              carrierCode: segment.carrierCode,
+              number: segment.number,
+              aircraft: segment.aircraft,
+              operating: segment.operating,
+              duration: segment.duration,
+              id: segment.id,
+              numberOfStops: segment.numberOfStops,
+            };
           }),
-        );
+        }),
+      );
 
-        // Calculate computed display fields
-        const firstItinerary = itineraries[0];
-        const firstSegment = firstItinerary?.segments[0];
-        const lastSegment =
-          firstItinerary?.segments[firstItinerary.segments.length - 1];
+      // Calculate computed display fields
+      const firstItinerary = itineraries[0];
+      const firstSegment = firstItinerary?.segments[0];
+      const lastSegment =
+        firstItinerary?.segments[firstItinerary.segments.length - 1];
 
-        const allSegments = itineraries.flatMap(
-          (itinerary) => itinerary.segments,
-        );
-        const uniqueAirlineNames = new Set<string>();
-        allSegments.forEach((segment) => {
-          if (segment.airlineName) {
-            uniqueAirlineNames.add(segment.airlineName);
-          }
-        });
+      const carrierCode = firstSegment?.carrierCode || "XX";
+      const carrierName =
+        response.dictionaries.carriers?.[carrierCode] || "Unknown Airline";
 
-        const airlineDisplayString = Array.from(uniqueAirlineNames).join(', ')
+      // Calculate total stops across all segments in first itinerary
+      const totalStops =
+        firstItinerary?.segments.reduce(
+          (sum, segment) => sum + segment.numberOfStops,
+          0,
+        ) || 0;
 
-        // console.log(uniqueAirlineNames)
-        // console.log(airlineDisplayString)
-       
-        return {
-          id: offer.id,
-          source: offer.source,
-          lastTicketingDate: offer.lastTicketingDate,
-          numberOfBookableSeats: offer.numberOfBookableSeats,
-          itineraries,
-          price: {
-            currency: offer.price.currency,
-            total: offer.price.total,
-            base: offer.price.base,
-          },
-          validatingAirlineCodes: offer.validatingAirlineCodes,
+      return {
+        id: offer.id,
+        source: offer.source,
+        lastTicketingDate: offer.lastTicketingDate,
+        numberOfBookableSeats: offer.numberOfBookableSeats,
+        itineraries,
+        price: {
+          currency: offer.price.currency,
+          total: offer.price.total,
+          base: offer.price.base,
+        },
+        validatingAirlineCodes: offer.validatingAirlineCodes,
 
-          // Computed display fields
-          airline: airlineDisplayString,
-          origin: firstSegment?.departure.cityName || searchParams.origin,
-          destination:
-            lastSegment?.arrival.cityName || searchParams.destination,
-          departureTime: new Date(firstSegment?.departure.at || new Date()),
-          arrivalTime: new Date(lastSegment?.arrival.at || new Date()),
-          duration: firstItinerary?.duration || "PT0H0M",
-          stops: Math.max(0, firstItinerary?.segments.length - 1 || 0),
-          cabin:
-            offer.travelerPricings[0]?.fareDetailsBySegment[0]?.cabin ||
-            "ECONOMY",
-          availableSeats: offer.numberOfBookableSeats,
-          numberOfPassengers: offer?.travelerPricings.length,
-        };
-      }),
-    );
+        // Computed display fields
+        airline: carrierName,
+        flightNumber: `${carrierCode} ${firstSegment?.number || "000"}`,
+        origin: firstSegment?.departure.cityName || searchParams.origin,
+        destination: lastSegment?.arrival.cityName || searchParams.destination,
+        departureTime: new Date(firstSegment?.departure.at || new Date()),
+        arrivalTime: new Date(lastSegment?.arrival.at || new Date()),
+        duration: firstItinerary?.duration || "PT0H0M",
+        stops: Math.max(0, firstItinerary?.segments.length - 1 || 0), // segments.length - 1 = number of stops
+        cabin:
+          offer.travelerPricings[0]?.fareDetailsBySegment[0]?.cabin ||
+          "ECONOMY",
+        availableSeats: offer.numberOfBookableSeats,
+        numberOfPassengers: offer?.travelerPricings.length
+      };
+    });
   }
 
   async getAirportSuggestions(

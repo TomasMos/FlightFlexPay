@@ -1,21 +1,10 @@
 import { sql } from "drizzle-orm";
-import {
-  pgTable,
-  text,
-  varchar,
-  decimal,
-  timestamp,
-  integer,
-  boolean,
-  jsonb,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, timestamp, integer, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const users = pgTable("users", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
 });
@@ -31,51 +20,33 @@ export const flights = pgTable("flights", {
   duration: text("duration").notNull(),
   stops: integer("stops").notNull().default(0),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  currency: text("currency").notNull().default("USD"),
-  cabin: text("cabin").notNull().default("ECONOMY"),
+  currency: text("currency").notNull().default('USD'),
+  cabin: text("cabin").notNull().default('ECONOMY'),
   availableSeats: integer("available_seats").notNull(),
   amenities: jsonb("amenities"),
 });
 
 export const bookings = pgTable("bookings", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id),
-  flightId: varchar("flight_id")
-    .references(() => flights.id)
-    .notNull(),
+  flightId: varchar("flight_id").references(() => flights.id).notNull(),
   passengerCount: integer("passenger_count").notNull(),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   paymentPlanEnabled: boolean("payment_plan_enabled").notNull().default(false),
-  status: text("status").notNull().default("PENDING"), // PENDING, CONFIRMED, CANCELLED
-  createdAt: timestamp("created_at")
-    .notNull()
-    .default(sql`now()`),
+  status: text("status").notNull().default('PENDING'), // PENDING, CONFIRMED, CANCELLED
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
   travelDate: timestamp("travel_date").notNull(),
 });
 
 export const paymentPlans = pgTable("payment_plans", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  bookingId: varchar("booking_id")
-    .references(() => bookings.id)
-    .notNull(),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  bookingId: varchar("booking_id").references(() => bookings.id).notNull(),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
-  depositAmount: decimal("deposit_amount", {
-    precision: 10,
-    scale: 2,
-  }).notNull(),
-  installmentAmount: decimal("installment_amount", {
-    precision: 10,
-    scale: 2,
-  }).notNull(),
+  depositAmount: decimal("deposit_amount", { precision: 10, scale: 2 }).notNull(),
+  installmentAmount: decimal("installment_amount", { precision: 10, scale: 2 }).notNull(),
   installmentCount: integer("installment_count").notNull(),
   schedule: jsonb("schedule").notNull(), // Array of payment dates and amounts
-  createdAt: timestamp("created_at")
-    .notNull()
-    .default(sql`now()`),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
 // Insert schemas
@@ -121,6 +92,8 @@ export type PaymentPlan = typeof paymentPlans.$inferSelect;
 
 export type FlightSearch = z.infer<typeof flightSearchSchema>;
 
+
+
 // Enhanced Amadeus-compatible flight structures
 export interface FlightSegment {
   departure: {
@@ -138,7 +111,6 @@ export interface FlightSegment {
     cityName?: string;
   };
   carrierCode: string;
-  airlineName?: string;
   number: string;
   aircraft: {
     code: string;
@@ -168,9 +140,10 @@ export interface EnhancedFlight {
     base: string;
   };
   validatingAirlineCodes: string[];
-
+  
   // Computed fields for display
   airline: string;
+  flightNumber: string;
   origin: string;
   destination: string;
   departureTime: Date;
