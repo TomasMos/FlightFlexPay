@@ -3,11 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { toTitleCase } from "@/utils/titlecase";
-
-interface FlightCardProps {
-  flight: EnhancedFlightWithPaymentPlan;
-  onSelect: (flight: EnhancedFlightWithPaymentPlan) => void;
-}
+import { Carrier } from "@/components/carrier"
 
 // Component for one-way flights
 export function FlightCard({
@@ -49,37 +45,7 @@ export function FlightCard({
         {/* Flight Details */}
         <div className="lg:col-span-2  h-full flex flex-col">
           {/*Airline & Flight Information  */}
-          <div className="flex items-center gap-4 mb-4 bg-green-400">
-            {/* <div
-              className={`w-8 h-8 ${getAirlineLogo(airlineCode)} rounded-full flex items-center justify-center`}
-            >
-              <span
-                className="text-white text-sm font-bold"
-                data-testid={`text-airline-code-${flight.id}`}
-              >
-                {airlineCode}
-              </span>
-            </div> */}
-
-            {flight.airlines.length > 1 ? (
-              <div>
-                <div className="font-[500]">Multiple Carriers</div>
-                <div
-                  className="text-sm font-normal text-flightpay-slate-900 bg-red-400"
-                  data-testid={`text-airline-name-${flight.id}`}
-                >
-                  {toTitleCase(flight.airlines.join(", "))}
-                </div>
-              </div>
-            ) : (
-              <div
-                className="font-medium text-flightpay-slate-900 bg-red-400"
-                data-testid={`text-airline-name-${flight.id}`}
-              >
-                {toTitleCase(flight.airlines.join(", "))}
-              </div>
-            )}
-          </div>
+          <Carrier flight = {flight}/>
 
           <div className="flex flex-col gap-4 h-full">
             {/* Outbound Flight */}

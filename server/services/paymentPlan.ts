@@ -22,8 +22,8 @@ export interface PaymentPlanCalculation {
 }
 
 export class PaymentPlanService {
-  private static readonly ADMIN_FEE_PERCENTAGE = 0.05; // 5% admin fee on all flights
-  private static readonly LAY_BY_FEE_PERCENTAGE = 0.10; // 10% lay by fee for flights > 14 days
+  private static readonly ADMIN_FEE_PERCENTAGE = 0.0; // 5% admin fee on all flights
+  private static readonly LAY_BY_FEE_PERCENTAGE = 0.0; // 10% lay by fee for flights > 14 days
   private static readonly DEPOSIT_PERCENTAGE = 0.20; // 20% deposit
   private static readonly MINIMUM_ADVANCE_DAYS = 14; // Payment plans only available for flights > 14 days
   private static readonly MAX_INSTALLMENT_WEEKS = 26; // Maximum 26 weeks of installments

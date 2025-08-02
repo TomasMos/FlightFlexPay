@@ -37,7 +37,7 @@ export default function Home() {
     },
     enabled: !!searchParams,
   });
-  // console.log("Home.ts - 41 -  Manipulated Flight Data:", JSON.stringify(flightData, null, 2));
+  console.log("Home.ts - 41 - Frontend Data:", JSON.stringify(flightData, null, 2));
 
   const handleSearch = (params: FlightSearch) => {
     setSearchParams(params);
