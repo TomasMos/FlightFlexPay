@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatTime, formatDuration, formatDate } from "@/utils/formatters";
 import {
   X,
   ChevronDown,
@@ -33,50 +34,6 @@ export function ItineraryModal({
 
   if (!isOpen) return null;
 
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      day: "2-digit",
-      month: "long",
-    });
-  };
-
-  const formatDuration = (duration: string) => {
-    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
-    if (!match) return duration;
-
-    const hours = match[1] ? parseInt(match[1]) : 0;
-    const minutes = match[2] ? parseInt(match[2]) : 0;
-
-    if (hours === 0) return `${minutes}m`;
-    if (minutes === 0) return `${hours}h`;
-    return `${hours}h ${minutes}m`;
-  };
-  // <div>
-  // 
-
-  const getCarrierDisplayName = () => {
-    if (flight.airlines && flight.airlines.length > 1) {
-      return (<div>
-        <h2 className="text-xl font-semibold text-flightpay-slate-900">
-          Multiple Airlines
-        </h2>
-        <div>{flight.airlines.join(", ")}</div>
-      </div>
-        );
-    }
-    return flight.airlines?.[0] || "Unknown Airline";
-  };
-
   const toggleDetails = (itineraryIndex: number) => {
     setExpandedDetails((prev) => ({
       ...prev,
@@ -95,7 +52,7 @@ export function ItineraryModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 sm:p-10">
       <div className="bg-white w-full h-full sm:max-w-4xl sm:rounded-xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between h-md:p-6 py-3 px-6 border-b border-flightpay-slate-200">
+        <div className=" flex flex-row items-spread justify-between h-md:p-6 h-md:py-3 px-6 border-b border-flightpay-slate-200">
           <Carrier flight = {flight} textSize="xl"/>
           <button
             onClick={onClose}
@@ -127,13 +84,13 @@ export function ItineraryModal({
                   <div className="flex items-center justify-between mb-6">
                     {/* Origin */}
                     <div className="text-left">
-                      <div className="text-2xl font-bold text-flightpay-slate-900">
+                      <div className="text-xl font-bold text-flightpay-slate-900">
                         {firstSegment.departure.iataCode}
                       </div>
                       <div className="text-sm text-flightpay-slate-600">
-                        {firstSegment.departure.cityName}
+                        {'cityName'}{/* {firstSegment.arrival.cityName} */}
                       </div>
-                      <div className="text-lg font-medium text-flightpay-slate-900 mt-1">
+                      <div className="text-sm font-medium text-flightpay-slate-900 mt-1">
                         {formatTime(firstSegment.departure.at)}
                       </div>
                     </div>
@@ -163,9 +120,9 @@ export function ItineraryModal({
                         {lastSegment.arrival.iataCode}
                       </div>
                       <div className="text-sm text-flightpay-slate-600">
-                        {lastSegment.arrival.cityName}
+                        {'cityName'}{/* {lastSegment.arrival.cityName} */}
                       </div>
-                      <div className="text-lg font-medium text-flightpay-slate-900 mt-1">
+                      <div className="text-sm font-medium text-flightpay-slate-900 mt-1">
                         {formatTime(lastSegment.arrival.at)}
                       </div>
                     </div>
@@ -199,9 +156,7 @@ export function ItineraryModal({
                           <div key={segment.id}>
                             {/* Segment details */}
                             <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-flightpay-slate-200">
-                              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                <Plane className="w-3 h-3 text-white" />
-                              </div>
+
                               <div className="flex-1">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   {/* Departure */}
@@ -431,7 +386,7 @@ export function ItineraryModal({
         </div>
 
         {/* Footer with pricing and select button */}
-        <div className="border-t border-flightpay-slate-200 h-md:p-6 py-3 px-6 bg-flightpay-slate-900">
+        <div className="border-t border-flightpay-slate-200 h-md:p-6 h-md:py-3 px-6 bg-flightpay-slate-900">
           <div className="flex items-center justify-between">
             <div className="">
               <div className="text-2xl font-bold">

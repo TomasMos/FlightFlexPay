@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
-import { Carrier } from "@/components/carrier"
+import { Carrier } from "@/components/carrier";
+import { formatTime, formatDuration } from "@/utils/formatters";
 
 // Component for one-way flights
 export function FlightCard({
@@ -12,26 +13,6 @@ export function FlightCard({
   flight: EnhancedFlightWithPaymentPlan;
   onSelect: (flight: EnhancedFlightWithPaymentPlan) => void;
 }) {
-  const formatTime = (date: Date) => {
-    return new Date(date).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
-  const formatDuration = (duration: string) => {
-    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
-    if (!match) return duration;
-
-    const hours = match[1] ? parseInt(match[1]) : 0;
-    const minutes = match[2] ? parseInt(match[2]) : 0;
-
-    if (hours === 0) return `${minutes}m`;
-    if (minutes === 0) return `${hours}h`;
-    return `${hours}h ${minutes}m`;
-  };
-
   const pricePerTraveller =
     parseFloat(flight.price.total) / (flight?.numberOfPassengers || 1);
 
@@ -45,7 +26,7 @@ export function FlightCard({
         {/* Flight Details */}
         <div className="lg:col-span-2  h-full flex flex-col">
           {/*Airline & Flight Information  */}
-          <Carrier flight = {flight}/>
+          <Carrier flight={flight} />
 
           <div className="flex flex-col gap-4 h-full">
             {/* Outbound Flight */}
@@ -55,9 +36,7 @@ export function FlightCard({
                   className="text-lg font-bold text-flightpay-slate-900"
                   data-testid={`text-departure-time-${flight.id}`}
                 >
-                  {formatTime(
-                    new Date(flight.itineraries[0]?.segments[0]?.departure.at),
-                  )}
+                  {formatTime(flight.itineraries[0]?.segments[0]?.departure.at)}
                 </div>
                 <div
                   className="text-sm text-flightpay-slate-500"
@@ -97,11 +76,9 @@ export function FlightCard({
                   data-testid={`text-arrival-time-${flight.id}`}
                 >
                   {formatTime(
-                    new Date(
-                      flight.itineraries[0]?.segments[
-                        flight.itineraries[0].segments.length - 1
-                      ]?.arrival.at,
-                    ),
+                    flight.itineraries[0]?.segments[
+                      flight.itineraries[0].segments.length - 1
+                    ]?.arrival.at,
                   )}
                 </div>
                 <div
@@ -123,9 +100,7 @@ export function FlightCard({
                     className="text-lg font-bold text-flightpay-slate-900"
                     data-testid={`text-return-departure-time-${flight.id}`}
                   >
-                    {formatTime(
-                      new Date(flight.itineraries[1].segments[0].departure.at),
-                    )}
+                    {formatTime(flight.itineraries[1].segments[0].departure.at)}
                   </div>
                   <div
                     className="text-sm text-flightpay-slate-500"
@@ -163,11 +138,9 @@ export function FlightCard({
                     data-testid={`text-return-arrival-time-${flight.id}`}
                   >
                     {formatTime(
-                      new Date(
-                        flight.itineraries[1].segments[
-                          flight.itineraries[1].segments.length - 1
-                        ].arrival.at,
-                      ),
+                      flight.itineraries[1].segments[
+                        flight.itineraries[1].segments.length - 1
+                      ].arrival.at,
                     )}
                   </div>
                   <div

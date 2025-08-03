@@ -1,5 +1,5 @@
 import React from "react";
-import { toTitleCase } from "@/utils/titlecase";
+import { toTitleCase } from "@/utils/formatters";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 
 // The function signature with an inline type definition
@@ -19,7 +19,7 @@ export function Carrier({
 
   // This is the updated base URL for the airline logos CDN
   return (
-    <div className="flex items-center gap-4 mb-4">
+    <div className="flex items-center h-full gap-4 mb-4">
       {isMultipleCarriers ? (
         <div>
           <div className={`text-${textSize} font-semibold`}>Multiple Carriers</div>

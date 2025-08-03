@@ -28,3 +28,34 @@ export const toTitleCase = (text: string): string => {
   // Join the words back together with a single space
   return titleCasedWords.join(' ');
 };
+
+export const formatTime = (dateString: string) => {
+  const formattedTime = new Date(dateString).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return formattedTime.replace(/(AM|PM)/, (match) => match.toLowerCase());
+};
+
+export const formatDuration = (duration: string) => {
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+  if (!match) return duration;
+
+  const hours = match[1] ? parseInt(match[1]) : 0;
+  const minutes = match[2] ? parseInt(match[2]) : 0;
+
+  if (hours === 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
+};
+
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+  });
+};
