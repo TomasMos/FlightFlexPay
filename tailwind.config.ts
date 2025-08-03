@@ -7,6 +7,12 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      screens: {
+        // Add a new custom breakpoint for screen height
+        'h-sm': { 'raw': '(min-height: 500px)' },
+        'h-md': { 'raw': '(min-height: 700px)' },
+        'h-lg': { 'raw': '(min-height: 1024px)' },
+      },
       fontFamily: {
         // Here we extend the default 'sans' font stack
         // to put 'Inter' at the very beginning.

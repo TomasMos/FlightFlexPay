@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
-import { toTitleCase } from "@/utils/titlecase";
 import { Carrier } from "@/components/carrier"
 
 // Component for one-way flights

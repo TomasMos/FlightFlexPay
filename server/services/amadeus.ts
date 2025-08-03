@@ -316,7 +316,6 @@ export class AmadeusService {
           total: offer.price.total,
           base: offer.price.base,
         },
-        validatingAirlineCodes: offer.validatingAirlineCodes,
 
         // Computed display fields
         airlines: airlines,

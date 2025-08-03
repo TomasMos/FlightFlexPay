@@ -1,8 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, ChevronDown, ChevronUp, Check, AlertTriangle, Clock, Plane } from "lucide-react";
+import {
+  X,
+  ChevronDown,
+  ChevronUp,
+  Check,
+  AlertTriangle,
+  Clock,
+  Plane,
+} from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { useState } from "react";
+import { Carrier } from "@/components/carrier"
 
 interface ItineraryModalProps {
   flight: EnhancedFlightWithPaymentPlan;
@@ -10,9 +19,17 @@ interface ItineraryModalProps {
   onClose: () => void;
 }
 
-export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps) {
-  const [expandedDetails, setExpandedDetails] = useState<{ [key: number]: boolean }>({});
-  const [expandedInclusions, setExpandedInclusions] = useState<{ [key: number]: boolean }>({});
+export function ItineraryModal({
+  flight,
+  isOpen,
+  onClose,
+}: ItineraryModalProps) {
+  const [expandedDetails, setExpandedDetails] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const [expandedInclusions, setExpandedInclusions] = useState<{
+    [key: number]: boolean;
+  }>({});
 
   if (!isOpen) return null;
 
@@ -29,7 +46,7 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
     return date.toLocaleDateString("en-US", {
       weekday: "long",
       day: "2-digit",
-      month: "long"
+      month: "long",
     });
   };
 
@@ -44,48 +61,42 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
     if (minutes === 0) return `${hours}h`;
     return `${hours}h ${minutes}m`;
   };
+  // <div>
+  // 
 
   const getCarrierDisplayName = () => {
     if (flight.airlines && flight.airlines.length > 1) {
-      return "Multiple Airlines";
+      return (<div>
+        <h2 className="text-xl font-semibold text-flightpay-slate-900">
+          Multiple Airlines
+        </h2>
+        <div>{flight.airlines.join(", ")}</div>
+      </div>
+        );
     }
     return flight.airlines?.[0] || "Unknown Airline";
   };
 
-  const getCarrierSubtext = () => {
-    if (flight.airlines && flight.airlines.length > 1) {
-      return flight.airlines.join(", ");
-    }
-    return null;
-  };
-
   const toggleDetails = (itineraryIndex: number) => {
-    setExpandedDetails(prev => ({
+    setExpandedDetails((prev) => ({
       ...prev,
-      [itineraryIndex]: !prev[itineraryIndex]
+      [itineraryIndex]: !prev[itineraryIndex],
     }));
   };
 
   const toggleInclusions = (itineraryIndex: number) => {
-    setExpandedInclusions(prev => ({
+    setExpandedInclusions((prev) => ({
       ...prev,
-      [itineraryIndex]: !prev[itineraryIndex]
+      [itineraryIndex]: !prev[itineraryIndex],
     }));
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 sm:p-10">
+      <div className="bg-white w-full h-full sm:max-w-4xl sm:rounded-xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-flightpay-slate-200">
-          <div>
-            <h2 className="text-xl font-semibold text-flightpay-slate-900">
-              {getCarrierDisplayName()}
-            </h2>
-            <p className="text-sm text-flightpay-slate-500">
-              {flight.origin} → {flight.destination}
-            </p>
-          </div>
+        <div className="flex items-center justify-between h-md:p-6 py-3 px-6 border-b border-flightpay-slate-200">
+          <Carrier flight = {flight} textSize="xl"/>
           <button
             onClick={onClose}
             className="p-2 hover:bg-flightpay-slate-100 rounded-lg"
@@ -96,43 +107,22 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
         </div>
 
         {/* Scrollable content */}
-        <div className="overflow-y-auto max-h-[70vh]">
+        <div className="overflow-y-auto flex-1">
           <div className="p-6 space-y-6">
             {/* Render each itinerary */}
             {flight.itineraries.map((itinerary, itineraryIndex) => {
               const isOutbound = itineraryIndex === 0;
               const firstSegment = itinerary.segments[0];
-              const lastSegment = itinerary.segments[itinerary.segments.length - 1];
+              const lastSegment =
+                itinerary.segments[itinerary.segments.length - 1];
               const stops = itinerary.segments.length - 1;
 
               return (
-                <div 
-                  key={itineraryIndex} 
+                <div
+                  key={itineraryIndex}
                   className="bg-flightpay-slate-50 rounded-lg p-6 border border-flightpay-slate-200"
                   data-testid={`itinerary-section-${itineraryIndex}`}
                 >
-                  {/* Itinerary Header */}
-                  <div className="mb-4">
-                    <div className="flex items-center gap-4 mb-2">
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                        <Plane className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-flightpay-slate-900">
-                          {getCarrierDisplayName()}
-                        </p>
-                        {getCarrierSubtext() && (
-                          <p className="text-sm font-light text-flightpay-slate-600">
-                            {getCarrierSubtext()}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-sm text-flightpay-slate-600 ml-12">
-                      {formatDate(firstSegment.departure.at)}
-                    </p>
-                  </div>
-
                   {/* Route Overview */}
                   <div className="flex items-center justify-between mb-6">
                     {/* Origin */}
@@ -158,7 +148,9 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                         <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
                       </div>
                       <div className="text-sm text-flightpay-slate-600 mb-1">
-                        {stops === 0 ? "Nonstop" : `${stops} stop${stops > 1 ? "s" : ""}`}
+                        {stops === 0
+                          ? "Nonstop"
+                          : `${stops} stop${stops > 1 ? "s" : ""}`}
                       </div>
                       <div className="text-sm text-flightpay-slate-500">
                         {formatDuration(itinerary.duration)}
@@ -187,16 +179,22 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                       data-testid={`button-toggle-details-${itineraryIndex}`}
                     >
                       <span className="text-sm font-medium text-flightpay-slate-700">
-                        {expandedDetails[itineraryIndex] ? "Hide details" : "Show details"}
+                        {expandedDetails[itineraryIndex]
+                          ? "Hide details"
+                          : "Show details"}
                       </span>
-                      {expandedDetails[itineraryIndex] ? 
-                        <ChevronUp className="w-4 h-4" /> : 
+                      {expandedDetails[itineraryIndex] ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
                         <ChevronDown className="w-4 h-4" />
-                      }
+                      )}
                     </button>
 
                     {expandedDetails[itineraryIndex] && (
-                      <div className="mt-4 space-y-4" data-testid={`details-content-${itineraryIndex}`}>
+                      <div
+                        className="mt-4 space-y-4"
+                        data-testid={`details-content-${itineraryIndex}`}
+                      >
                         {itinerary.segments.map((segment, segmentIndex) => (
                           <div key={segment.id}>
                             {/* Segment details */}
@@ -217,7 +215,8 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                                       </div>
                                     </div>
                                     <div className="text-sm text-flightpay-slate-900 font-medium">
-                                      {segment.departure.airportName} ({segment.departure.iataCode})
+                                      {segment.departure.airportName} (
+                                      {segment.departure.iataCode})
                                     </div>
                                     {segment.departure.terminal && (
                                       <div className="text-xs text-flightpay-slate-500">
@@ -225,7 +224,8 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                                       </div>
                                     )}
                                     <div className="text-sm text-flightpay-slate-600 mt-1">
-                                      {segment.carrierCode} {segment.number} • {formatDuration(segment.duration)}
+                                      {segment.carrierCode} {segment.number} •{" "}
+                                      {formatDuration(segment.duration)}
                                     </div>
                                     <div className="text-xs text-flightpay-slate-500">
                                       {segment.aircraft.code} • Economy
@@ -243,7 +243,8 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                                       </div>
                                     </div>
                                     <div className="text-sm text-flightpay-slate-900 font-medium">
-                                      {segment.arrival.airportName} ({segment.arrival.iataCode})
+                                      {segment.arrival.airportName} (
+                                      {segment.arrival.iataCode})
                                     </div>
                                     {segment.arrival.terminal && (
                                       <div className="text-xs text-flightpay-slate-500">
@@ -267,7 +268,11 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                                 <div className="flex items-center gap-2 px-3 py-1 bg-flightpay-slate-100 rounded-full">
                                   <Clock className="w-3 h-3 text-flightpay-slate-500" />
                                   <span className="text-xs text-flightpay-slate-600">
-                                    Stopover at {itinerary.segments[segmentIndex + 1].departure.iataCode}
+                                    Stopover at{" "}
+                                    {
+                                      itinerary.segments[segmentIndex + 1]
+                                        .departure.iataCode
+                                    }
                                   </span>
                                 </div>
                               </div>
@@ -288,45 +293,62 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                       <span className="text-sm font-medium text-flightpay-slate-700">
                         Flight Inclusions
                       </span>
-                      {expandedInclusions[itineraryIndex] ? 
-                        <ChevronUp className="w-4 h-4" /> : 
+                      {expandedInclusions[itineraryIndex] ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
                         <ChevronDown className="w-4 h-4" />
-                      }
+                      )}
                     </button>
 
                     {expandedInclusions[itineraryIndex] && (
-                      <div className="mt-4 space-y-4" data-testid={`inclusions-content-${itineraryIndex}`}>
+                      <div
+                        className="mt-4 space-y-4"
+                        data-testid={`inclusions-content-${itineraryIndex}`}
+                      >
                         {itinerary.segments.map((segment, segmentIndex) => {
-                          const fareDetails = flight.fareDetailsBySegment?.find(f => f.segmentId === segment.id);
+                          const fareDetails = flight.fareDetailsBySegment?.find(
+                            (f) => f.segmentId === segment.id,
+                          );
                           return (
-                            <div key={segment.id} className="p-4 bg-white rounded-lg border border-flightpay-slate-200">
+                            <div
+                              key={segment.id}
+                              className="p-4 bg-white rounded-lg border border-flightpay-slate-200"
+                            >
                               <div className="mb-4">
                                 <h4 className="font-medium text-flightpay-slate-900 mb-2">
-                                  {segment.departure.iataCode} → {segment.arrival.iataCode}
+                                  {segment.departure.iataCode} →{" "}
+                                  {segment.arrival.iataCode}
                                 </h4>
                                 <p className="text-sm text-flightpay-slate-600">
                                   Cabin: {fareDetails?.cabin || "Economy"}
                                 </p>
                                 <p className="text-xs text-flightpay-slate-500">
-                                  Branded fare: {fareDetails?.fareBasis || "ECONOMY LIGHTBAG"}
+                                  Branded fare:{" "}
+                                  {fareDetails?.fareBasis || "ECONOMY LIGHTBAG"}
                                 </p>
                               </div>
 
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {/* Flexibility */}
                                 <div>
-                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">Flexibility</h5>
+                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
+                                    Flexibility
+                                  </h5>
                                   <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                       {flight.pricingOptions?.refundableFare ? (
                                         <>
                                           <Check className="w-4 h-4 text-green-600" />
-                                          <span className="text-sm text-green-600">Refundable</span>
+                                          <span className="text-sm text-green-600">
+                                            Refundable
+                                          </span>
                                         </>
                                       ) : (
                                         <>
                                           <X className="w-4 h-4 text-red-600" />
-                                          <span className="text-sm text-red-600">Non-refundable</span>
+                                          <span className="text-sm text-red-600">
+                                            Non-refundable
+                                          </span>
                                         </>
                                       )}
                                     </div>
@@ -334,12 +356,16 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
                                       {flight.pricingOptions?.noPenaltyFare ? (
                                         <>
                                           <Check className="w-4 h-4 text-green-600" />
-                                          <span className="text-sm text-green-600">Change available (for a fee)</span>
+                                          <span className="text-sm text-green-600">
+                                            Change available (for a fee)
+                                          </span>
                                         </>
                                       ) : (
                                         <>
                                           <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                                          <span className="text-sm text-yellow-600">Cancellation not allowed</span>
+                                          <span className="text-sm text-yellow-600">
+                                            Cancellation not allowed
+                                          </span>
                                         </>
                                       )}
                                     </div>
@@ -348,18 +374,24 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
 
                                 {/* Baggage */}
                                 <div>
-                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">Bag</h5>
+                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
+                                    Bag
+                                  </h5>
                                   <div className="space-y-1">
                                     <div className="flex items-center gap-2">
                                       <Check className="w-4 h-4 text-green-600" />
                                       <span className="text-sm text-flightpay-slate-600">
-                                        {fareDetails?.includedCabinBags?.quantity || 1} piece(s) of carry-on baggage
+                                        {fareDetails?.includedCabinBags
+                                          ?.quantity || 1}{" "}
+                                        piece(s) of carry-on baggage
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <Check className="w-4 h-4 text-green-600" />
                                       <span className="text-sm text-flightpay-slate-600">
-                                        {fareDetails?.includedCheckedBags?.quantity || 1} piece(s) of checked baggage
+                                        {fareDetails?.includedCheckedBags
+                                          ?.quantity || 1}{" "}
+                                        piece(s) of checked baggage
                                       </span>
                                     </div>
                                   </div>
@@ -367,15 +399,21 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
 
                                 {/* Additional Services */}
                                 <div>
-                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">Additional</h5>
+                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
+                                    Additional
+                                  </h5>
                                   <div className="space-y-1">
                                     <div className="flex items-center gap-2">
                                       <Check className="w-4 h-4 text-green-600" />
-                                      <span className="text-sm text-flightpay-slate-600">Seat selection</span>
+                                      <span className="text-sm text-flightpay-slate-600">
+                                        Seat selection
+                                      </span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <Check className="w-4 h-4 text-green-600" />
-                                      <span className="text-sm text-flightpay-slate-600">Flexible fare</span>
+                                      <span className="text-sm text-flightpay-slate-600">
+                                        Flexible fare
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
@@ -393,20 +431,21 @@ export function ItineraryModal({ flight, isOpen, onClose }: ItineraryModalProps)
         </div>
 
         {/* Footer with pricing and select button */}
-        <div className="border-t border-flightpay-slate-200 p-6 bg-flightpay-slate-900">
+        <div className="border-t border-flightpay-slate-200 h-md:p-6 py-3 px-6 bg-flightpay-slate-900">
           <div className="flex items-center justify-between">
-            <div className="text-white">
+            <div className="">
               <div className="text-2xl font-bold">
                 ${parseFloat(flight.price.total).toFixed(2)}
               </div>
               {flight.paymentPlanEligible && (
                 <div className="text-flightpay-slate-300 text-sm">
-                  ${flight.paymentPlan?.installmentAmount?.toFixed(2) || '0.00'}/week
+                  ${flight.paymentPlan?.installmentAmount?.toFixed(2) || "0.00"}
+                  /week
                 </div>
               )}
             </div>
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white px-8"
               data-testid="button-select-flight"
             >

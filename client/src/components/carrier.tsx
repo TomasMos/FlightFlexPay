@@ -3,7 +3,13 @@ import { toTitleCase } from "@/utils/titlecase";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 
 // The function signature with an inline type definition
-export function Carrier({ flight }: { flight: EnhancedFlightWithPaymentPlan }) {
+export function Carrier({
+  flight,
+  textSize = "",
+}: {
+  flight: EnhancedFlightWithPaymentPlan;
+  textSize?: string;
+}) {
   const isMultipleCarriers = flight.airlines.length > 1;
 
   // For multiple carriers, we join them into a single string for display.
@@ -16,7 +22,7 @@ export function Carrier({ flight }: { flight: EnhancedFlightWithPaymentPlan }) {
     <div className="flex items-center gap-4 mb-4">
       {isMultipleCarriers ? (
         <div>
-          <div className="font-semibold">Multiple Carriers</div>
+          <div className={`text-${textSize} font-semibold`}>Multiple Carriers</div>
           <div
             className="text-sm font-normal text-flightpay-slate-900"
             data-testid={`text-airline-name-${flight.id}`}

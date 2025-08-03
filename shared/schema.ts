@@ -142,7 +142,6 @@ export interface EnhancedFlight {
     total: string;
     base: string;
   };
-  validatingAirlineCodes: string[];
   
   // Additional data for modal
   pricingOptions?: {
