@@ -5,6 +5,7 @@ import {
   formatDuration,
   formatDate,
   toTitleCase,
+  stopoverDuration,
 } from "@/utils/formatters";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -169,7 +170,7 @@ export function ItineraryModal({
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.5, ease: "easeInOut" }}
-                          className="overflow-hidden mt-4 space-y-4"
+                          className="overflow-hidden mt-4 "
                           data-testid={`details-content-${itineraryIndex}`}
                         >
                           {itinerary.segments.map((segment, segmentIndex) => (
@@ -181,7 +182,7 @@ export function ItineraryModal({
                                     {/* Departure */}
                                     <div>
                                       <div className="flex items-center gap-2 mb-2">
-                                        <div className=" font-semibold text-flightpay-slate-900">
+                                        <div className=" font-medium text-flightpay-slate-900">
                                           {formatTime(segment.departure.at)} -{" "}
                                           {formatDate(segment.departure.at)}
                                         </div>
@@ -219,7 +220,7 @@ export function ItineraryModal({
                                     {/* Arrival */}
                                     <div>
                                       <div className="flex items-center gap-2 mb-2">
-                                        <div className=" font-semibold text-flightpay-slate-900">
+                                        <div className=" font-medium text-flightpay-slate-900">
                                           {formatTime(segment.arrival.at)} -{" "}
                                           {formatDate(segment.arrival.at)}
                                         </div>
@@ -244,15 +245,15 @@ export function ItineraryModal({
 
                               {/* Stopover indicator */}
                               {segmentIndex < itinerary.segments.length - 1 && (
-                                <div className="flex items-center justify-center py-3">
-                                  <div className="flex items-center gap-2 px-3 py-1 bg-flightpay-slate-100 rounded-full">
+                                <div className="flex items-center justify-center py-3  ">
+                                  <div className=" flex items-center gap-2 px-3 py-1 bg-flightpay-slate-100 rounded-full">
                                     <Clock className="w-3 h-3 text-flightpay-slate-500" />
                                     <span className="text-xs text-flightpay-slate-600">
-                                      Stopover at{" "}
+                                      cityName (
                                       {
                                         itinerary.segments[segmentIndex + 1]
                                           .departure.iataCode
-                                      }
+                                      }) - {stopoverDuration(new Date(segment.arrival.at), new Date(itinerary.segments[segmentIndex + 1].departure.at))}
                                     </span>
                                   </div>
                                 </div>
@@ -299,11 +300,11 @@ export function ItineraryModal({
                           className="overflow-hidden mt-4 space-y-4"
                           data-testid={`details-content-${itineraryIndex}`}
                         >
-                          
                           {itinerary.segments.map((segment, segmentIndex) => {
-                            const fareDetails = flight.fareDetailsBySegment?.find(
-                              (f) => f.segmentId === segment.id,
-                            );
+                            const fareDetails =
+                              flight.fareDetailsBySegment?.find(
+                                (f) => f.segmentId === segment.id,
+                              );
                             return (
                               <div
                                 key={segment.id}
@@ -319,7 +320,8 @@ export function ItineraryModal({
                                   </p>
                                   <p className="text-xs text-flightpay-slate-500">
                                     Branded fare:{" "}
-                                    {fareDetails?.fareBasis || "ECONOMY LIGHTBAG"}
+                                    {fareDetails?.fareBasis ||
+                                      "ECONOMY LIGHTBAG"}
                                   </p>
                                 </div>
 
@@ -331,7 +333,8 @@ export function ItineraryModal({
                                     </h5>
                                     <div className="space-y-2">
                                       <div className="flex items-center gap-2">
-                                        {flight.pricingOptions?.refundableFare ? (
+                                        {flight.pricingOptions
+                                          ?.refundableFare ? (
                                           <>
                                             <Check className="w-4 h-4 text-green-600" />
                                             <span className="text-sm text-green-600">
@@ -348,7 +351,8 @@ export function ItineraryModal({
                                         )}
                                       </div>
                                       <div className="flex items-center gap-2">
-                                        {flight.pricingOptions?.noPenaltyFare ? (
+                                        {flight.pricingOptions
+                                          ?.noPenaltyFare ? (
                                           <>
                                             <Check className="w-4 h-4 text-green-600" />
                                             <span className="text-sm text-green-600">
@@ -415,19 +419,11 @@ export function ItineraryModal({
                                 </div>
                               </div>
                             );
-                        })};
+                          })}
+                          ;
                         </motion.div>
                       )}
                     </AnimatePresence>
-                    
-
-
-
-
-
-                    
-
-                    
                   </div>
                 </div>
               );

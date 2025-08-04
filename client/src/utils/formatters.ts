@@ -59,3 +59,21 @@ export const formatDate = (dateString: string) => {
     month: "long",
   });
 };
+
+
+export const stopoverDuration = (startDate: Date, endDate: Date): string => {
+    // Calculate the difference in milliseconds
+    const diffInMs = endDate.getTime() - startDate.getTime();
+
+    // Ensure the duration is not negative
+    if (diffInMs < 0) {
+        return "0h 0m";
+    }
+
+    // Convert milliseconds to hours and minutes
+    const totalMinutes = Math.floor(diffInMs / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    return `${hours}h ${minutes}m`;
+}

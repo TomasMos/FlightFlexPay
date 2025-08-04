@@ -58,7 +58,6 @@ export class PaymentPlanService {
     const today = new Date();
     const daysUntilTravel = Math.ceil((travelDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-    console.log(`Base Cost`, baseCost)
 
     // Calculate flight price with fees
     const priceCalculation = this.calculateFlightPrice(baseCost, travelDate);

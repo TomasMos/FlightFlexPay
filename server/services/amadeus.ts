@@ -302,9 +302,6 @@ export class AmadeusService {
       });
 
       const airlines = Array.from(airlineSet)
-      console.log(`printing airlineSet`, airlineSet);
-      console.log(`printing airlines`, airlines);
-
       return {
         id: offer.id,
         source: offer.source,
