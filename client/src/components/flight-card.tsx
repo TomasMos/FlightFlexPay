@@ -158,36 +158,30 @@ export function FlightCard({
             )}
           </div>
         </div>
-        <div className="flex flex-col items-center lg:items-end gap-4">
+        <div className="flex flex-col items-center justify-center lg:items-end gap-4">
           {/* Pricing */}
           <div className="items-center lg:items-end flex flex-col gap-6">
-            <div
-              className={` flex flex-row w-full  ${
-                flight?.numberOfPassengers && flight.numberOfPassengers > 1
-                  ? "lg:justify-end lg:gap-10 justify-around"
-                  : "lg:justify-end justify-center"
-              }`}
-            >
-              <div className="">
+            <div className="flex flex-row w-full  justify-center ">
+              <div className="w-full">
                 <div
-                  className="text-2xl text-center lg:text-right font-bold text-flightpay-slate-900  mb-1"
+                  className="text-2xl text-center font-bold text-flightpay-slate-900  mb-1"
                   data-testid={`text-price-${flight.id}`}
                 >
                   ${pricePerTraveller.toFixed(0)}
                 </div>
-                <div className="text-sm text-flightpay-slate-500 lg:text-right">
+                <div className="text-sm text-center text-flightpay-slate-500">
                   per person
                 </div>
               </div>
               {flight?.numberOfPassengers && flight.numberOfPassengers > 1 ? (
-                <div className=" text-center">
+                <div className="  w-full text-center">
                   <div
-                    className="text-2xl text-center lg:text-right font-bold text-flightpay-slate-900  mb-1"
+                    className="text-2xl text-center font-bold  text-flightpay-slate-900  mb-1"
                     data-testid={`text-price-${flight.id}`}
                   >
                     ${parseFloat(flight.price.total).toFixed(0)}
                   </div>
-                  <div className="text-sm text-flightpay-slate-500 lg:text-right">
+                  <div className="text-sm text-flightpay-slate-500">
                     in total
                   </div>
                 </div>
@@ -198,10 +192,10 @@ export function FlightCard({
 
             {flight.paymentPlanEligible && flight.paymentPlan ? (
               <div
-                className="bg-flightpay-secondary/10 rounded-lg p-3 border border-flightpay-secondary/20"
+                className="bg-flightpay-secondary/10 rounded-lg p-3 border border-flightpay-secondary/20 flex flex-col items-center"
                 data-testid={`payment-plan-preview-${flight.id}`}
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex  items-center gap-2 mb-2">
                   <Shield className="w-4 h-4 text-flightpay-secondary" />
                   <span className="text-sm font-medium text-flightpay-secondary">
                     Payment Plan Available
@@ -219,18 +213,6 @@ export function FlightCard({
               </div>
             )}
           </div>
-
-          {/* <div className="w-full flex flex-col items-center lg:items-end gap-2 ">
-            <Button
-              onClick={() => onSelect(flight)}
-              className="min-w-[100px] px-8 bg-flightpay-primary hover:bg-flightpay-primary/90 text-white"
-              data-testid={`button-select-${flight.id}`}
-            >
-              {flight.paymentPlanEligible
-                ? "View Payment Options"
-                : "Select Flight"}
-            </Button>
-          </div> */}
         </div>
       </div>
     </div>

@@ -65,6 +65,9 @@
   * {
     @apply border-border;
   }
+  input[type="date"]::-webkit-datetime-edit-text {
+    text-align: left !important;
+  }
 
   body {
     @apply font-sans antialiased bg-background text-foreground;

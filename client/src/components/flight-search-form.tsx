@@ -144,12 +144,12 @@ export function FlightSearchForm({
                 <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">
                   Departure
                 </Label>
-                <div className="relative">
+                <div className="relative flex">
                   <Input
                     {...form.register("departureDate")}
                     type="date"
                     min={today}
-                  className="hide-date-icon pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
+                  className="hide-date-icon pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary cursor-pointer"
                     data-testid="input-departure-date"
                     // CORRECTED: Use e.target to access the input element
                     onClick={(e) => (e.target as HTMLInputElement).showPicker()}
@@ -181,13 +181,13 @@ export function FlightSearchForm({
                 >
                   Return
                 </Label>
-                <div className="relative">
+                <div className="relative flex">
                   <Input
                     {...form.register("returnDate")}
                     type="date"
                     min={form.watch("departureDate") || today}
                     disabled={tripType === "oneway"}
-                  className="hide-date-icon pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
+                  className="hide-date-icon pl-10 w-full pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
                     data-testid="input-return-date"
                     // CORRECTED: Use e.target to access the input element
                     onClick={(e) => (e.target as HTMLInputElement).showPicker()}
