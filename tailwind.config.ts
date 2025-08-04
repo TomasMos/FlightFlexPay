@@ -7,6 +7,7 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      
       screens: {
         // Add a new custom breakpoint for screen height
         'h-sm': { 'raw': '(min-height: 500px)' },

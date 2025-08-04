@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatTime, formatDuration, formatDate } from "@/utils/formatters";
+import {
+  formatTime,
+  formatDuration,
+  formatDate,
+  toTitleCase,
+} from "@/utils/formatters";
+import { motion, AnimatePresence } from "framer-motion";
+
 import {
   X,
   ChevronDown,
@@ -12,7 +19,7 @@ import {
 } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { useState } from "react";
-import { Carrier } from "@/components/carrier"
+import { Carrier } from "@/components/carrier";
 
 interface ItineraryModalProps {
   flight: EnhancedFlightWithPaymentPlan;
@@ -53,7 +60,7 @@ export function ItineraryModal({
       <div className="bg-white w-full h-full sm:max-w-4xl sm:rounded-xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className=" flex flex-row items-spread justify-between h-md:p-6 h-md:py-3 px-6 border-b border-flightpay-slate-200">
-          <Carrier flight = {flight} textSize="xl"/>
+          <Carrier flight={flight} textSize="xl" />
           <button
             onClick={onClose}
             className="p-2 hover:bg-flightpay-slate-100 rounded-lg"
@@ -88,7 +95,8 @@ export function ItineraryModal({
                         {firstSegment.departure.iataCode}
                       </div>
                       <div className="text-sm text-flightpay-slate-600">
-                        {'cityName'}{/* {firstSegment.arrival.cityName} */}
+                        {"cityName"}
+                        {/* {firstSegment.arrival.cityName} */}
                       </div>
                       <div className="text-sm font-medium text-flightpay-slate-900 mt-1">
                         {formatTime(firstSegment.departure.at)}
@@ -120,7 +128,8 @@ export function ItineraryModal({
                         {lastSegment.arrival.iataCode}
                       </div>
                       <div className="text-sm text-flightpay-slate-600">
-                        {'cityName'}{/* {lastSegment.arrival.cityName} */}
+                        {"cityName"}
+                        {/* {lastSegment.arrival.cityName} */}
                       </div>
                       <div className="text-sm font-medium text-flightpay-slate-900 mt-1">
                         {formatTime(lastSegment.arrival.at)}
@@ -136,106 +145,123 @@ export function ItineraryModal({
                       data-testid={`button-toggle-details-${itineraryIndex}`}
                     >
                       <span className="text-sm font-medium text-flightpay-slate-700">
-                        {expandedDetails[itineraryIndex]
-                          ? "Hide details"
-                          : "Show details"}
+                        Details
                       </span>
-                      {expandedDetails[itineraryIndex] ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
+                      <motion.div
+                        animate={{
+                          rotate: expandedDetails[itineraryIndex] ? -180 : 0,
+                        }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        {expandedDetails[itineraryIndex] ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </motion.div>
                     </button>
 
-                    {expandedDetails[itineraryIndex] && (
-                      <div
-                        className="mt-4 space-y-4"
-                        data-testid={`details-content-${itineraryIndex}`}
-                      >
-                        {itinerary.segments.map((segment, segmentIndex) => (
-                          <div key={segment.id}>
-                            {/* Segment details */}
-                            <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-flightpay-slate-200">
+                    <AnimatePresence initial={false}>
+                      {expandedDetails[itineraryIndex] && (
+                        <motion.div
+                          key={`details-${itineraryIndex}`}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.5, ease: "easeInOut" }}
+                          className="overflow-hidden mt-4 space-y-4"
+                          data-testid={`details-content-${itineraryIndex}`}
+                        >
+                          {itinerary.segments.map((segment, segmentIndex) => (
+                            <div key={segment.id}>
+                              {/* Segment details */}
+                              <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-flightpay-slate-200">
+                                <div className="flex-1">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Departure */}
+                                    <div>
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <div className=" font-semibold text-flightpay-slate-900">
+                                          {formatTime(segment.departure.at)} -{" "}
+                                          {formatDate(segment.departure.at)}
+                                        </div>
+                                      </div>
+                                      <div className="text-sm text-flightpay-slate-900">
+                                        <p>
+                                          {" "}
+                                          {"departureAirportName"} (
+                                          {segment.departure.iataCode})
+                                        </p>
+                                        {segment.departure.terminal && (
+                                          <p>
+                                            Terminal{" "}
+                                            {segment.departure.terminal}{" "}
+                                          </p>
+                                        )}
+                                        <p>
+                                          {" "}
+                                          {toTitleCase(segment.airline)} -{" "}
+                                          {segment.number}
+                                        </p>
+                                        <p>
+                                          {formatDuration(segment.duration)}
+                                        </p>
+                                        <p>
+                                          {toTitleCase(
+                                            flight.fareDetailsBySegment?.[
+                                              segmentIndex
+                                            ]?.cabin || "Economy",
+                                          )}
+                                        </p>
+                                      </div>
+                                    </div>
 
-                              <div className="flex-1">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  {/* Departure */}
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <div className="text-lg font-bold text-flightpay-slate-900">
-                                        {formatTime(segment.departure.at)}
+                                    {/* Arrival */}
+                                    <div>
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <div className=" font-semibold text-flightpay-slate-900">
+                                          {formatTime(segment.arrival.at)} -{" "}
+                                          {formatDate(segment.arrival.at)}
+                                        </div>
                                       </div>
-                                      <div className="text-sm text-flightpay-slate-600">
-                                        {formatDate(segment.departure.at)}
+                                      <div className="text-sm text-flightpay-slate-900">
+                                        <p>
+                                          {" "}
+                                          {"arrivalAirportName"} (
+                                          {segment.arrival.iataCode})
+                                        </p>
+                                        {segment.arrival.terminal && (
+                                          <p>
+                                            Terminal{" "}
+                                            {segment.arrival.terminal}{" "}
+                                          </p>
+                                        )}
                                       </div>
-                                    </div>
-                                    <div className="text-sm text-flightpay-slate-900 font-medium">
-                                      {segment.departure.airportName} (
-                                      {segment.departure.iataCode})
-                                    </div>
-                                    {segment.departure.terminal && (
-                                      <div className="text-xs text-flightpay-slate-500">
-                                        Terminal {segment.departure.terminal}
-                                      </div>
-                                    )}
-                                    <div className="text-sm text-flightpay-slate-600 mt-1">
-                                      {segment.carrierCode} {segment.number} •{" "}
-                                      {formatDuration(segment.duration)}
-                                    </div>
-                                    <div className="text-xs text-flightpay-slate-500">
-                                      {segment.aircraft.code} • Economy
-                                    </div>
-                                  </div>
-
-                                  {/* Arrival */}
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <div className="text-lg font-bold text-flightpay-slate-900">
-                                        {formatTime(segment.arrival.at)}
-                                      </div>
-                                      <div className="text-sm text-flightpay-slate-600">
-                                        {formatDate(segment.arrival.at)}
-                                      </div>
-                                    </div>
-                                    <div className="text-sm text-flightpay-slate-900 font-medium">
-                                      {segment.arrival.airportName} (
-                                      {segment.arrival.iataCode})
-                                    </div>
-                                    {segment.arrival.terminal && (
-                                      <div className="text-xs text-flightpay-slate-500">
-                                        Terminal {segment.arrival.terminal}
-                                      </div>
-                                    )}
-                                    <div className="text-sm text-flightpay-slate-600 mt-1">
-                                      {segment.airline}
-                                    </div>
-                                    <div className="text-xs text-flightpay-slate-500">
-                                      Aircraft: {segment.aircraft.code}
                                     </div>
                                   </div>
                                 </div>
                               </div>
+
+                              {/* Stopover indicator */}
+                              {segmentIndex < itinerary.segments.length - 1 && (
+                                <div className="flex items-center justify-center py-3">
+                                  <div className="flex items-center gap-2 px-3 py-1 bg-flightpay-slate-100 rounded-full">
+                                    <Clock className="w-3 h-3 text-flightpay-slate-500" />
+                                    <span className="text-xs text-flightpay-slate-600">
+                                      Stopover at{" "}
+                                      {
+                                        itinerary.segments[segmentIndex + 1]
+                                          .departure.iataCode
+                                      }
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-
-                            {/* Stopover indicator */}
-                            {segmentIndex < itinerary.segments.length - 1 && (
-                              <div className="flex items-center justify-center py-3">
-                                <div className="flex items-center gap-2 px-3 py-1 bg-flightpay-slate-100 rounded-full">
-                                  <Clock className="w-3 h-3 text-flightpay-slate-500" />
-                                  <span className="text-xs text-flightpay-slate-600">
-                                    Stopover at{" "}
-                                    {
-                                      itinerary.segments[segmentIndex + 1]
-                                        .departure.iataCode
-                                    }
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {/* Flight Inclusions Collapsible */}
@@ -246,138 +272,162 @@ export function ItineraryModal({
                       data-testid={`button-toggle-inclusions-${itineraryIndex}`}
                     >
                       <span className="text-sm font-medium text-flightpay-slate-700">
-                        Flight Inclusions
+                        Inclusions
                       </span>
-                      {expandedInclusions[itineraryIndex] ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
+                      <motion.div
+                        animate={{
+                          rotate: expandedInclusions[itineraryIndex] ? -180 : 0,
+                        }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        {expandedInclusions[itineraryIndex] ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </motion.div>
                     </button>
 
-                    {expandedInclusions[itineraryIndex] && (
-                      <div
-                        className="mt-4 space-y-4"
-                        data-testid={`inclusions-content-${itineraryIndex}`}
-                      >
-                        {itinerary.segments.map((segment, segmentIndex) => {
-                          const fareDetails = flight.fareDetailsBySegment?.find(
-                            (f) => f.segmentId === segment.id,
-                          );
-                          return (
-                            <div
-                              key={segment.id}
-                              className="p-4 bg-white rounded-lg border border-flightpay-slate-200"
-                            >
-                              <div className="mb-4">
-                                <h4 className="font-medium text-flightpay-slate-900 mb-2">
-                                  {segment.departure.iataCode} →{" "}
-                                  {segment.arrival.iataCode}
-                                </h4>
-                                <p className="text-sm text-flightpay-slate-600">
-                                  Cabin: {fareDetails?.cabin || "Economy"}
-                                </p>
-                                <p className="text-xs text-flightpay-slate-500">
-                                  Branded fare:{" "}
-                                  {fareDetails?.fareBasis || "ECONOMY LIGHTBAG"}
-                                </p>
+                    <AnimatePresence initial={false}>
+                      {expandedInclusions[itineraryIndex] && (
+                        <motion.div
+                          key={`details-${itineraryIndex}`}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          className="overflow-hidden mt-4 space-y-4"
+                          data-testid={`details-content-${itineraryIndex}`}
+                        >
+                          
+                          {itinerary.segments.map((segment, segmentIndex) => {
+                            const fareDetails = flight.fareDetailsBySegment?.find(
+                              (f) => f.segmentId === segment.id,
+                            );
+                            return (
+                              <div
+                                key={segment.id}
+                                className="p-4 bg-white rounded-lg border border-flightpay-slate-200"
+                              >
+                                <div className="mb-4">
+                                  <h4 className="font-medium text-flightpay-slate-900 mb-2">
+                                    {segment.departure.iataCode} →{" "}
+                                    {segment.arrival.iataCode}
+                                  </h4>
+                                  <p className="text-sm text-flightpay-slate-600">
+                                    Cabin: {fareDetails?.cabin || "Economy"}
+                                  </p>
+                                  <p className="text-xs text-flightpay-slate-500">
+                                    Branded fare:{" "}
+                                    {fareDetails?.fareBasis || "ECONOMY LIGHTBAG"}
+                                  </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                  {/* Flexibility */}
+                                  <div>
+                                    <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
+                                      Flexibility
+                                    </h5>
+                                    <div className="space-y-2">
+                                      <div className="flex items-center gap-2">
+                                        {flight.pricingOptions?.refundableFare ? (
+                                          <>
+                                            <Check className="w-4 h-4 text-green-600" />
+                                            <span className="text-sm text-green-600">
+                                              Refundable
+                                            </span>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <X className="w-4 h-4 text-red-600" />
+                                            <span className="text-sm text-red-600">
+                                              Non-refundable
+                                            </span>
+                                          </>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {flight.pricingOptions?.noPenaltyFare ? (
+                                          <>
+                                            <Check className="w-4 h-4 text-green-600" />
+                                            <span className="text-sm text-green-600">
+                                              Change available (for a fee)
+                                            </span>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                                            <span className="text-sm text-yellow-600">
+                                              Cancellation not allowed
+                                            </span>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Baggage */}
+                                  <div>
+                                    <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
+                                      Bag
+                                    </h5>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center gap-2">
+                                        <Check className="w-4 h-4 text-green-600" />
+                                        <span className="text-sm text-flightpay-slate-600">
+                                          {fareDetails?.includedCabinBags
+                                            ?.quantity || 1}{" "}
+                                          piece(s) of carry-on baggage
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Check className="w-4 h-4 text-green-600" />
+                                        <span className="text-sm text-flightpay-slate-600">
+                                          {fareDetails?.includedCheckedBags
+                                            ?.quantity || 1}{" "}
+                                          piece(s) of checked baggage
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Additional Services */}
+                                  <div>
+                                    <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
+                                      Additional
+                                    </h5>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center gap-2">
+                                        <Check className="w-4 h-4 text-green-600" />
+                                        <span className="text-sm text-flightpay-slate-600">
+                                          Seat selection
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Check className="w-4 h-4 text-green-600" />
+                                        <span className="text-sm text-flightpay-slate-600">
+                                          Flexible fare
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
+                            );
+                        })};
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    
 
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {/* Flexibility */}
-                                <div>
-                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
-                                    Flexibility
-                                  </h5>
-                                  <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                      {flight.pricingOptions?.refundableFare ? (
-                                        <>
-                                          <Check className="w-4 h-4 text-green-600" />
-                                          <span className="text-sm text-green-600">
-                                            Refundable
-                                          </span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <X className="w-4 h-4 text-red-600" />
-                                          <span className="text-sm text-red-600">
-                                            Non-refundable
-                                          </span>
-                                        </>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      {flight.pricingOptions?.noPenaltyFare ? (
-                                        <>
-                                          <Check className="w-4 h-4 text-green-600" />
-                                          <span className="text-sm text-green-600">
-                                            Change available (for a fee)
-                                          </span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                                          <span className="text-sm text-yellow-600">
-                                            Cancellation not allowed
-                                          </span>
-                                        </>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
 
-                                {/* Baggage */}
-                                <div>
-                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
-                                    Bag
-                                  </h5>
-                                  <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                      <Check className="w-4 h-4 text-green-600" />
-                                      <span className="text-sm text-flightpay-slate-600">
-                                        {fareDetails?.includedCabinBags
-                                          ?.quantity || 1}{" "}
-                                        piece(s) of carry-on baggage
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Check className="w-4 h-4 text-green-600" />
-                                      <span className="text-sm text-flightpay-slate-600">
-                                        {fareDetails?.includedCheckedBags
-                                          ?.quantity || 1}{" "}
-                                        piece(s) of checked baggage
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
 
-                                {/* Additional Services */}
-                                <div>
-                                  <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
-                                    Additional
-                                  </h5>
-                                  <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                      <Check className="w-4 h-4 text-green-600" />
-                                      <span className="text-sm text-flightpay-slate-600">
-                                        Seat selection
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Check className="w-4 h-4 text-green-600" />
-                                      <span className="text-sm text-flightpay-slate-600">
-                                        Flexible fare
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+
+
+                    
+
+                    
                   </div>
                 </div>
               );
