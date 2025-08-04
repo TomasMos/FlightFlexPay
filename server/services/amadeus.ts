@@ -201,7 +201,7 @@ export class AmadeusService {
         destinationLocationCode: searchParams.destination,
         departureDate: searchParams.departureDate,
         adults: searchParams.passengers.toString(),
-        max: "1", // Increased for better results
+        // max: "1", // Increased for better results
         currencyCode: "USD",
       });
 
@@ -276,13 +276,29 @@ export class AmadeusService {
                   segment.arrival.iataCode, // Use city name from address, fallback to cityCode then iataCode
               },
               carrierCode: segment.carrierCode,
-              airline: response.dictionaries.carriers?.[segment.operating?.carrierCode ?? segment.carrierCode],
+              airline:
+                response.dictionaries.carriers?.[
+                  segment.operating?.carrierCode ?? segment.carrierCode
+                ],
               number: segment.number,
               aircraft: segment.aircraft,
               operating: segment.operating,
               duration: segment.duration,
+              cabin:
+                offer.travelerPricings[0]?.fareDetailsBySegment[
+                  Number(segment.id) - 1
+                ]?.cabin || "Economy",
+              includedCheckedBags: (
+                offer.travelerPricings[0]?.fareDetailsBySegment[
+                  Number(segment.id) - 1
+                ] as any
+              )?.includedCheckedBags,
+              includedCabinBags: (
+                offer.travelerPricings[0]?.fareDetailsBySegment[
+                  Number(segment.id) - 1
+                ] as any
+              )?.includedCabinBags,
               id: segment.id,
-              numberOfStops: segment.numberOfStops,
             };
           }),
         }),
@@ -301,41 +317,28 @@ export class AmadeusService {
         });
       });
 
-      const airlines = Array.from(airlineSet)
+      const airlines = Array.from(airlineSet);
       return {
         id: offer.id,
-        source: offer.source,
-        lastTicketingDate: offer.lastTicketingDate,
-        numberOfBookableSeats: offer.numberOfBookableSeats,
+        origin: firstSegment?.departure.cityName || searchParams.origin,
+        destination: lastSegment?.arrival.cityName || searchParams.destination,
+        departureTime: new Date(firstSegment?.departure.at || new Date()),
+        arrivalTime: new Date(lastSegment?.arrival.at || new Date()),
+        numberOfPassengers: offer?.travelerPricings.length,
         itineraries,
+        airlines: airlines,
+        pricingOptions: {
+          includedCheckedBagsOnly:
+            offer.pricingOptions?.includedCheckedBagsOnly || false,
+          refundableFare:
+            (offer.pricingOptions as any)?.refundableFare || false,
+          noPenaltyFare: (offer.pricingOptions as any)?.noPenaltyFare || false,
+        },
         price: {
           currency: offer.price.currency,
           total: offer.price.total,
           base: offer.price.base,
         },
-
-        // Computed display fields
-        airlines: airlines,
-        origin: firstSegment?.departure.cityName || searchParams.origin,
-        destination: lastSegment?.arrival.cityName || searchParams.destination,
-        departureTime: new Date(firstSegment?.departure.at || new Date()),
-        arrivalTime: new Date(lastSegment?.arrival.at || new Date()),
-        duration: firstItinerary?.duration || "PT0H0M",
-        stops: Math.max(0, firstItinerary?.segments.length - 1 || 0), // segments.length - 1 = number of stops
-        cabin:
-          offer.travelerPricings[0]?.fareDetailsBySegment[0]?.cabin ||
-          "ECONOMY",
-        availableSeats: offer.numberOfBookableSeats,
-        numberOfPassengers: offer?.travelerPricings.length,
-        
-        // Additional data for modal
-        pricingOptions: {
-          fareType: offer.pricingOptions?.fareType || [],
-          includedCheckedBagsOnly: offer.pricingOptions?.includedCheckedBagsOnly || false,
-          refundableFare: (offer.pricingOptions as any)?.refundableFare || false,
-          noPenaltyFare: (offer.pricingOptions as any)?.noPenaltyFare || false,
-        },
-        fareDetailsBySegment: offer.travelerPricings[0]?.fareDetailsBySegment || [],
       };
     });
   }

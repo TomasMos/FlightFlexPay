@@ -77,3 +77,12 @@ export const stopoverDuration = (startDate: Date, endDate: Date): string => {
 
     return `${hours}h ${minutes}m`;
 }
+
+
+export const parseDurationToMinutes = (duration: string): number => {
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+    if (!match) return 0;
+    const hours = match[1] ? parseInt(match[1]) : 0;
+    const minutes = match[2] ? parseInt(match[2]) : 0;
+    return hours * 60 + minutes;
+  };

@@ -207,13 +207,7 @@ export function ItineraryModal({
                                         <p>
                                           {formatDuration(segment.duration)}
                                         </p>
-                                        <p>
-                                          {toTitleCase(
-                                            flight.fareDetailsBySegment?.[
-                                              segmentIndex
-                                            ]?.cabin || "Economy",
-                                          )}
-                                        </p>
+                                        <p>{toTitleCase(segment.cabin)}</p>
                                       </div>
                                     </div>
 
@@ -253,7 +247,16 @@ export function ItineraryModal({
                                       {
                                         itinerary.segments[segmentIndex + 1]
                                           .departure.iataCode
-                                      }) - {stopoverDuration(new Date(segment.arrival.at), new Date(itinerary.segments[segmentIndex + 1].departure.at))}
+                                      }
+                                      ) -{" "}
+                                      {stopoverDuration(
+                                        new Date(segment.arrival.at),
+                                        new Date(
+                                          itinerary.segments[
+                                            segmentIndex + 1
+                                          ].departure.at,
+                                        ),
+                                      )}
                                     </span>
                                   </div>
                                 </div>
@@ -310,22 +313,124 @@ export function ItineraryModal({
                                 key={segment.id}
                                 className="p-4 bg-white rounded-lg border border-flightpay-slate-200"
                               >
-                                <div className="mb-4">
-                                  <h4 className="font-medium text-flightpay-slate-900 mb-2">
-                                    {segment.departure.iataCode} →{" "}
-                                    {segment.arrival.iataCode}
-                                  </h4>
-                                  <p className="text-sm text-flightpay-slate-600">
-                                    Cabin: {fareDetails?.cabin || "Economy"}
-                                  </p>
-                                  <p className="text-xs text-flightpay-slate-500">
-                                    Branded fare:{" "}
-                                    {fareDetails?.fareBasis ||
-                                      "ECONOMY LIGHTBAG"}
-                                  </p>
-                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {/* Baggage */}
+                                  <div>
+                                    <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
+                                      Baggage
+                                    </h5>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm text-flightpay-slate-600">
+                                          {segment.includedCabinBags
+                                            ?.quantity &&
+                                          segment.includedCabinBags?.weight &&
+                                          segment.includedCabinBags
+                                            ?.weightUnit ? (
+                                            <div className="flex flex-row gap-2">
+                                              <Check className="w-4 h-4 text-green-600" />
+                                              <span className="text-sm text-flightpay-slate-600">
+                                                {
+                                                  segment.includedCabinBags
+                                                    ?.weight
+                                                }{" "}
+                                                {segment.includedCabinBags?.weightUnit.toLowerCase()}{" "}
+                                                x{" "}
+                                                {
+                                                  segment.includedCabinBags
+                                                    ?.quantity
+                                                }{" "}
+                                                piece(s) carry-on
+                                              </span>
+                                            </div>
+                                          ) : segment.includedCabinBags
+                                              ?.weightUnit &&
+                                            segment.includedCabinBags
+                                              ?.weight ? (
+                                            <div className="flex flex-row gap-2">
+                                              <Check className="w-4 h-4 text-green-600" />
+                                              <span className="text-sm text-flightpay-slate-600">
+                                                {
+                                                  segment.includedCabinBags
+                                                    ?.weight
+                                                }{" "}
+                                                {segment.includedCabinBags?.weightUnit.toLowerCase()}{" "}
+                                                carry-on
+                                              </span>
+                                            </div>
+                                          ) : segment.includedCabinBags
+                                              ?.quantity ? (
+                                            <div className="flex flex-row gap-2">
+                                              <Check className="w-4 h-4 text-green-600" />
+                                              <span className="text-sm text-flightpay-slate-600">
+                                                {
+                                                  segment.includedCabinBags
+                                                    ?.quantity
+                                                }{" "}
+                                                piece(s) carry-on
+                                              </span>
+                                            </div>
+                                          ) : (
+                                            <></>
+                                          )}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {segment.includedCheckedBags
+                                          ?.quantity &&
+                                        segment.includedCheckedBags?.weight &&
+                                        segment.includedCheckedBags
+                                          ?.weightUnit ? (
+                                          <div className="flex flex-row gap-2">
+                                            <Check className="w-4 h-4 text-green-600" />
+                                            <span className="text-sm text-flightpay-slate-600">
+                                              {
+                                                segment.includedCheckedBags
+                                                  ?.weight
+                                              }{" "}
+                                              {segment.includedCheckedBags?.weightUnit.toLowerCase()}{" "}
+                                              x{" "}
+                                              {
+                                                segment.includedCheckedBags
+                                                  ?.quantity
+                                              }{" "}
+                                              piece(s) checked
+                                            </span>
+                                          </div>
+                                        ) : segment.includedCheckedBags
+                                            ?.weightUnit &&
+                                          segment.includedCheckedBags
+                                            ?.weight ? (
+                                          <div className="flex flex-row gap-2">
+                                            <Check className="w-4 h-4 text-green-600" />
+                                            <span className="text-sm text-flightpay-slate-600">
+                                              {
+                                                segment.includedCheckedBags
+                                                  ?.weight
+                                              }{" "}
+                                              {segment.includedCheckedBags?.weightUnit.toLowerCase()}{" "}
+                                              checked
+                                            </span>
+                                          </div>
+                                        ) : segment.includedCheckedBags
+                                            ?.quantity ? (
+                                          <div className="flex flex-row gap-2">
+                                            <Check className="w-4 h-4 text-green-600" />
+                                            <span className="text-sm text-flightpay-slate-600">
+                                              {
+                                                segment.includedCheckedBags
+                                                  ?.quantity
+                                              }{" "}
+                                              piece(s) checked
+                                            </span>
+                                          </div>
+                                        ) : (
+                                          <></>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                   {/* Flexibility */}
                                   <div>
                                     <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
@@ -356,63 +461,17 @@ export function ItineraryModal({
                                           <>
                                             <Check className="w-4 h-4 text-green-600" />
                                             <span className="text-sm text-green-600">
-                                              Change available (for a fee)
+                                              Free changes
                                             </span>
                                           </>
                                         ) : (
                                           <>
                                             <AlertTriangle className="w-4 h-4 text-yellow-600" />
                                             <span className="text-sm text-yellow-600">
-                                              Cancellation not allowed
+                                              Changes with a fee
                                             </span>
                                           </>
                                         )}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Baggage */}
-                                  <div>
-                                    <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
-                                      Bag
-                                    </h5>
-                                    <div className="space-y-1">
-                                      <div className="flex items-center gap-2">
-                                        <Check className="w-4 h-4 text-green-600" />
-                                        <span className="text-sm text-flightpay-slate-600">
-                                          {fareDetails?.includedCabinBags
-                                            ?.quantity || 1}{" "}
-                                          piece(s) of carry-on baggage
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Check className="w-4 h-4 text-green-600" />
-                                        <span className="text-sm text-flightpay-slate-600">
-                                          {fareDetails?.includedCheckedBags
-                                            ?.quantity || 1}{" "}
-                                          piece(s) of checked baggage
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Additional Services */}
-                                  <div>
-                                    <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
-                                      Additional
-                                    </h5>
-                                    <div className="space-y-1">
-                                      <div className="flex items-center gap-2">
-                                        <Check className="w-4 h-4 text-green-600" />
-                                        <span className="text-sm text-flightpay-slate-600">
-                                          Seat selection
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Check className="w-4 h-4 text-green-600" />
-                                        <span className="text-sm text-flightpay-slate-600">
-                                          Flexible fare
-                                        </span>
                                       </div>
                                     </div>
                                   </div>
@@ -420,7 +479,6 @@ export function ItineraryModal({
                               </div>
                             );
                           })}
-                          ;
                         </motion.div>
                       )}
                     </AnimatePresence>

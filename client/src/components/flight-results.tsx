@@ -1,7 +1,5 @@
 import { useState } from "react";
-import {
-  EnhancedFlightWithPaymentPlan,
-} from "@shared/schema";
+import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -13,7 +11,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Shield, CreditCard, Filter } from "lucide-react";
 import { ItineraryModal } from "./itinerary-modal";
-import { FlightCard } from "@/components/flight-card.tsx"
+import { FlightCard } from "@/components/flight-card.tsx";
+import { parseDurationToMinutes } from '@/utils/formatters'
 
 interface FlightResultsProps {
   flights: EnhancedFlightWithPaymentPlan[];
@@ -31,42 +30,17 @@ export function FlightResults({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState("best");
 
-  // Helper functions
-  const formatTime = (date: Date | string) => {
-    return new Date(date).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
-  const formatDuration = (duration: string) => {
-    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
-    if (!match) return duration;
-
-    const hours = match[1] ? parseInt(match[1]) : 0;
-    const minutes = match[2] ? parseInt(match[2]) : 0;
-
-    if (hours === 0) return `${minutes}m`;
-    if (minutes === 0) return `${hours}h`;
-    return `${hours}h ${minutes}m`;
-  };
-
-  // Helper functions for enhanced flights
-  const parseDurationToMinutes = (duration: string): number => {
-    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
-    if (!match) return 0;
-    const hours = match[1] ? parseInt(match[1]) : 0;
-    const minutes = match[2] ? parseInt(match[2]) : 0;
-    return hours * 60 + minutes;
-  };
-
   const getFlightPrice = (flight: EnhancedFlightWithPaymentPlan): number => {
     return parseFloat(flight.price.total);
   };
 
-  const getFlightDuration = (flight: EnhancedFlightWithPaymentPlan): number => {
-    return parseDurationToMinutes(flight.duration);
+  const getTotalItineraryDuration = (flight: EnhancedFlightWithPaymentPlan): number => {
+    let totalDuration: number = 0;
+
+    flight.itineraries.forEach((itinerary) => {
+      totalDuration = parseDurationToMinutes(itinerary.duration);
+    });
+    return totalDuration;
   };
 
   const calculateBestRanking = (): EnhancedFlightWithPaymentPlan[] => {
@@ -84,7 +58,7 @@ export function FlightResults({
     // Sort by duration (shortest first) and assign ranks
     const durationRanks = new Map<string, number>();
     const sortedByDuration = [...flights].sort(
-      (a, b) => getFlightDuration(a) - getFlightDuration(b),
+      (a, b) => getTotalItineraryDuration(a) - getTotalItineraryDuration(b),
     );
     sortedByDuration.forEach((flight, index) => {
       durationRanks.set(flight.id, index + 1);
@@ -112,7 +86,7 @@ export function FlightResults({
         );
       case "duration":
         return [...flights].sort(
-          (a, b) => getFlightDuration(a) - getFlightDuration(b),
+          (a, b) => getTotalItineraryDuration(a) - getTotalItineraryDuration(b),
         );
       case "best":
       default:
