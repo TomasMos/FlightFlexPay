@@ -148,6 +148,10 @@ export function AirportAutocomplete({
       <Plane className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 -rotate-45" />
     );
 
+  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+    event.target.select();
+  };
+
   return (
     <div className="relative ">
       <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">
@@ -160,7 +164,8 @@ export function AirportAutocomplete({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white w-full min-w-[140px]"
+          onFocus={handleFocus} 
+          className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white w-full min-w-[140px] cursor-pointer"
           data-testid={testId}
           autoComplete="off"
         />

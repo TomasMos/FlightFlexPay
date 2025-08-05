@@ -10,22 +10,29 @@ export const toTitleCase = (text: string): string => {
     return '';
   }
 
-  // Convert the entire string to lowercase first
-  const lowerCaseText = text.toLowerCase().trim();
+  // Define a set of words or patterns that should be exempt from title casing.
+  // In this case, we'll specifically look for "O.R."
+  const exceptions = ['o.r.', 'o.r']; // Include both with and without the trailing dot
 
   // Split the string into words, handling multiple spaces
-  const words = lowerCaseText.split(/\s+/);
+  const words = text.split(/\s+/);
 
-  // Capitalize the first letter of each word
   const titleCasedWords = words.map(word => {
-    // Check if the word is not empty to avoid errors on extra spaces
-    if (word.length > 0) {
-      return word.charAt(0).toUpperCase() + word.slice(1);
+    if (word.length === 0) {
+      return '';
     }
-    return '';
+
+    const lowerCaseWord = word.toLowerCase();
+
+    // Check if the lowercase word is in our exceptions list.
+    if (exceptions.includes(lowerCaseWord)) {
+      return word.toUpperCase(); // Return the original word in uppercase
+    }
+
+    // Capitalize the first letter and make the rest lowercase
+    return lowerCaseWord.charAt(0).toUpperCase() + lowerCaseWord.slice(1);
   });
 
-  // Join the words back together with a single space
   return titleCasedWords.join(' ');
 };
 
