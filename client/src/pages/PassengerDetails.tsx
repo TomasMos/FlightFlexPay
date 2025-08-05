@@ -242,25 +242,82 @@ export default function PassengerDetails() {
   const [priceDetailsOpen, setPriceDetailsOpen] = useState(false);
   const [userCountry, setUserCountry] = useState("ZA"); // Default to South Africa
 
-  // Multiple passenger forms
-  const [passengerForms, setPassengerForms] = useState<any[]>([]);
+  // Create forms for each passenger (hooks must be called at top level)
+  const passengerForm1 = useForm<PassengerForm>({
+    resolver: zodResolver(passengerSchema),
+    defaultValues: {
+      title: "Mr",
+      firstName: "",
+      lastName: "",
+      dateOfBirth: "",
+      passportCountry: "",
+    },
+  });
 
-  // Initialize passenger forms
-  useEffect(() => {
-    const forms = Array.from({ length: passengerCount }, (_, index) => 
-      useForm<PassengerForm>({
-        resolver: zodResolver(passengerSchema),
-        defaultValues: {
-          title: "Mr",
-          firstName: "",
-          lastName: "",
-          dateOfBirth: "",
-          passportCountry: "",
-        },
-      })
-    );
-    setPassengerForms(forms);
-  }, [passengerCount]);
+  const passengerForm2 = useForm<PassengerForm>({
+    resolver: zodResolver(passengerSchema),
+    defaultValues: {
+      title: "Mr",
+      firstName: "",
+      lastName: "",
+      dateOfBirth: "",
+      passportCountry: "",
+    },
+  });
+
+  const passengerForm3 = useForm<PassengerForm>({
+    resolver: zodResolver(passengerSchema),
+    defaultValues: {
+      title: "Mr",
+      firstName: "",
+      lastName: "",
+      dateOfBirth: "",
+      passportCountry: "",
+    },
+  });
+
+  const passengerForm4 = useForm<PassengerForm>({
+    resolver: zodResolver(passengerSchema),
+    defaultValues: {
+      title: "Mr",
+      firstName: "",
+      lastName: "",
+      dateOfBirth: "",
+      passportCountry: "",
+    },
+  });
+
+  const passengerForm5 = useForm<PassengerForm>({
+    resolver: zodResolver(passengerSchema),
+    defaultValues: {
+      title: "Mr",
+      firstName: "",
+      lastName: "",
+      dateOfBirth: "",
+      passportCountry: "",
+    },
+  });
+
+  const passengerForm6 = useForm<PassengerForm>({
+    resolver: zodResolver(passengerSchema),
+    defaultValues: {
+      title: "Mr",
+      firstName: "",
+      lastName: "",
+      dateOfBirth: "",
+      passportCountry: "",
+    },
+  });
+
+  // Create array of forms based on passenger count
+  const passengerForms = [
+    passengerForm1,
+    passengerForm2,
+    passengerForm3,
+    passengerForm4,
+    passengerForm5,
+    passengerForm6,
+  ].slice(0, passengerCount);
 
   const contactForm = useForm<ContactForm>({
     resolver: zodResolver(contactSchema),

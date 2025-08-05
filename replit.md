@@ -57,11 +57,18 @@ The application uses four main tables:
 - **Select Button Integration**: "Select" button navigates to passenger details page with flight data
 
 ### Passenger Details System
-- **Passenger Forms**: Dynamic passenger information collection with form validation
+- **Multi-Passenger Forms**: Dynamic passenger information collection for up to 6 passengers based on search criteria
+- **Country Selection**: Comprehensive dropdown with 195+ countries for passport selection
 - **Contact Details**: Email confirmation (no paste allowed), phone number with IP-based country detection
 - **Price Breakdown**: Collapsible pricing section showing flight fare and taxes breakdown
 - **Form Validation**: Comprehensive Zod-based validation for all passenger and contact fields
+- **Data Persistence**: All passenger and contact details saved to localStorage when continuing
 - **Routing Integration**: Seamless navigation from flight selection to passenger details (/flight-search/passenger-details/:flightId)
+
+### Local Storage Integration
+- **Search Persistence**: Flight search parameters automatically saved and restored on homepage
+- **Passenger Data**: Complete passenger and contact information stored for booking process
+- **Flight Selection**: Selected flight data persisted across page navigation
 
 ## Data Flow
 
