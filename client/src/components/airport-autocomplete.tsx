@@ -57,8 +57,12 @@ export function AirportAutocomplete({
     setInputValue(value);
   }, [value]);
 
+  const isSelectedValue = airports.some(
+    (airport) => `${airport.city} (${airport.code})` === inputValue
+  );
+
   useEffect(() => {
-    if (airports.length > 0 && inputValue.length >= 2) {
+    if (airports.length > 0 && inputValue.length >= 2 && !isSelectedValue) {
       setIsOpen(true);
     } else {
       setIsOpen(false);
