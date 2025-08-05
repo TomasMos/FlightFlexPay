@@ -12,7 +12,7 @@ export const toTitleCase = (text: string): string => {
 
   // Define a set of words or patterns that should be exempt from title casing.
   // In this case, we'll specifically look for "O.R."
-  const exceptions = ['o.r.', 'o.r']; // Include both with and without the trailing dot
+  const exceptions = ['o.r.', 'o.r', 'klm']; // Include both with and without the trailing dot
 
   // Split the string into words, handling multiple spaces
   const words = text.split(/\s+/);

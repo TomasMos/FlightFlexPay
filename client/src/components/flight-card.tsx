@@ -143,7 +143,7 @@ export function FlightCard({
                 </div>
               </div>
             ) : (
-              <div className="text-sm text-flightpay-slate-500">
+              <div className="text-sm text-center text-flightpay-slate-500">
                 No payment plans available <br />
                 (departure is within 14 days)
               </div>

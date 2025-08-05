@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, CreditCard, Filter } from "lucide-react";
 import { ItineraryModal } from "./itinerary-modal";
 import { FlightCard } from "@/components/flight-card.tsx";
-import { parseDurationToMinutes } from '@/utils/formatters'
+import { parseDurationToMinutes } from "@/utils/formatters";
 
 interface FlightResultsProps {
   flights: EnhancedFlightWithPaymentPlan[];
@@ -34,7 +34,9 @@ export function FlightResults({
     return parseFloat(flight.price.total);
   };
 
-  const getTotalItineraryDuration = (flight: EnhancedFlightWithPaymentPlan): number => {
+  const getTotalItineraryDuration = (
+    flight: EnhancedFlightWithPaymentPlan,
+  ): number => {
     let totalDuration: number = 0;
 
     flight.itineraries.forEach((itinerary) => {
@@ -96,9 +98,7 @@ export function FlightResults({
 
   const handleSelectFlight = (flight: EnhancedFlightWithPaymentPlan) => {
     setSelectedFlight(flight);
-    if (flight.paymentPlanEligible) {
-      setIsModalOpen(true);
-    }
+    setIsModalOpen(true);
   };
 
   if (isLoading) {
