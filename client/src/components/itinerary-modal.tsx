@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Carrier } from "@/components/carrier";
 
 interface ItineraryModalProps {
@@ -33,6 +34,7 @@ export function ItineraryModal({
   isOpen,
   onClose,
 }: ItineraryModalProps) {
+  const [, setLocation] = useLocation();
   const [expandedDetails, setExpandedDetails] = useState<{
     [key: number]: boolean;
   }>({});
@@ -305,10 +307,6 @@ export function ItineraryModal({
                           data-testid={`details-content-${itineraryIndex}`}
                         >
                           {itinerary.segments.map((segment, segmentIndex) => {
-                            const fareDetails =
-                              flight.fareDetailsBySegment?.find(
-                                (f) => f.segmentId === segment.id,
-                              );
                             return (
                               <div
                                 key={segment.id}
@@ -508,6 +506,13 @@ export function ItineraryModal({
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white px-8"
               data-testid="button-select-flight"
+              onClick={() => {
+                // Store flight data in localStorage for the passenger details page
+                localStorage.setItem("selectedFlight", JSON.stringify(flight));
+                // Navigate to passenger details page
+                setLocation(`/flight-search/passenger-details/${flight.id}`);
+                onClose(); // Close the modal
+              }}
             >
               Select
             </Button>

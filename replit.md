@@ -54,6 +54,14 @@ The application uses four main tables:
 - **Collapsible Details**: Expandable flight segments with departure/arrival information
 - **Flight Inclusions**: Baggage, flexibility, and refund policy information
 - **Multiple Airline Handling**: Displays "Multiple Airlines" when flight uses different carriers
+- **Select Button Integration**: "Select" button navigates to passenger details page with flight data
+
+### Passenger Details System
+- **Passenger Forms**: Dynamic passenger information collection with form validation
+- **Contact Details**: Email confirmation (no paste allowed), phone number with IP-based country detection
+- **Price Breakdown**: Collapsible pricing section showing flight fare and taxes breakdown
+- **Form Validation**: Comprehensive Zod-based validation for all passenger and contact fields
+- **Routing Integration**: Seamless navigation from flight selection to passenger details (/flight-search/passenger-details/:flightId)
 
 ## Data Flow
 
