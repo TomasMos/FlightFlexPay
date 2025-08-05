@@ -201,7 +201,7 @@ export class AmadeusService {
         destinationLocationCode: searchParams.destination,
         departureDate: searchParams.departureDate,
         adults: searchParams.passengers.toString(),
-        // max: "1", // Increased for better results
+        max: "1", // Increased for better results
         currencyCode: "USD",
       });
 
@@ -226,7 +226,7 @@ export class AmadeusService {
 
       const data: AmadeusFlightResponse = await response.json();
       console.log(`Amadeus.ts - 215 - RAW:`, JSON.stringify(data, null, 2));
-      const transformedData = this.transformEnhancedAmadeusResponse(
+      const transformedData = await this.transformEnhancedAmadeusResponse(
         data,
         searchParams,
       );
@@ -241,39 +241,101 @@ export class AmadeusService {
     }
   }
 
-  private transformEnhancedAmadeusResponse(
+  // Add this new method inside the AmadeusService class
+  private async fetchLocationsByCodes(iataCodes: Set<string>): Promise<Record<string, { airportName: string; cityName: string }>> {
+    if (iataCodes.size === 0) {
+      return {};
+    }
+
+    const token = await this.getAccessToken();
+    const locationPromises = Array.from(iataCodes).map(async (code) => {
+      try {
+        const response = await fetch(
+          `${this.config.baseUrl}/v1/reference-data/locations?subType=AIRPORT,CITY&keyword=${code}&page%5Blimit%5D=1`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error(`Error fetching location for ${code}: ${response.statusText}`);
+          return null;
+        }
+
+        const data = await response.json();
+        const locationData = data.data?.[0];
+
+        if (locationData) {
+          return {
+            code,
+            airportName: locationData.name || code,
+            cityName: locationData.address?.cityName || locationData.name || code,
+          };
+        }
+        return null;
+      } catch (error) {
+        console.error(`Error fetching location for ${code}:`, error);
+        return null;
+      }
+    });
+
+    const locationResults = await Promise.all(locationPromises);
+    const locationMap: Record<string, { airportName: string; cityName: string }> = {};
+
+    locationResults.forEach((result) => {
+      if (result) {
+        locationMap[result.code] = {
+          airportName: result.airportName,
+          cityName: result.cityName,
+        };
+      }
+    });
+
+    return locationMap;
+  }
+
+  // Update the signature to be async
+  private async transformEnhancedAmadeusResponse(
     response: AmadeusFlightResponse,
     searchParams: FlightSearch,
-  ): EnhancedFlight[] {
+  ): Promise<EnhancedFlight[]> {
+    // 1. Collect all unique IATA codes from the flight offer response
+    const uniqueIataCodes = new Set<string>();
+    response.data.forEach((offer) => {
+      offer.itineraries.forEach((itinerary) => {
+        itinerary.segments.forEach((segment) => {
+          uniqueIataCodes.add(segment.departure.iataCode);
+          uniqueIataCodes.add(segment.arrival.iataCode);
+        });
+      });
+    });
+
+    // 2. Fetch the full names for all unique codes in parallel
+    const locationMap = await this.fetchLocationsByCodes(uniqueIataCodes);
+
+    // 3. Map the offer data and use the fetched names
     return response.data.map((offer) => {
-      // Transform itineraries preserving Amadeus structure
       const itineraries: FlightItinerary[] = offer.itineraries.map(
         (itinerary) => ({
           duration: itinerary.duration,
           segments: itinerary.segments.map((segment) => {
-            // Get airport/city names from dictionaries
-            const departureLocation =
-              response.dictionaries.locations?.[segment.departure.iataCode];
-            const arrivalLocation =
-              response.dictionaries.locations?.[segment.arrival.iataCode];
+            // Use the locationMap to find the airport and city names
+            const departureLocation = locationMap[segment.departure.iataCode];
+            const arrivalLocation = locationMap[segment.arrival.iataCode];
 
             return {
               departure: {
                 ...segment.departure,
-                airportName:
-                  departureLocation?.name || segment.departure.iataCode, // Use name for airport, fallback to iataCode
-                cityName:
-                  departureLocation?.address?.cityName ||
-                  departureLocation?.cityCode ||
-                  segment.departure.iataCode, // Use city name from address, fallback to cityCode then iataCode
+                airportName: departureLocation?.airportName || segment.departure.iataCode,
+                cityName: departureLocation?.cityName || segment.departure.iataCode,
               },
               arrival: {
                 ...segment.arrival,
-                airportName: arrivalLocation?.name || segment.arrival.iataCode, // Use name for airport, fallback to iataCode
-                cityName:
-                  arrivalLocation?.address?.cityName ||
-                  arrivalLocation?.cityCode ||
-                  segment.arrival.iataCode, // Use city name from address, fallback to cityCode then iataCode
+                airportName: arrivalLocation?.airportName || segment.arrival.iataCode,
+                cityName: arrivalLocation?.cityName || segment.arrival.iataCode,
               },
               carrierCode: segment.carrierCode,
               airline:
@@ -304,11 +366,10 @@ export class AmadeusService {
         }),
       );
 
-      // Calculate computed display fields
+      // Calculate computed display fields as before
       const firstItinerary = itineraries[0];
       const firstSegment = firstItinerary?.segments[0];
-      const lastSegment =
-        firstItinerary?.segments[firstItinerary.segments.length - 1];
+      const lastSegment = firstItinerary?.segments[firstItinerary.segments.length - 1];
 
       const airlineSet = new Set<string>();
       itineraries.forEach((itinerary) => {
@@ -318,6 +379,7 @@ export class AmadeusService {
       });
 
       const airlines = Array.from(airlineSet);
+
       return {
         id: offer.id,
         origin: firstSegment?.departure.cityName || searchParams.origin,
@@ -328,10 +390,8 @@ export class AmadeusService {
         itineraries,
         airlines: airlines,
         pricingOptions: {
-          includedCheckedBagsOnly:
-            offer.pricingOptions?.includedCheckedBagsOnly || false,
-          refundableFare:
-            (offer.pricingOptions as any)?.refundableFare || false,
+          includedCheckedBagsOnly: offer.pricingOptions?.includedCheckedBagsOnly || false,
+          refundableFare: (offer.pricingOptions as any)?.refundableFare || false,
           noPenaltyFare: (offer.pricingOptions as any)?.noPenaltyFare || false,
         },
         price: {

@@ -4,6 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plane, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  toTitleCase,
+} from "@/utils/formatters";
 
 interface Airport {
   code: string;
@@ -58,7 +61,7 @@ export function AirportAutocomplete({
   }, [value]);
 
   const isSelectedValue = airports.some(
-    (airport) => `${airport.city} (${airport.code})` === inputValue
+    (airport) => `${toTitleCase(airport.city)} (${airport.code})` === inputValue
   );
 
   useEffect(() => {
@@ -81,7 +84,7 @@ export function AirportAutocomplete({
   };
 
   const handleSelectAirport = (airport: Airport) => {
-    const displayValue = `${airport.city} (${airport.code})`;
+    const displayValue = `${toTitleCase(airport.city)} (${airport.code})`;
     setInputValue(displayValue);
     onChange(displayValue, airport.code);
     setIsOpen(false);
@@ -146,7 +149,7 @@ export function AirportAutocomplete({
     );
 
   return (
-    <div className="relative">
+    <div className="relative ">
       <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">
         {label}
       </Label>
@@ -187,10 +190,10 @@ export function AirportAutocomplete({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-flightpay-slate-900 truncate">
-                      {airport.city}
+                      {toTitleCase(airport.city)}
                     </div>
                     <div className="text-sm text-flightpay-slate-500 truncate">
-                      {airport.name}
+                      {toTitleCase(airport.name)}
                     </div>
                   </div>
                   <div className="flex-shrink-0">

@@ -127,16 +127,16 @@ export interface FlightSegment {
     iataCode: string;
     terminal?: string;
     at: string;
-    airportName?: string;
-    cityName?: string;
+    airportName: string;
+    cityName: string;
     timeZoneOffset?: string;
   };
   arrival: {
     iataCode: string;
     terminal?: string;
     at: string;
-    airportName?: string;
-    cityName?: string;
+    airportName: string;
+    cityName: string;
     timeZoneOffset?: string;
   };
   carrierCode: string;

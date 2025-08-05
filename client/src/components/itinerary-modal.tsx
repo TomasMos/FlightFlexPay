@@ -96,8 +96,8 @@ export function ItineraryModal({
                         {firstSegment.departure.iataCode}
                       </div>
                       <div className="text-sm text-flightpay-slate-600">
-                        {"cityName"}
-                        {/* {firstSegment.arrival.cityName} */}
+                        {toTitleCase(firstSegment.departure.cityName)}
+                        
                       </div>
                       <div className="text-sm font-medium text-flightpay-slate-900 mt-1">
                         {formatTime(firstSegment.departure.at)}
@@ -129,7 +129,7 @@ export function ItineraryModal({
                         {lastSegment.arrival.iataCode}
                       </div>
                       <div className="text-sm text-flightpay-slate-600">
-                        {"cityName"}
+                        {toTitleCase(lastSegment.arrival.cityName)}
                         {/* {lastSegment.arrival.cityName} */}
                       </div>
                       <div className="text-sm font-medium text-flightpay-slate-900 mt-1">
@@ -190,7 +190,7 @@ export function ItineraryModal({
                                       <div className="text-sm text-flightpay-slate-900">
                                         <p>
                                           {" "}
-                                          {"departureAirportName"} (
+                                          {toTitleCase(segment.departure.airportName)} (
                                           {segment.departure.iataCode})
                                         </p>
                                         {segment.departure.terminal && (
@@ -222,7 +222,7 @@ export function ItineraryModal({
                                       <div className="text-sm text-flightpay-slate-900">
                                         <p>
                                           {" "}
-                                          {"arrivalAirportName"} (
+                                          {toTitleCase(segment.arrival.airportName)} (
                                           {segment.arrival.iataCode})
                                         </p>
                                         {segment.arrival.terminal && (
@@ -243,7 +243,8 @@ export function ItineraryModal({
                                   <div className=" flex items-center gap-2 px-3 py-1 bg-flightpay-slate-100 rounded-full">
                                     <Clock className="w-3 h-3 text-flightpay-slate-500" />
                                     <span className="text-xs text-flightpay-slate-600">
-                                      cityName (
+                                      {toTitleCase(itinerary.segments[segmentIndex + 1]
+                                                   .departure.airportName)} (
                                       {
                                         itinerary.segments[segmentIndex + 1]
                                           .departure.iataCode
