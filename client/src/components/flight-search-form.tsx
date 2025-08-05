@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { flightSearchSchema, type FlightSearch } from "@shared/schema";
@@ -44,6 +44,30 @@ export function FlightSearchForm({
     },
   });
 
+  // Load previous search from localStorage on component mount
+  useEffect(() => {
+    const savedSearch = localStorage.getItem("lastFlightSearch");
+    if (savedSearch) {
+      try {
+        const searchData = JSON.parse(savedSearch);
+        // Restore form values
+        form.reset({
+          origin: searchData.origin || "",
+          destination: searchData.destination || "",
+          departureDate: searchData.departureDate || "",
+          returnDate: searchData.returnDate || "",
+          passengers: searchData.passengers || 1,
+          tripType: searchData.tripType || "roundtrip",
+        });
+        setTripType(searchData.tripType || "roundtrip");
+        setOriginIata(searchData.originIata || "");
+        setDestinationIata(searchData.destinationIata || "");
+      } catch (error) {
+        console.error("Error loading saved search:", error);
+      }
+    }
+  }, [form]);
+
   const onSubmit = (data: FlightSearch) => {
     // Use IATA codes if available, otherwise fall back to entered text
     const searchData: FlightSearch = {
@@ -52,6 +76,16 @@ export function FlightSearchForm({
       origin: originIata || data.origin,
       destination: destinationIata || data.destination,
     };
+    
+    // Save search to localStorage for future use
+    const searchToSave = {
+      ...searchData,
+      originIata,
+      destinationIata,
+      timestamp: new Date().toISOString(),
+    };
+    localStorage.setItem("lastFlightSearch", JSON.stringify(searchToSave));
+    
     onSearch(searchData);
   };
 

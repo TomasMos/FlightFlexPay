@@ -21,6 +21,205 @@ const passengerSchema = z.object({
   passportCountry: z.string().min(1, "Passport country is required"),
 });
 
+// Common countries list
+const countries = [
+  { code: "AF", name: "Afghanistan" },
+  { code: "AL", name: "Albania" },
+  { code: "DZ", name: "Algeria" },
+  { code: "AD", name: "Andorra" },
+  { code: "AO", name: "Angola" },
+  { code: "AR", name: "Argentina" },
+  { code: "AM", name: "Armenia" },
+  { code: "AU", name: "Australia" },
+  { code: "AT", name: "Austria" },
+  { code: "AZ", name: "Azerbaijan" },
+  { code: "BS", name: "Bahamas" },
+  { code: "BH", name: "Bahrain" },
+  { code: "BD", name: "Bangladesh" },
+  { code: "BB", name: "Barbados" },
+  { code: "BY", name: "Belarus" },
+  { code: "BE", name: "Belgium" },
+  { code: "BZ", name: "Belize" },
+  { code: "BJ", name: "Benin" },
+  { code: "BT", name: "Bhutan" },
+  { code: "BO", name: "Bolivia" },
+  { code: "BA", name: "Bosnia and Herzegovina" },
+  { code: "BW", name: "Botswana" },
+  { code: "BR", name: "Brazil" },
+  { code: "BN", name: "Brunei" },
+  { code: "BG", name: "Bulgaria" },
+  { code: "BF", name: "Burkina Faso" },
+  { code: "BI", name: "Burundi" },
+  { code: "CV", name: "Cabo Verde" },
+  { code: "KH", name: "Cambodia" },
+  { code: "CM", name: "Cameroon" },
+  { code: "CA", name: "Canada" },
+  { code: "CF", name: "Central African Republic" },
+  { code: "TD", name: "Chad" },
+  { code: "CL", name: "Chile" },
+  { code: "CN", name: "China" },
+  { code: "CO", name: "Colombia" },
+  { code: "KM", name: "Comoros" },
+  { code: "CG", name: "Congo" },
+  { code: "CD", name: "Congo (Democratic Republic)" },
+  { code: "CR", name: "Costa Rica" },
+  { code: "CI", name: "Côte d'Ivoire" },
+  { code: "HR", name: "Croatia" },
+  { code: "CU", name: "Cuba" },
+  { code: "CY", name: "Cyprus" },
+  { code: "CZ", name: "Czech Republic" },
+  { code: "DK", name: "Denmark" },
+  { code: "DJ", name: "Djibouti" },
+  { code: "DM", name: "Dominica" },
+  { code: "DO", name: "Dominican Republic" },
+  { code: "EC", name: "Ecuador" },
+  { code: "EG", name: "Egypt" },
+  { code: "SV", name: "El Salvador" },
+  { code: "GQ", name: "Equatorial Guinea" },
+  { code: "ER", name: "Eritrea" },
+  { code: "EE", name: "Estonia" },
+  { code: "SZ", name: "Eswatini" },
+  { code: "ET", name: "Ethiopia" },
+  { code: "FJ", name: "Fiji" },
+  { code: "FI", name: "Finland" },
+  { code: "FR", name: "France" },
+  { code: "GA", name: "Gabon" },
+  { code: "GM", name: "Gambia" },
+  { code: "GE", name: "Georgia" },
+  { code: "DE", name: "Germany" },
+  { code: "GH", name: "Ghana" },
+  { code: "GR", name: "Greece" },
+  { code: "GD", name: "Grenada" },
+  { code: "GT", name: "Guatemala" },
+  { code: "GN", name: "Guinea" },
+  { code: "GW", name: "Guinea-Bissau" },
+  { code: "GY", name: "Guyana" },
+  { code: "HT", name: "Haiti" },
+  { code: "HN", name: "Honduras" },
+  { code: "HU", name: "Hungary" },
+  { code: "IS", name: "Iceland" },
+  { code: "IN", name: "India" },
+  { code: "ID", name: "Indonesia" },
+  { code: "IR", name: "Iran" },
+  { code: "IQ", name: "Iraq" },
+  { code: "IE", name: "Ireland" },
+  { code: "IL", name: "Israel" },
+  { code: "IT", name: "Italy" },
+  { code: "JM", name: "Jamaica" },
+  { code: "JP", name: "Japan" },
+  { code: "JO", name: "Jordan" },
+  { code: "KZ", name: "Kazakhstan" },
+  { code: "KE", name: "Kenya" },
+  { code: "KI", name: "Kiribati" },
+  { code: "KP", name: "Korea (North)" },
+  { code: "KR", name: "Korea (South)" },
+  { code: "KW", name: "Kuwait" },
+  { code: "KG", name: "Kyrgyzstan" },
+  { code: "LA", name: "Laos" },
+  { code: "LV", name: "Latvia" },
+  { code: "LB", name: "Lebanon" },
+  { code: "LS", name: "Lesotho" },
+  { code: "LR", name: "Liberia" },
+  { code: "LY", name: "Libya" },
+  { code: "LI", name: "Liechtenstein" },
+  { code: "LT", name: "Lithuania" },
+  { code: "LU", name: "Luxembourg" },
+  { code: "MG", name: "Madagascar" },
+  { code: "MW", name: "Malawi" },
+  { code: "MY", name: "Malaysia" },
+  { code: "MV", name: "Maldives" },
+  { code: "ML", name: "Mali" },
+  { code: "MT", name: "Malta" },
+  { code: "MH", name: "Marshall Islands" },
+  { code: "MR", name: "Mauritania" },
+  { code: "MU", name: "Mauritius" },
+  { code: "MX", name: "Mexico" },
+  { code: "FM", name: "Micronesia" },
+  { code: "MD", name: "Moldova" },
+  { code: "MC", name: "Monaco" },
+  { code: "MN", name: "Mongolia" },
+  { code: "ME", name: "Montenegro" },
+  { code: "MA", name: "Morocco" },
+  { code: "MZ", name: "Mozambique" },
+  { code: "MM", name: "Myanmar" },
+  { code: "NA", name: "Namibia" },
+  { code: "NR", name: "Nauru" },
+  { code: "NP", name: "Nepal" },
+  { code: "NL", name: "Netherlands" },
+  { code: "NZ", name: "New Zealand" },
+  { code: "NI", name: "Nicaragua" },
+  { code: "NE", name: "Niger" },
+  { code: "NG", name: "Nigeria" },
+  { code: "MK", name: "North Macedonia" },
+  { code: "NO", name: "Norway" },
+  { code: "OM", name: "Oman" },
+  { code: "PK", name: "Pakistan" },
+  { code: "PW", name: "Palau" },
+  { code: "PS", name: "Palestine" },
+  { code: "PA", name: "Panama" },
+  { code: "PG", name: "Papua New Guinea" },
+  { code: "PY", name: "Paraguay" },
+  { code: "PE", name: "Peru" },
+  { code: "PH", name: "Philippines" },
+  { code: "PL", name: "Poland" },
+  { code: "PT", name: "Portugal" },
+  { code: "QA", name: "Qatar" },
+  { code: "RO", name: "Romania" },
+  { code: "RU", name: "Russia" },
+  { code: "RW", name: "Rwanda" },
+  { code: "KN", name: "Saint Kitts and Nevis" },
+  { code: "LC", name: "Saint Lucia" },
+  { code: "VC", name: "Saint Vincent and the Grenadines" },
+  { code: "WS", name: "Samoa" },
+  { code: "SM", name: "San Marino" },
+  { code: "ST", name: "Sao Tome and Principe" },
+  { code: "SA", name: "Saudi Arabia" },
+  { code: "SN", name: "Senegal" },
+  { code: "RS", name: "Serbia" },
+  { code: "SC", name: "Seychelles" },
+  { code: "SL", name: "Sierra Leone" },
+  { code: "SG", name: "Singapore" },
+  { code: "SK", name: "Slovakia" },
+  { code: "SI", name: "Slovenia" },
+  { code: "SB", name: "Solomon Islands" },
+  { code: "SO", name: "Somalia" },
+  { code: "ZA", name: "South Africa" },
+  { code: "SS", name: "South Sudan" },
+  { code: "ES", name: "Spain" },
+  { code: "LK", name: "Sri Lanka" },
+  { code: "SD", name: "Sudan" },
+  { code: "SR", name: "Suriname" },
+  { code: "SE", name: "Sweden" },
+  { code: "CH", name: "Switzerland" },
+  { code: "SY", name: "Syria" },
+  { code: "TW", name: "Taiwan" },
+  { code: "TJ", name: "Tajikistan" },
+  { code: "TZ", name: "Tanzania" },
+  { code: "TH", name: "Thailand" },
+  { code: "TL", name: "Timor-Leste" },
+  { code: "TG", name: "Togo" },
+  { code: "TO", name: "Tonga" },
+  { code: "TT", name: "Trinidad and Tobago" },
+  { code: "TN", name: "Tunisia" },
+  { code: "TR", name: "Turkey" },
+  { code: "TM", name: "Turkmenistan" },
+  { code: "TV", name: "Tuvalu" },
+  { code: "UG", name: "Uganda" },
+  { code: "UA", name: "Ukraine" },
+  { code: "AE", name: "United Arab Emirates" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "US", name: "United States" },
+  { code: "UY", name: "Uruguay" },
+  { code: "UZ", name: "Uzbekistan" },
+  { code: "VU", name: "Vanuatu" },
+  { code: "VA", name: "Vatican City" },
+  { code: "VE", name: "Venezuela" },
+  { code: "VN", name: "Vietnam" },
+  { code: "YE", name: "Yemen" },
+  { code: "ZM", name: "Zambia" },
+  { code: "ZW", name: "Zimbabwe" }
+];
+
 // Contact details schema
 const contactSchema = z.object({
   email: z.string().email("Valid email is required"),
@@ -39,21 +238,29 @@ export default function PassengerDetails() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/flight-search/passenger-details/:flightId");
   const [flight, setFlight] = useState<EnhancedFlightWithPaymentPlan | null>(null);
-  const [passengerCount] = useState(1); // For now, defaulting to 1 passenger
+  const [passengerCount, setPassengerCount] = useState(1);
   const [priceDetailsOpen, setPriceDetailsOpen] = useState(false);
   const [userCountry, setUserCountry] = useState("ZA"); // Default to South Africa
 
-  // Forms
-  const passengerForm = useForm<PassengerForm>({
-    resolver: zodResolver(passengerSchema),
-    defaultValues: {
-      title: "Mr",
-      firstName: "",
-      lastName: "",
-      dateOfBirth: "",
-      passportCountry: "",
-    },
-  });
+  // Multiple passenger forms
+  const [passengerForms, setPassengerForms] = useState<any[]>([]);
+
+  // Initialize passenger forms
+  useEffect(() => {
+    const forms = Array.from({ length: passengerCount }, (_, index) => 
+      useForm<PassengerForm>({
+        resolver: zodResolver(passengerSchema),
+        defaultValues: {
+          title: "Mr",
+          firstName: "",
+          lastName: "",
+          dateOfBirth: "",
+          passportCountry: "",
+        },
+      })
+    );
+    setPassengerForms(forms);
+  }, [passengerCount]);
 
   const contactForm = useForm<ContactForm>({
     resolver: zodResolver(contactSchema),
@@ -126,22 +333,40 @@ export default function PassengerDetails() {
       // In a real app, you might fetch from API using the flight ID
       const flightData = localStorage.getItem("selectedFlight");
       if (flightData) {
-        setFlight(JSON.parse(flightData));
+        const parsedFlight = JSON.parse(flightData);
+        setFlight(parsedFlight);
+        // Set passenger count from flight search (default to 1 if not found)
+        const searchData = localStorage.getItem("lastFlightSearch");
+        if (searchData) {
+          const search = JSON.parse(searchData);
+          setPassengerCount(search.passengers || 1);
+        }
       }
     }
   }, [params?.flightId]);
 
   const handleContinue = () => {
-    const passengerData = passengerForm.getValues();
+    // Validate all passenger forms and contact form
+    const allPassengerData = passengerForms.map(form => form.getValues());
     const contactData = contactForm.getValues();
     
-    if (passengerForm.formState.isValid && contactForm.formState.isValid) {
+    // Check if all forms are valid
+    const allFormsValid = passengerForms.every(form => form.formState.isValid) && 
+                          contactForm.formState.isValid;
+    
+    if (allFormsValid) {
       // Store form data and navigate to review page
       localStorage.setItem("passengerData", JSON.stringify({
-        passengers: [passengerData],
+        passengers: allPassengerData,
         contact: contactData,
+        flightId: flight?.id,
+        passengerCount,
       }));
       setLocation("/flight-booking/review");
+    } else {
+      // Trigger validation on all forms
+      passengerForms.forEach(form => form.trigger());
+      contactForm.trigger();
     }
   };
 
@@ -236,88 +461,102 @@ export default function PassengerDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Section - Passenger and Contact Forms */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Passenger 1 Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle data-testid="title-passenger-1">Passenger 1</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Passenger Forms */}
+            {passengerForms.map((form, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle data-testid={`title-passenger-${index + 1}`}>
+                    Passenger {index + 1}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="title">Title</Label>
+                      <Select 
+                        value={form.watch("title")} 
+                        onValueChange={(value) => form.setValue("title", value as any)}
+                      >
+                        <SelectTrigger data-testid={`select-title-${index + 1}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Mr">Mr</SelectItem>
+                          <SelectItem value="Mrs">Mrs</SelectItem>
+                          <SelectItem value="Ms">Ms</SelectItem>
+                          <SelectItem value="Miss">Miss</SelectItem>
+                          <SelectItem value="Master">Master</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input 
+                        {...form.register("firstName")}
+                        data-testid={`input-first-name-${index + 1}`}
+                      />
+                      {form.formState.errors.firstName && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {form.formState.errors.firstName.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input 
+                        {...form.register("lastName")}
+                        data-testid={`input-last-name-${index + 1}`}
+                      />
+                      {form.formState.errors.lastName && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {form.formState.errors.lastName.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                      <Input 
+                        {...form.register("dateOfBirth")}
+                        type="date"
+                        data-testid={`input-date-of-birth-${index + 1}`}
+                      />
+                      {form.formState.errors.dateOfBirth && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {form.formState.errors.dateOfBirth.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
                   <div>
-                    <Label htmlFor="title">Title</Label>
+                    <Label htmlFor="passportCountry">Passport Country</Label>
                     <Select 
-                      value={passengerForm.watch("title")} 
-                      onValueChange={(value) => passengerForm.setValue("title", value as any)}
+                      value={form.watch("passportCountry")} 
+                      onValueChange={(value) => form.setValue("passportCountry", value)}
                     >
-                      <SelectTrigger data-testid="select-title">
-                        <SelectValue />
+                      <SelectTrigger data-testid={`select-passport-country-${index + 1}`}>
+                        <SelectValue placeholder="Select country" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Mr">Mr</SelectItem>
-                        <SelectItem value="Mrs">Mrs</SelectItem>
-                        <SelectItem value="Ms">Ms</SelectItem>
-                        <SelectItem value="Miss">Miss</SelectItem>
-                        <SelectItem value="Master">Master</SelectItem>
+                      <SelectContent className="max-h-60">
+                        {countries.map((country) => (
+                          <SelectItem key={country.code} value={country.name}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input 
-                      {...passengerForm.register("firstName")}
-                      data-testid="input-first-name"
-                    />
-                    {passengerForm.formState.errors.firstName && (
+                    {form.formState.errors.passportCountry && (
                       <p className="text-red-500 text-sm mt-1">
-                        {passengerForm.formState.errors.firstName.message}
+                        {form.formState.errors.passportCountry.message}
                       </p>
                     )}
                   </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input 
-                      {...passengerForm.register("lastName")}
-                      data-testid="input-last-name"
-                    />
-                    {passengerForm.formState.errors.lastName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {passengerForm.formState.errors.lastName.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                    <Input 
-                      {...passengerForm.register("dateOfBirth")}
-                      type="date"
-                      data-testid="input-date-of-birth"
-                    />
-                    {passengerForm.formState.errors.dateOfBirth && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {passengerForm.formState.errors.dateOfBirth.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="passportCountry">Passport Country</Label>
-                  <Input 
-                    {...passengerForm.register("passportCountry")}
-                    placeholder="e.g., South Africa"
-                    data-testid="input-passport-country"
-                  />
-                  {passengerForm.formState.errors.passportCountry && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {passengerForm.formState.errors.passportCountry.message}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ))}
 
             {/* Contact Details Form */}
             <Card>
