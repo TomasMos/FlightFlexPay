@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { amadeusService } from "./services/amadeus";
 import { PaymentPlanService } from "./services/paymentPlan";
+import { StripeService } from "./services/stripe";
 import {
   flightSearchSchema,
   EnhancedFlightWithPaymentPlan,
@@ -183,6 +184,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get booking error:", error);
       res.status(500).json({ message: "Failed to get booking" });
+    }
+  });
+
+  // Payment routes
+  const paymentIntentSchema = z.object({
+    amount: z.number().min(50), // Minimum $0.50
+    currency: z.string().default('usd'),
+    customer_email: z.string().email().optional(),
+    metadata: z.record(z.string()).optional(),
+  });
+
+  const createSubscriptionSchema = z.object({
+    customer_email: z.string().email(),
+    customer_name: z.string().optional(),
+    amount: z.number().min(50), // Minimum $0.50 per installment
+    currency: z.string().default('usd'),
+    interval: z.enum(['week', 'month']),
+    interval_count: z.number().min(1).max(4),
+    metadata: z.record(z.string()).optional(),
+  });
+
+  // Create payment intent for one-time payments (deposits or full payments)
+  app.post("/api/payments/create-intent", async (req, res) => {
+    try {
+      const paymentData = paymentIntentSchema.parse(req.body);
+      
+      const paymentIntent = await StripeService.createPaymentIntent(paymentData);
+      
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        id: paymentIntent.id,
+      });
+    } catch (error: any) {
+      console.error("Error creating payment intent:", error);
+      res.status(400).json({ 
+        error: error.message || "Failed to create payment intent" 
+      });
+    }
+  });
+
+  // Create subscription for installment payments
+  app.post("/api/payments/create-subscription", async (req, res) => {
+    try {
+      const subscriptionData = createSubscriptionSchema.parse(req.body);
+      
+      // Create customer first
+      const customer = await StripeService.createCustomer(
+        subscriptionData.customer_email,
+        subscriptionData.customer_name
+      );
+      
+      // Create subscription
+      const subscription = await StripeService.createSubscription(customer.id, subscriptionData);
+      
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
+        customerId: customer.id,
+      });
+    } catch (error: any) {
+      console.error("Error creating subscription:", error);
+      res.status(400).json({ 
+        error: error.message || "Failed to create subscription" 
+      });
+    }
+  });
+
+  // Get payment intent status
+  app.get("/api/payments/intent/:id", async (req, res) => {
+    try {
+      const paymentIntent = await StripeService.getPaymentIntent(req.params.id);
+      res.json({
+        status: paymentIntent.status,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency,
+      });
+    } catch (error: any) {
+      console.error("Error retrieving payment intent:", error);
+      res.status(400).json({ 
+        error: error.message || "Failed to retrieve payment intent" 
+      });
     }
   });
 

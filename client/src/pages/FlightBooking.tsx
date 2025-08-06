@@ -3,9 +3,10 @@ import { useLocation, useRoute } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, Check } from "lucide-react";
+import { ChevronDown, ChevronUp, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EnhancedFlightWithPaymentPlan } from "@shared/schema";
+import StripePaymentForm from "@/components/StripePaymentForm";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
@@ -14,6 +15,9 @@ export default function FlightBooking() {
   const [selectedDeposit, setSelectedDeposit] = useState(30); // Default to 30%
   const [selectedInstallment, setSelectedInstallment] = useState<"weekly" | "bi-weekly">("weekly");
   const [installmentDetailsOpen, setInstallmentDetailsOpen] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
   // Load flight and passenger data from localStorage
   useEffect(() => {
@@ -136,6 +140,12 @@ export default function FlightBooking() {
   ];
 
   const handleBooking = () => {
+    setShowPaymentForm(true);
+  };
+
+  const handlePaymentSuccess = (paymentResult: any) => {
+    setPaymentCompleted(true);
+    
     // Save booking details to localStorage
     const bookingData = {
       flight,
@@ -150,16 +160,83 @@ export default function FlightBooking() {
         totalAmount: flightTotal,
         remainingAmount,
       },
+      paymentResult,
       bookingDate: new Date().toISOString(),
     };
     
     localStorage.setItem("bookingData", JSON.stringify(bookingData));
-    setLocation("/flight-booking/confirmation");
+    setBookingConfirmed(true);
   };
+
+  const handlePaymentError = (error: string) => {
+    console.error("Payment error:", error);
+    // You might want to show an error toast or modal here
+    alert(`Payment failed: ${error}`);
+  };
+
+  if (bookingConfirmed) {
+    return (
+      <div className="min-h-screen bg-flightpay-slate-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-flightpay-slate-900 mb-2">Booking Confirmed!</h2>
+          <p className="text-flightpay-slate-600 mb-6">
+            Your flight has been successfully booked and payment processed.
+            {selectedDeposit < 100 && " Your installment plan has been set up."}
+          </p>
+          <Button
+            onClick={() => setLocation("/")}
+            className="bg-flightpay-accent hover:bg-orange-600 text-white"
+          >
+            Return to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-flightpay-slate-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {showPaymentForm && (
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold text-flightpay-slate-900 mb-6" data-testid="title-payment">Complete Your Payment</h2>
+            <StripePaymentForm
+              amount={Math.round(depositAmount * 100)} // Convert to cents
+              currency="usd"
+              customerEmail={passengerData?.contactDetails?.email || ""}
+              customerName={`${passengerData?.passengers?.[0]?.firstName} ${passengerData?.passengers?.[0]?.lastName}`}
+              paymentType={selectedDeposit === 100 ? "full_payment" : "deposit"}
+              metadata={{
+                flightId: flight?.id || "",
+                passengers: JSON.stringify(passengerData?.passengers?.map((p: any) => `${p.firstName} ${p.lastName}`) || []),
+                depositPercentage: selectedDeposit.toString(),
+              }}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+              hasInstallments={selectedDeposit < 100}
+              installmentData={selectedDeposit < 100 ? {
+                amount: Math.round(installmentAmount * 100), // Convert to cents
+                interval: 'week',
+                interval_count: selectedInstallment === "weekly" ? 1 : 2,
+              } : undefined}
+            />
+            <div className="mt-6 text-center">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowPaymentForm(false)}
+                data-testid="button-back-to-booking"
+              >
+                Back to Booking Details
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!showPaymentForm && (
+        <div>
         {/* Flight Summary Header */}
         <div className="bg-white rounded-lg shadow-sm border border-flightpay-slate-200 p-6 mb-8">
           <h1 className="text-2xl font-bold text-flightpay-slate-900 mb-4" data-testid="title-booking">
@@ -415,6 +492,8 @@ export default function FlightBooking() {
             </Card>
           </div>
         </div>
+        </div>
+        )}
       </div>
     </div>
   );
