@@ -69,10 +69,14 @@ export const formatDate = (dateString: string) => {
 
 export const formatDateShort = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "long",
-  });
+
+  // Get the individual date parts
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Add 1 because months are 0-indexed
+  const day = date.getDate().toString().padStart(2, '0');
+
+  // Return the date in yyyy/mm/dd format
+  return `${year}/${month}/${day}`;
 };
 
 

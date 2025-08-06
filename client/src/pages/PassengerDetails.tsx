@@ -89,7 +89,7 @@ export default function PassengerDetails() {
   const passengerForm2 = useForm<PassengerForm>({
     resolver: zodResolver(passengerSchema),
     defaultValues: {
-      title: "Mr",
+      title: "",
       firstName: "",
       lastName: "",
       dateOfBirth: "",
@@ -100,7 +100,7 @@ export default function PassengerDetails() {
   const passengerForm3 = useForm<PassengerForm>({
     resolver: zodResolver(passengerSchema),
     defaultValues: {
-      title: "Mr",
+      title: "",
       firstName: "",
       lastName: "",
       dateOfBirth: "",
@@ -111,7 +111,7 @@ export default function PassengerDetails() {
   const passengerForm4 = useForm<PassengerForm>({
     resolver: zodResolver(passengerSchema),
     defaultValues: {
-      title: "Mr",
+      title: "",
       firstName: "",
       lastName: "",
       dateOfBirth: "",
@@ -122,7 +122,7 @@ export default function PassengerDetails() {
   const passengerForm5 = useForm<PassengerForm>({
     resolver: zodResolver(passengerSchema),
     defaultValues: {
-      title: "Mr",
+      title: "",
       firstName: "",
       lastName: "",
       dateOfBirth: "",
@@ -133,7 +133,7 @@ export default function PassengerDetails() {
   const passengerForm6 = useForm<PassengerForm>({
     resolver: zodResolver(passengerSchema),
     defaultValues: {
-      title: "Mr",
+      title: "",
       firstName: "",
       lastName: "",
       dateOfBirth: "",
@@ -465,7 +465,7 @@ export default function PassengerDetails() {
                         <Input
                           {...form.register("dateOfBirth")}
                           type="date"
-                          className="hide-date-icon pl-10 w-full pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
+                          className="hide-date-icon pl-10 w-full pr-4 py-3  focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
                           data-testid={`input-date-of-birth-${index + 1}`}
                           onClick={(e) => (e.target as HTMLInputElement).showPicker()}
   
