@@ -3,10 +3,113 @@ import { useLocation, useRoute } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, Check, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Check, Loader2, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EnhancedFlightWithPaymentPlan } from "@shared/schema";
-import StripePaymentForm from "@/components/StripePaymentForm";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements
+} from "@stripe/react-stripe-js";
+
+// Initialize Stripe
+const stripePromise = loadStripe("pk_test_51QbMwRAIE9EfBRRmGpNZ5FDdUcPsNzNlvb45vRGZ89LG5Sx4Sgi4Z9nE7beLN0AV7zlG2vLAqNYNpSblcOgfUxGT00bUKOGe3p");
+
+// Payment Form Component
+function PaymentForm({ 
+  clientSecret, 
+  onSuccess, 
+  onError,
+  amount,
+  paymentType 
+}: {
+  clientSecret: string;
+  onSuccess: (paymentIntent: any) => void;
+  onError: (error: string) => void;
+  amount: number;
+  paymentType: string;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!stripe || !elements) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/payment-success`,
+      },
+      redirect: "if_required",
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      onError(error.message || "Payment failed");
+    } else if (paymentIntent && paymentIntent.status === "succeeded") {
+      onSuccess(paymentIntent);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount / 100);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="border border-flightpay-slate-200 rounded-lg p-4">
+        <PaymentElement 
+          options={{
+            layout: "tabs",
+          }}
+        />
+      </div>
+      
+      <div className="bg-flightpay-slate-50 rounded-lg p-4">
+        <div className="flex justify-between items-center">
+          <span className="text-flightpay-slate-700">
+            {paymentType === "full_payment" ? "Total Amount" : "Deposit Amount"}
+          </span>
+          <span className="font-bold text-flightpay-slate-900">
+            {formatCurrency(amount)}
+          </span>
+        </div>
+      </div>
+
+      <Button 
+        type="submit" 
+        disabled={!stripe || isLoading}
+        className="w-full bg-flightpay-accent hover:bg-orange-600 text-white"
+        data-testid="button-pay-now"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          <>
+            <CreditCard className="mr-2 h-4 w-4" />
+            Pay {formatCurrency(amount)}
+          </>
+        )}
+      </Button>
+    </form>
+  );
+}
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
@@ -16,6 +119,8 @@ export default function FlightBooking() {
   const [selectedInstallment, setSelectedInstallment] = useState<"weekly" | "bi-weekly">("weekly");
   const [installmentDetailsOpen, setInstallmentDetailsOpen] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [clientSecret, setClientSecret] = useState("");
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
@@ -81,57 +186,47 @@ export default function FlightBooking() {
     
     return dates;
   };
-
+  
   const installmentDates = generateInstallmentDates();
-  const firstInstallmentDate = installmentDates[0];
-  const lastInstallmentDate = installmentDates[installmentDates.length - 1];
 
-  // Format dates
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    }).format(date);
-  };
-
+  // Format currency helper
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'USD',
     }).format(amount);
   };
 
-  // Flight summary calculation
-  const getFlightSummary = () => {
-    if (!flight) return null;
-    
-    const outboundSegments = flight.itineraries[0].segments;
-    const firstSegment = outboundSegments[0];
-    const lastSegment = outboundSegments[outboundSegments.length - 1];
-    
-    return {
-      origin: firstSegment.departure.cityName,
-      destination: lastSegment.arrival.cityName,
-      departureTime: new Date(firstSegment.departure.at).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      }),
-      arrivalTime: new Date(lastSegment.arrival.at).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      }),
-      departureDate: formatDate(new Date(firstSegment.departure.at)),
-      arrivalDate: formatDate(new Date(lastSegment.arrival.at)),
-    };
+  // Format date helper
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
-  const flightSummary = getFlightSummary();
-  const flightFare = parseFloat(flight.price.base);
-  const flightTaxes = parseFloat(flight.price.total) - parseFloat(flight.price.base);
+  // Create flight summary
+  const flightSummary = {
+    origin: flight.itineraries[0].segments[0].departure.iataCode,
+    destination: flight.itineraries[0].segments[flight.itineraries[0].segments.length - 1].arrival.iataCode,
+    departureDate: formatDate(new Date(flight.itineraries[0].segments[0].departure.at)),
+    arrivalDate: formatDate(new Date(flight.itineraries[0].segments[flight.itineraries[0].segments.length - 1].arrival.at)),
+    departureTime: new Date(flight.itineraries[0].segments[0].departure.at).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    arrivalTime: new Date(flight.itineraries[0].segments[flight.itineraries[0].segments.length - 1].arrival.at).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+  };
 
+  // Price breakdown
+  const flightFare = flightTotal * 0.85; // Approximate fare (85% of total)
+  const flightTaxes = flightTotal * 0.15; // Approximate taxes (15% of total)
+
+  // Deposit options
   const depositOptions = [
     { value: 20, label: "20%" },
     { value: 30, label: "30%" },
@@ -139,14 +234,53 @@ export default function FlightBooking() {
     { value: 50, label: "50%" },
   ];
 
-  const handleBooking = () => {
-    setShowPaymentForm(true);
+  // Create payment intent
+  const createPaymentIntent = async () => {
+    if (!passengerData?.contactDetails?.email) {
+      alert("Please go back and enter a valid email address.");
+      return;
+    }
+
+    setIsLoadingPayment(true);
+    
+    try {
+      const response = await fetch("/api/payments/create-intent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: Math.round(depositAmount * 100), // Convert to cents
+          currency: "usd",
+          customer_email: passengerData.contactDetails.email,
+          metadata: {
+            flightId: flight.id || "",
+            passengers: JSON.stringify(passengerData.passengers?.map((p: any) => `${p.firstName} ${p.lastName}`) || []),
+            depositPercentage: selectedDeposit.toString(),
+          },
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      setClientSecret(data.clientSecret);
+      setShowPaymentForm(true);
+    } catch (error: any) {
+      alert(`Payment setup failed: ${error.message}`);
+    } finally {
+      setIsLoadingPayment(false);
+    }
   };
 
-  const handlePaymentSuccess = (paymentResult: any) => {
+  const handlePaymentSuccess = (paymentIntent: any) => {
     setPaymentCompleted(true);
+    setBookingConfirmed(true);
     
-    // Save booking details to localStorage
+    // Save booking details
     const bookingData = {
       flight,
       passengers: passengerData,
@@ -160,18 +294,17 @@ export default function FlightBooking() {
         totalAmount: flightTotal,
         remainingAmount,
       },
-      paymentResult,
+      paymentResult: paymentIntent,
       bookingDate: new Date().toISOString(),
     };
     
     localStorage.setItem("bookingData", JSON.stringify(bookingData));
-    setBookingConfirmed(true);
   };
 
   const handlePaymentError = (error: string) => {
-    console.error("Payment error:", error);
-    // You might want to show an error toast or modal here
     alert(`Payment failed: ${error}`);
+    setShowPaymentForm(false);
+    setClientSecret("");
   };
 
   if (bookingConfirmed) {
@@ -200,43 +333,6 @@ export default function FlightBooking() {
   return (
     <div className="min-h-screen bg-flightpay-slate-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {showPaymentForm && (
-          <div className="max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold text-flightpay-slate-900 mb-6" data-testid="title-payment">Complete Your Payment</h2>
-            <StripePaymentForm
-              amount={Math.round(depositAmount * 100)} // Convert to cents
-              currency="usd"
-              customerEmail={passengerData?.contactDetails?.email || ""}
-              customerName={`${passengerData?.passengers?.[0]?.firstName} ${passengerData?.passengers?.[0]?.lastName}`}
-              paymentType={selectedDeposit === 100 ? "full_payment" : "deposit"}
-              metadata={{
-                flightId: flight?.id || "",
-                passengers: JSON.stringify(passengerData?.passengers?.map((p: any) => `${p.firstName} ${p.lastName}`) || []),
-                depositPercentage: selectedDeposit.toString(),
-              }}
-              onSuccess={handlePaymentSuccess}
-              onError={handlePaymentError}
-              hasInstallments={selectedDeposit < 100}
-              installmentData={selectedDeposit < 100 ? {
-                amount: Math.round(installmentAmount * 100), // Convert to cents
-                interval: 'week',
-                interval_count: selectedInstallment === "weekly" ? 1 : 2,
-              } : undefined}
-            />
-            <div className="mt-6 text-center">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowPaymentForm(false)}
-                data-testid="button-back-to-booking"
-              >
-                Back to Booking Details
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {!showPaymentForm && (
-        <div>
         {/* Flight Summary Header */}
         <div className="bg-white rounded-lg shadow-sm border border-flightpay-slate-200 p-6 mb-8">
           <h1 className="text-2xl font-bold text-flightpay-slate-900 mb-4" data-testid="title-booking">
@@ -245,25 +341,25 @@ export default function FlightBooking() {
           <div className="flex items-center justify-between text-lg">
             <div className="flex items-center gap-4">
               <span className="font-semibold text-flightpay-slate-900" data-testid="text-origin">
-                {flightSummary?.origin}
+                {flightSummary.origin}
               </span>
               <span className="text-flightpay-slate-600" data-testid="text-departure-time">
-                {flightSummary?.departureTime}
+                {flightSummary.departureTime}
               </span>
               <span className="text-flightpay-slate-400">→</span>
               <span className="font-semibold text-flightpay-slate-900" data-testid="text-destination">
-                {flightSummary?.destination}
+                {flightSummary.destination}
               </span>
               <span className="text-flightpay-slate-600" data-testid="text-arrival-time">
-                {flightSummary?.arrivalTime}
+                {flightSummary.arrivalTime}
               </span>
             </div>
             <div className="text-sm text-flightpay-slate-600">
-              <span data-testid="text-departure-date">{flightSummary?.departureDate}</span>
-              {flightSummary?.departureDate !== flightSummary?.arrivalDate && (
+              <span data-testid="text-departure-date">{flightSummary.departureDate}</span>
+              {flightSummary.departureDate !== flightSummary.arrivalDate && (
                 <>
                   <span className="mx-2">-</span>
-                  <span data-testid="text-arrival-date">{flightSummary?.arrivalDate}</span>
+                  <span data-testid="text-arrival-date">{flightSummary.arrivalDate}</span>
                 </>
               )}
             </div>
@@ -281,162 +377,197 @@ export default function FlightBooking() {
               <CardContent>
                 <div className="grid grid-cols-4 gap-3">
                   {depositOptions.map((option) => (
-                    <Button
+                    <button
                       key={option.value}
-                      variant={selectedDeposit === option.value ? "default" : "outline"}
-                      className={cn(
-                        "h-12 text-base font-semibold",
-                        selectedDeposit === option.value 
-                          ? "bg-green-600 hover:bg-green-700 text-white" 
-                          : "border-flightpay-slate-300 text-flightpay-slate-700 hover:bg-flightpay-slate-50"
-                      )}
                       onClick={() => setSelectedDeposit(option.value)}
+                      className={cn(
+                        "p-4 rounded-lg border-2 text-center transition-all",
+                        selectedDeposit === option.value
+                          ? "border-flightpay-accent bg-orange-50 text-orange-700"
+                          : "border-flightpay-slate-200 bg-white text-flightpay-slate-700 hover:border-flightpay-slate-300"
+                      )}
                       data-testid={`button-deposit-${option.value}`}
                     >
-                      {option.label}
-                    </Button>
+                      <div className="font-semibold text-lg">{option.label}</div>
+                      <div className="text-sm mt-1">
+                        {formatCurrency((flightTotal * option.value) / 100)}
+                      </div>
+                    </button>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Installments Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle data-testid="title-installments">Installments</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div
-                    className={cn(
-                      "relative border-2 rounded-lg p-4 cursor-pointer transition-colors",
-                      selectedInstallment === "weekly"
-                        ? "border-green-500 bg-green-50"
-                        : "border-flightpay-slate-200 hover:border-flightpay-slate-300"
-                    )}
-                    onClick={() => setSelectedInstallment("weekly")}
-                    data-testid="button-weekly-installments"
-                  >
-                    {selectedInstallment === "weekly" && (
-                      <div className="absolute top-3 right-3">
-                        <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
-                        </div>
-                      </div>
-                    )}
-                    <div className="text-center">
-                      <div className="text-sm font-medium text-flightpay-slate-600 mb-1">Weekly</div>
-                      <div className="text-xl font-bold text-green-600">
-                        {formatCurrency(weeklyAmount)}
-                      </div>
-                      <div className="text-xs text-flightpay-slate-500">x {weeklyInstallments}</div>
-                    </div>
-                  </div>
-
-                  <div
-                    className={cn(
-                      "relative border-2 rounded-lg p-4 cursor-pointer transition-colors",
-                      selectedInstallment === "bi-weekly"
-                        ? "border-green-500 bg-green-50"
-                        : "border-flightpay-slate-200 hover:border-flightpay-slate-300"
-                    )}
-                    onClick={() => setSelectedInstallment("bi-weekly")}
-                    data-testid="button-biweekly-installments"
-                  >
-                    {selectedInstallment === "bi-weekly" && (
-                      <div className="absolute top-3 right-3">
-                        <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
-                        </div>
-                      </div>
-                    )}
-                    <div className="text-center">
-                      <div className="text-sm font-medium text-flightpay-slate-600 mb-1">Bi-weekly</div>
-                      <div className="text-xl font-bold text-flightpay-slate-500">
-                        {formatCurrency(biWeeklyAmount)}
-                      </div>
-                      <div className="text-xs text-flightpay-slate-500">x {biWeeklyInstallments}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-center text-sm text-flightpay-slate-600" data-testid="text-installment-schedule">
-                  {installmentCount} installments, starting {formatDate(firstInstallmentDate)} and ending {formatDate(lastInstallmentDate)}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Billing Plan Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle data-testid="title-billing-plan">Billing Plan</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-flightpay-slate-900" data-testid="text-total-due">Total Due</span>
-                  <span className="font-bold text-flightpay-slate-900" data-testid="text-total-amount">
-                    {formatCurrency(flightTotal)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-flightpay-slate-700" data-testid="text-deposit-due">
-                    {selectedDeposit}% Deposit (due today)
-                  </span>
-                  <span className="font-semibold text-flightpay-slate-900" data-testid="text-deposit-amount">
-                    {formatCurrency(depositAmount)}
-                  </span>
-                </div>
-
-                <Collapsible open={installmentDetailsOpen} onOpenChange={setInstallmentDetailsOpen}>
-                  <CollapsibleTrigger className="flex justify-between items-center w-full py-2 hover:bg-flightpay-slate-50 rounded" data-testid="button-toggle-installments">
+                
+                <div className="mt-6 bg-flightpay-slate-50 rounded-lg p-4">
+                  <div className="flex justify-between items-center">
                     <span className="text-flightpay-slate-700">
-                      Installments ({installmentCount})
+                      {selectedDeposit === 100 ? "Total Payment" : "Deposit Payment"}
                     </span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-flightpay-slate-900">
+                    <span className="font-bold text-xl text-flightpay-slate-900" data-testid="text-deposit-amount">
+                      {formatCurrency(depositAmount)}
+                    </span>
+                  </div>
+                  {selectedDeposit < 100 && (
+                    <div className="flex justify-between items-center mt-2 text-sm">
+                      <span className="text-flightpay-slate-600">Remaining to pay</span>
+                      <span className="text-flightpay-slate-700" data-testid="text-remaining-amount">
                         {formatCurrency(remainingAmount)}
                       </span>
-                      {installmentDetailsOpen ? (
-                        <ChevronUp className="h-4 w-4 text-flightpay-slate-500" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4 text-flightpay-slate-500" />
-                      )}
                     </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-2 pt-2">
-                    {installmentDates.map((date, index) => (
-                      <div key={index} className="flex justify-between items-center py-1 text-sm border-l-2 border-flightpay-slate-200 pl-4">
-                        <span className="text-flightpay-slate-600" data-testid={`text-installment-date-${index + 1}`}>
-                          {formatDate(date)}
-                        </span>
-                        <span className="text-flightpay-slate-900" data-testid={`text-installment-amount-${index + 1}`}>
-                          {formatCurrency(installmentAmount)}
-                        </span>
-                      </div>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
-            <div className="flex gap-4">
-              <Button
-                variant="outline"
-                onClick={() => setLocation("/flight-search/passenger-details/" + flight.id)}
-                className="flex-1"
-                data-testid="button-back"
-              >
-                Back to Passenger Details
-              </Button>
-              <Button
-                onClick={handleBooking}
-                className="flex-1 bg-flightpay-accent hover:bg-orange-600 text-white"
-                data-testid="button-confirm-booking"
-              >
-                Confirm Booking
-              </Button>
-            </div>
+            {/* Installment Options (only show if not 100% deposit) */}
+            {selectedDeposit < 100 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle data-testid="title-installment-plan">Installment Plan</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <button
+                      onClick={() => setSelectedInstallment("weekly")}
+                      className={cn(
+                        "p-4 rounded-lg border-2 text-center transition-all",
+                        selectedInstallment === "weekly"
+                          ? "border-flightpay-accent bg-orange-50 text-orange-700"
+                          : "border-flightpay-slate-200 bg-white text-flightpay-slate-700 hover:border-flightpay-slate-300"
+                      )}
+                      data-testid="button-weekly"
+                    >
+                      <div className="font-semibold">Weekly</div>
+                      <div className="text-sm mt-1">{weeklyInstallments} payments</div>
+                      <div className="text-lg font-bold mt-2">
+                        {formatCurrency(weeklyAmount)}
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => setSelectedInstallment("bi-weekly")}
+                      className={cn(
+                        "p-4 rounded-lg border-2 text-center transition-all",
+                        selectedInstallment === "bi-weekly"
+                          ? "border-flightpay-accent bg-orange-50 text-orange-700"
+                          : "border-flightpay-slate-200 bg-white text-flightpay-slate-700 hover:border-flightpay-slate-300"
+                      )}
+                      data-testid="button-bi-weekly"
+                    >
+                      <div className="font-semibold">Bi-weekly</div>
+                      <div className="text-sm mt-1">{biWeeklyInstallments} payments</div>
+                      <div className="text-lg font-bold mt-2">
+                        {formatCurrency(biWeeklyAmount)}
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Billing Plan Details */}
+                  <Collapsible open={installmentDetailsOpen} onOpenChange={setInstallmentDetailsOpen}>
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between"
+                        data-testid="button-view-billing-plan"
+                      >
+                        View Billing Plan
+                        {installmentDetailsOpen ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-2 mt-4">
+                      {installmentDates.map((date, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center py-2 px-3 bg-flightpay-slate-50 rounded"
+                        >
+                          <span className="text-sm text-flightpay-slate-600" data-testid={`text-installment-date-${index + 1}`}>
+                            Payment {index + 1} - {formatDate(date)}
+                          </span>
+                          <span className="text-flightpay-slate-900" data-testid={`text-installment-amount-${index + 1}`}>
+                            {formatCurrency(installmentAmount)}
+                          </span>
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Payment Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle data-testid="title-payment-details">Payment Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {!showPaymentForm ? (
+                  <div className="flex gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setLocation("/flight-search/passenger-details/" + flight.id)}
+                      className="flex-1"
+                      data-testid="button-back"
+                    >
+                      Back to Passenger Details
+                    </Button>
+                    <Button
+                      onClick={createPaymentIntent}
+                      disabled={isLoadingPayment}
+                      className="flex-1 bg-flightpay-accent hover:bg-orange-600 text-white"
+                      data-testid="button-confirm-booking"
+                    >
+                      {isLoadingPayment ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Setting up payment...
+                        </>
+                      ) : (
+                        "Proceed to Payment"
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    {clientSecret && (
+                      <Elements 
+                        stripe={stripePromise} 
+                        options={{ 
+                          clientSecret,
+                          appearance: {
+                            theme: 'stripe',
+                            variables: {
+                              colorPrimary: '#fb923c', // flightpay-accent color
+                            },
+                          },
+                        }}
+                      >
+                        <PaymentForm
+                          clientSecret={clientSecret}
+                          onSuccess={handlePaymentSuccess}
+                          onError={handlePaymentError}
+                          amount={Math.round(depositAmount * 100)}
+                          paymentType={selectedDeposit === 100 ? "full_payment" : "deposit"}
+                        />
+                      </Elements>
+                    )}
+                    <div className="mt-4 text-center">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setShowPaymentForm(false);
+                          setClientSecret("");
+                        }}
+                        data-testid="button-back-to-booking"
+                      >
+                        Back to Booking Details
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right Section - Flight Summary */}
@@ -448,15 +579,15 @@ export default function FlightBooking() {
               <CardContent className="space-y-4">
                 <div className="text-center space-y-2">
                   <div className="flex items-center justify-between text-lg font-semibold">
-                    <span data-testid="text-summary-origin">{flightSummary?.origin}</span>
+                    <span data-testid="text-summary-origin">{flightSummary.origin}</span>
                     <span className="text-flightpay-slate-400">→</span>
-                    <span data-testid="text-summary-destination">{flightSummary?.destination}</span>
+                    <span data-testid="text-summary-destination">{flightSummary.destination}</span>
                   </div>
                   <div className="text-sm text-flightpay-slate-600">
-                    <div data-testid="text-summary-date">{flightSummary?.departureDate}</div>
+                    <div data-testid="text-summary-date">{flightSummary.departureDate}</div>
                     <div className="flex justify-between mt-1">
-                      <span>Departure: {flightSummary?.departureTime}</span>
-                      <span>Arrival: {flightSummary?.arrivalTime}</span>
+                      <span>Departure: {flightSummary.departureTime}</span>
+                      <span>Arrival: {flightSummary.arrivalTime}</span>
                     </div>
                   </div>
                 </div>
@@ -492,8 +623,6 @@ export default function FlightBooking() {
             </Card>
           </div>
         </div>
-        </div>
-        )}
       </div>
     </div>
   );

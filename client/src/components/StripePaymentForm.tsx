@@ -165,6 +165,9 @@ export default function StripePaymentForm({
         });
 
         const paymentResponse = await response.json();
+        console.log(`payment response`,paymentResponse)
+        console.log("customerEmail", customerEmail);
+
         setClientSecret(paymentResponse.clientSecret);
 
         // Create subscription for installments if needed
