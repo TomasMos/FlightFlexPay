@@ -230,6 +230,7 @@ export function FlightSearchForm({
                     className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-flightpay-slate-600 pointer-events-none" 
                     // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
                   />
+                  
                 </div>
               </div>
 

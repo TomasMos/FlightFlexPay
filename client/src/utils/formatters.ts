@@ -67,6 +67,14 @@ export const formatDate = (dateString: string) => {
   });
 };
 
+export const formatDateShort = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "long",
+  });
+};
+
 
 export const stopoverDuration = (startDate: Date, endDate: Date): string => {
     // Calculate the difference in milliseconds
@@ -93,3 +101,9 @@ export const parseDurationToMinutes = (duration: string): number => {
     const minutes = match[2] ? parseInt(match[2]) : 0;
     return hours * 60 + minutes;
   };
+
+export const formattedPrice = (amount: number): string => {
+  return amount.toLocaleString('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})};
