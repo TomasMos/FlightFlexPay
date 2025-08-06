@@ -43,10 +43,11 @@ The application uses four main tables:
 - **paymentPlans**: Payment plan details with installment schedules
 
 ### Payment Plan System
-- **PaymentPlanService**: Calculates eligibility and payment schedules
-- **Minimum Requirements**: $300 minimum booking, 45+ days before travel
-- **Payment Structure**: 20% deposit, remaining amount split into installments
-- **Schedule Generation**: Automatic payment date calculation based on travel date
+- **Customizable Deposits**: Four deposit options (20%, 30%, 40%, 50%) with 30% default
+- **Flexible Installments**: Weekly or bi-weekly payment schedules with dynamic calculations
+- **Smart Scheduling**: Automatic payment date calculation ending 2 weeks before departure
+- **Interactive Billing Plan**: Expandable accordion showing detailed installment schedule with dates and amounts
+- **Real-time Calculations**: Dynamic updates based on flight total, selected deposit, and departure date
 
 ### Flight Modal System
 - **Detailed Itinerary Display**: Comprehensive flight information modal following airline ticket design
@@ -69,6 +70,14 @@ The application uses four main tables:
 - **Search Persistence**: Flight search parameters automatically saved and restored on homepage
 - **Passenger Data**: Complete passenger and contact information stored for booking process
 - **Flight Selection**: Selected flight data persisted across page navigation
+
+### Payment Plan Booking System
+- **FlightBooking Component**: New comprehensive booking page at `/flight-search/book`
+- **Deposit Selection**: Visual buttons for 20%, 30%, 40%, 50% deposit amounts
+- **Installment Options**: Side-by-side comparison of weekly vs bi-weekly payment plans
+- **Billing Plan Accordion**: Collapsible detailed view of all installment dates and amounts
+- **Flight Summary Integration**: Persistent flight details and passenger information display
+- **Navigation Flow**: Passenger Details → Payment Plan Selection → Booking Confirmation
 
 ## Data Flow
 

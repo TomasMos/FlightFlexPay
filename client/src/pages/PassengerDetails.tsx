@@ -255,7 +255,7 @@ export default function PassengerDetails() {
           passengerCount,
         }),
       );
-      setLocation("/flight-booking/review");
+      setLocation("/flight-search/book");
     } else {
       // Trigger validation on all forms
       passengerForms.forEach((form) => form.trigger());
