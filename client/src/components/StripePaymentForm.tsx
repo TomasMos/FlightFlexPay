@@ -11,8 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CreditCard, CheckCircle } from "lucide-react";
 
 
-// Initialize Stripe
-const stripePromise = loadStripe("pk_test_51QbMwRAIE9EfBRRmGpNZ5FDdUcPsNzNlvb45vRGZ89LG5Sx4Sgi4Z9nE7beLN0AV7zlG2vLAqNYNpSblcOgfUxGT00bUKOGe3p");
+// Initialize Stripe Prod
+// const stripePromise = loadStripe("pk_live_51MgwsMAmEcsh1VOd2iSLbvZ7335oyK2OxjO1QrPM5lab8tU87jldpeUbHbhmTZuqSmJirLt02o3bLUfOokze4ENJ00NWRTsZuh");
+
+// Initialise Strip Test
+const stripePromise = loadStripe("pk_test_51Rt7ymAUy8x2iu0HB3xDTUlgU7zGr0QukGNjkcrQHbK1HmQtgKQziPH0DqQzQ2SxFVTbxRhhYqUXu43UqB2qn3fc00l5IihEVR");
 
 interface PaymentFormProps {
   clientSecret: string;
@@ -28,6 +31,8 @@ function PaymentForm({ clientSecret, onSuccess, onError, amount, currency, payme
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -165,10 +170,10 @@ export default function StripePaymentForm({
         });
 
         const paymentResponse = await response.json();
-        console.log(`payment response`,paymentResponse)
-        console.log("customerEmail", customerEmail);
+        console.log(`paymentResponse`, paymentResponse)
 
         setClientSecret(paymentResponse.clientSecret);
+        console.log(clientSecret)
 
         // Create subscription for installments if needed
         if (hasInstallments && installmentData) {
@@ -288,7 +293,7 @@ export default function StripePaymentForm({
       <CardHeader>
         <CardTitle data-testid="title-payment-details">Payment Details</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent >
         <Elements 
           stripe={stripePromise} 
           options={{ 
@@ -296,7 +301,7 @@ export default function StripePaymentForm({
             appearance,
           }}
         >
-          <PaymentForm
+          <PaymentForm 
             clientSecret={clientSecret}
             onSuccess={handlePaymentSuccess}
             onError={onError}

@@ -1,12 +1,24 @@
-import Stripe from 'stripe';
+import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY environment variable is required');
+// ---------------- Production --------------
+// if (!process.env.STRIPE_SECRET_KEY) {
+//   throw new Error("STRIPE_SECRET_KEY environment variable is required");
+// }
+
+// export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+//   apiVersion: "2025-07-30.basil",
+// });
+// -----------------------------------------
+
+// ---------------- TEST --------------
+if (!process.env.STRIPE_SECRET_KEY_TEST) {
+  throw new Error("STRIPE_SECRET_KEY environment variable is required");
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-07-30.basil',
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY_TEST, {
+  apiVersion: "2025-07-30.basil",
 });
+// -----------------------------------------
 
 export interface PaymentIntentData {
   amount: number; // in cents
@@ -19,18 +31,22 @@ export interface SubscriptionData {
   customer_email: string;
   amount: number; // in cents
   currency: string;
-  interval: 'week' | 'month';
+  interval: "week" | "month";
   interval_count: number; // 1 for weekly, 2 for bi-weekly
   metadata?: Record<string, string>;
 }
 
 export class StripeService {
   // Create payment intent for one-time payments (deposits or full payments)
-  static async createPaymentIntent(data: PaymentIntentData): Promise<Stripe.PaymentIntent> {
+  static async createPaymentIntent(
+    data: PaymentIntentData,
+  ): Promise<Stripe.PaymentIntent> {
+    console.log(data)
     return await stripe.paymentIntents.create({
       amount: Math.round(data.amount), // Ensure it's a whole number
       currency: data.currency,
       metadata: data.metadata || {},
+      receipt_email: data.customer_email,
       automatic_payment_methods: {
         enabled: true,
       },
@@ -38,7 +54,10 @@ export class StripeService {
   }
 
   // Create customer for recurring payments
-  static async createCustomer(email: string, name?: string): Promise<Stripe.Customer> {
+  static async createCustomer(
+    email: string,
+    name?: string,
+  ): Promise<Stripe.Customer> {
     return await stripe.customers.create({
       email,
       name,
@@ -46,7 +65,10 @@ export class StripeService {
   }
 
   // Create subscription for installment payments
-  static async createSubscription(customerId: string, data: SubscriptionData): Promise<Stripe.Subscription> {
+  static async createSubscription(
+    customerId: string,
+    data: SubscriptionData,
+  ): Promise<Stripe.Subscription> {
     // First create a price for the installment amount
     const price = await stripe.prices.create({
       unit_amount: Math.round(data.amount),
@@ -56,7 +78,7 @@ export class StripeService {
         interval_count: data.interval_count,
       },
       product_data: {
-        name: 'Flight Payment Installment',
+        name: "Flight Payment Installment",
       },
       metadata: data.metadata || {},
     });
@@ -64,30 +86,38 @@ export class StripeService {
     // Create the subscription
     return await stripe.subscriptions.create({
       customer: customerId,
-      items: [{
-        price: price.id,
-      }],
-      payment_behavior: 'default_incomplete',
+      items: [
+        {
+          price: price.id,
+        },
+      ],
+      payment_behavior: "default_incomplete",
       payment_settings: {
-        save_default_payment_method: 'on_subscription',
+        save_default_payment_method: "on_subscription",
       },
-      expand: ['latest_invoice.payment_intent'],
+      expand: ["latest_invoice.payment_intent"],
       metadata: data.metadata || {},
     });
   }
 
   // Cancel subscription (if needed)
-  static async cancelSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
+  static async cancelSubscription(
+    subscriptionId: string,
+  ): Promise<Stripe.Subscription> {
     return await stripe.subscriptions.cancel(subscriptionId);
   }
 
   // Retrieve payment intent
-  static async getPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
+  static async getPaymentIntent(
+    paymentIntentId: string,
+  ): Promise<Stripe.PaymentIntent> {
     return await stripe.paymentIntents.retrieve(paymentIntentId);
   }
 
   // Retrieve subscription
-  static async getSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
+  static async getSubscription(
+    subscriptionId: string,
+  ): Promise<Stripe.Subscription> {
     return await stripe.subscriptions.retrieve(subscriptionId);
   }
 }

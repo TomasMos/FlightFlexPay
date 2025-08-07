@@ -77,6 +77,7 @@ export default function PassengerDetails() {
   // Create forms for each passenger (hooks must be called at top level)
   const passengerForm1 = useForm<PassengerForm>({
     resolver: zodResolver(passengerSchema),
+     mode: "onChange",
     defaultValues: {
       title: "",
       firstName: "",
@@ -218,34 +219,54 @@ export default function PassengerDetails() {
   // Load flight data from localStorage or API
   useEffect(() => {
     if (params?.flightId) {
-      // For now, we'll get flight data from localStorage
-      // In a real app, you might fetch from API using the flight ID
+      // Load flight data
       const flightData = localStorage.getItem("selectedFlight");
       if (flightData) {
         const parsedFlight = JSON.parse(flightData);
         setFlight(parsedFlight);
-        // Set passenger count from flight search (default to 1 if not found)
-        const searchData = localStorage.getItem("lastFlightSearch");
-        if (searchData) {
-          const search = JSON.parse(searchData);
-          setPassengerCount(search.passengers || 1);
+      }
+
+      // Set passenger count from search data first
+      const searchData = localStorage.getItem("lastFlightSearch");
+      if (searchData) {
+        const search = JSON.parse(searchData);
+        setPassengerCount(search.passengers || 1);
+      }
+
+      // Load and populate passenger data
+      const storedPassengerData = localStorage.getItem("passengerData");
+      if (storedPassengerData) {
+        const { passengers: storedPassengers, contact: storedContact } =
+          JSON.parse(storedPassengerData);
+
+        // Populate contact form
+        if (storedContact) {
+          contactForm.reset(storedContact);
+        }
+
+        // Populate passenger forms based on passengerCount
+        const formsToPopulate = Math.min(passengerCount, storedPassengers.length);
+        for (let i = 0; i < formsToPopulate; i++) {
+          passengerForms[i].reset(storedPassengers[i]);
         }
       }
     }
-  }, [params?.flightId]);
+  }, [params?.flightId, passengerCount]); // Add passengerCount as a dependency
 
-  const handleContinue = () => {
-    // Validate all passenger forms and contact form
-    const allPassengerData = passengerForms.map((form) => form.getValues());
-    const contactData = contactForm.getValues();
+  const handleContinue = async () => {
+    // Trigger validation on all forms
+    const passengerValidations = await Promise.all(
+      passengerForms.map((form) => form.trigger())
+    );
+    const contactValid = await contactForm.trigger();
 
-    // Check if all forms are valid
     const allFormsValid =
-      passengerForms.every((form) => form.formState.isValid) &&
-      contactForm.formState.isValid;
+      passengerValidations.every((isValid) => isValid) && contactValid;
 
     if (allFormsValid) {
-      // Store form data and navigate to review page
+      const allPassengerData = passengerForms.map((form) => form.getValues());
+      const contactData = contactForm.getValues();
+
       localStorage.setItem(
         "passengerData",
         JSON.stringify({
@@ -256,12 +277,9 @@ export default function PassengerDetails() {
         }),
       );
       setLocation("/flight-search/book");
-    } else {
-      // Trigger validation on all forms
-      passengerForms.forEach((form) => form.trigger());
-      contactForm.trigger();
     }
   };
+
 
   const handleConfirmEmailPaste = (
     e: React.ClipboardEvent<HTMLInputElement>,
