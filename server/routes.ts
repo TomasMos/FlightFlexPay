@@ -225,31 +225,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create subscription for installment payments
+  // app.post("/api/payments/create-subscription", async (req, res) => {
+  //   try {
+  //     const subscriptionData = createSubscriptionSchema.parse(req.body);
+      
+  //     // Create customer first
+  //     const customer = await StripeService.createCustomer(
+  //       subscriptionData.customer_email,
+  //       subscriptionData.customer_name
+  //     );
+      
+  //     // Create subscription
+  //     const subscription = await StripeService.createSubscription(customer.id, subscriptionData);
+      
+  //     res.json({
+  //       subscriptionId: subscription.id,
+  //       clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
+  //       customerId: customer.id,
+  //     });
+  //   } catch (error: any) {
+  //     console.error("Error creating subscription:", error);
+  //     res.status(400).json({ 
+  //       error: error.message || "Failed to create subscription" 
+  //     });
+  //   }
+  // });
+
+  // Updated subscription route for your routes.ts file
   app.post("/api/payments/create-subscription", async (req, res) => {
     try {
-      const subscriptionData = createSubscriptionSchema.parse(req.body);
-      
-      // Create customer first
-      const customer = await StripeService.createCustomer(
-        subscriptionData.customer_email,
-        subscriptionData.customer_name
+      const {
+        customer_email,
+        customer_name,
+        installment_amount, // e.g. 125.50 (in dollars, not cents)
+        currency = 'usd',
+        interval,
+        interval_count,
+        metadata = {}
+      } = req.body;
+
+      // Validate required fields
+      if (!customer_email || !installment_amount || !interval || !interval_count) {
+        return res.status(400).json({
+          error: "Missing required fields: customer_email, installment_amount, interval, interval_count",
+        });
+      }
+
+      // Validate interval
+      if (!['week', 'month'].includes(interval)) {
+        return res.status(400).json({
+          error: "Invalid interval. Must be 'week' or 'month'",
+        });
+      }
+
+      // Validate amount (minimum $1.00)
+      if (installment_amount < 1) {
+        return res.status(400).json({
+          error: "Installment amount must be at least $1.00",
+        });
+      }
+
+      // 1. Get or create Stripe customer
+      const customer = await StripeService.getOrCreateCustomer(customer_email, customer_name);
+
+      // 2. Create price dynamically for this customer's installments
+      const price = await StripeService.createInstallmentPrice(
+        installment_amount, // amount in dollars
+        currency,
+        interval
       );
-      
-      // Create subscription
-      const subscription = await StripeService.createSubscription(customer.id, subscriptionData);
-      
+
+      // 3. Create subscription schedule starting in 1 week
+      const schedule = await StripeService.createInstallmentSchedule(
+        customer.id,
+        price.id,
+        interval,
+        interval_count,
+        {
+          ...metadata,
+          customer_email,
+          original_installment_amount: installment_amount.toString(),
+        }
+      );
+
+      // 4. Send result back to frontend
       res.json({
-        subscriptionId: subscription.id,
-        clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
+        success: true,
+        subscriptionScheduleId: schedule.id,
+        priceId: price.id,
         customerId: customer.id,
+        startDate: new Date(schedule.phases[0].start_date * 1000).toISOString(),
+        installmentAmount: installment_amount,
+        totalInstallments: interval_count,
       });
+
     } catch (error: any) {
-      console.error("Error creating subscription:", error);
-      res.status(400).json({ 
-        error: error.message || "Failed to create subscription" 
+      console.error("Error creating subscription schedule:", error);
+
+      // Return more specific error messages
+      let errorMessage = "Failed to create subscription schedule";
+
+      if (error.type === 'StripeCardError') {
+        errorMessage = "Card error: " + error.message;
+      } else if (error.type === 'StripeInvalidRequestError') {
+        errorMessage = "Invalid request: " + error.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      res.status(400).json({
+        error: errorMessage,
+        type: error.type || 'unknown',
       });
     }
   });
+
+
+  
 
   // Get payment intent status
   app.get("/api/payments/intent/:id", async (req, res) => {

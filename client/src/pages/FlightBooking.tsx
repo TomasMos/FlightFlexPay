@@ -45,13 +45,10 @@ export default function FlightBooking() {
     if (flightData) {
       setFlight(JSON.parse(flightData));
     }
-    console.log(`Flight 1`,flight)
 
     if (passengerInfo) {
       setPassengerData(JSON.parse(passengerInfo));
     }
-
-    console.log(`PassengerData`,passengerData)
   }, []);
 
   if (!flight) {
@@ -68,7 +65,7 @@ export default function FlightBooking() {
       </div>
     );
   }
-  console.log(`Flight 2`,flight)
+
 
   // Payment calculations
   const flightTotal = parseFloat(flight.price.total);
@@ -183,8 +180,6 @@ export default function FlightBooking() {
 
   const handleBooking = () => {
     setShowPaymentForm(true);
-    console.log(`handleBooking`,passengerData)
-    console.log(`customerEmailFixed`, passengerData?.contact?.email || "")
   };
 
   const handlePaymentSuccess = (paymentResult: any) => {
@@ -603,7 +598,7 @@ export default function FlightBooking() {
                         ? {
                             amount: Math.round(installmentAmount * 100), // Convert to cents
                             interval: "week",
-                            interval_count: selectedInstallment === "weekly" ? 1 : 2,
+                              interval_count: selectedInstallment === "weekly" ? 1 : 2,
                           }
                         : undefined
                     }

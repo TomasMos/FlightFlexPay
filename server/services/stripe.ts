@@ -41,7 +41,6 @@ export class StripeService {
   static async createPaymentIntent(
     data: PaymentIntentData,
   ): Promise<Stripe.PaymentIntent> {
-    console.log(data)
     return await stripe.paymentIntents.create({
       amount: Math.round(data.amount), // Ensure it's a whole number
       currency: data.currency,
@@ -119,5 +118,98 @@ export class StripeService {
     subscriptionId: string,
   ): Promise<Stripe.Subscription> {
     return await stripe.subscriptions.retrieve(subscriptionId);
+  }
+
+  static async createInstallmentPrice(
+    amount: number, // amount in dollars (not cents)
+    currency: string,
+    interval: 'week' | 'month',
+    productId?: string
+  ) {
+    const product = productId
+      ? { product: productId }
+      : { product_data: { name: "Flight Installment" } };
+
+    try {
+      const price = await stripe.prices.create({
+        unit_amount: Math.round(amount * 100), // Convert dollars to cents
+        currency,
+        recurring: { interval },
+        ...product,
+      });
+
+      return price;
+    } catch (error) {
+      console.error("Error creating installment price:", error);
+      throw error;
+    }
+  }
+
+  static async createInstallmentSchedule(
+    customerId: string,
+    priceId: string,
+    interval: 'week' | 'month',
+    iterations: number,
+    metadata?: Record<string, string>
+  ) {
+    const startDate = Math.floor(Date.now() / 1000) + 7 * 24 * 3600; // 1 week later
+
+    try {
+      const schedule = await stripe.subscriptionSchedules.create({
+        customer: customerId,
+        start_date: startDate,
+        end_behavior: 'cancel',
+        phases: [
+          {
+            iterations,
+            items: [{ price: priceId }],
+          },
+        ],
+        metadata,
+      });
+
+      return schedule;
+    } catch (error) {
+      console.error("Error creating subscription schedule:", error);
+      throw error;
+    }
+  }
+
+  // Get or create customer by email (helpful for handling existing customers)
+  static async getOrCreateCustomer(
+    email: string,
+    name?: string
+  ): Promise<Stripe.Customer> {
+    try {
+      // Try to find existing customer by email
+      const existingCustomers = await stripe.customers.list({
+        email: email,
+        limit: 1,
+      });
+
+      if (existingCustomers.data.length > 0) {
+        return existingCustomers.data[0];
+      }
+
+      // Create new customer if none exists
+      return await this.createCustomer(email, name);
+    } catch (error) {
+      console.error("Error getting or creating customer:", error);
+      throw error;
+    }
+  }
+
+  // Retrieve subscription schedule
+  static async getSubscriptionSchedule(
+    scheduleId: string,
+  ): Promise<Stripe.SubscriptionSchedule> {
+    return await stripe.subscriptionSchedules.retrieve(scheduleId);
+  }
+
+  // Cancel subscription schedule
+  static async cancelSubscriptionSchedule(
+    scheduleId: string,
+  ): Promise<Stripe.SubscriptionSchedule> {
+    return await stripe.subscriptionSchedules.cancel(scheduleId);
   }
 }

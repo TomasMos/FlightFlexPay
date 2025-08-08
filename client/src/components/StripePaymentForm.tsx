@@ -10,15 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CreditCard, CheckCircle } from "lucide-react";
 
-
-// Initialize Stripe Prod
-// const stripePromise = loadStripe("pk_live_51MgwsMAmEcsh1VOd2iSLbvZ7335oyK2OxjO1QrPM5lab8tU87jldpeUbHbhmTZuqSmJirLt02o3bLUfOokze4ENJ00NWRTsZuh");
-
-// Initialise Strip Test
+// Initialize Stripe Test
 const stripePromise = loadStripe("pk_test_51Rt7ymAUy8x2iu0HB3xDTUlgU7zGr0QukGNjkcrQHbK1HmQtgKQziPH0DqQzQ2SxFVTbxRhhYqUXu43UqB2qn3fc00l5IihEVR");
 
 interface PaymentFormProps {
-  clientSecret: string;
   onSuccess: (paymentIntent: any) => void;
   onError: (error: string) => void;
   amount: number;
@@ -26,13 +21,11 @@ interface PaymentFormProps {
   paymentType: "deposit" | "full_payment";
 }
 
-function PaymentForm({ clientSecret, onSuccess, onError, amount, currency, paymentType }: PaymentFormProps) {
+function PaymentForm({onSuccess, onError, amount, currency, paymentType }: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-
-
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -78,7 +71,7 @@ function PaymentForm({ clientSecret, onSuccess, onError, amount, currency, payme
           }}
         />
       </div>
-      
+
       <div className="bg-flightpay-slate-50 rounded-lg p-4">
         <div className="flex justify-between items-center">
           <span className="text-flightpay-slate-700">
@@ -126,6 +119,7 @@ interface StripePaymentFormProps {
     amount: number;
     interval: 'week' | 'month';
     interval_count: number;
+    bookingId?: string;
   };
 }
 
@@ -142,15 +136,15 @@ export default function StripePaymentForm({
   installmentData,
 }: StripePaymentFormProps) {
   const [clientSecret, setClientSecret] = useState("");
-  const [subscriptionClientSecret, setSubscriptionClientSecret] = useState("");
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [isSettingUpInstallments, setIsSettingUpInstallments] = useState(false);
 
   useEffect(() => {
     const createPaymentIntent = async () => {
       try {
         setIsLoadingPayment(true);
-        
+
         // Create payment intent for deposit/full payment
         const response = await fetch("/api/payments/create-intent", {
           method: "POST",
@@ -169,36 +163,14 @@ export default function StripePaymentForm({
           },
         });
 
-        const paymentResponse = await response.json();
-        console.log(`paymentResponse`, paymentResponse)
-
-        setClientSecret(paymentResponse.clientSecret);
-        console.log(clientSecret)
-
-        // Create subscription for installments if needed
-        if (hasInstallments && installmentData) {
-          const subResponse = await fetch("/api/payments/create-subscription", {
-            method: "POST",
-            body: JSON.stringify({
-              customer_email: customerEmail,
-              customer_name: customerName,
-              amount: installmentData.amount,
-              currency,
-              interval: installmentData.interval,
-              interval_count: installmentData.interval_count,
-              metadata: {
-                ...metadata,
-                payment_type: "installment",
-              },
-            }),
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          const subscriptionResponse = await subResponse.json();
-          setSubscriptionClientSecret(subscriptionResponse.clientSecret);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create payment intent');
         }
+
+        const paymentResponse = await response.json();
+        setClientSecret(paymentResponse.clientSecret);
+
       } catch (error: any) {
         onError(error.message || "Failed to initialize payment");
       } finally {
@@ -207,21 +179,59 @@ export default function StripePaymentForm({
     };
 
     createPaymentIntent();
-  }, [amount, currency, customerEmail, customerName, paymentType, hasInstallments, installmentData]);
+  }, [amount, currency, customerEmail, customerName, paymentType, metadata]);
 
   const handlePaymentSuccess = async (paymentIntent: any) => {
     setPaymentCompleted(true);
-    
-    // If there are installments, we need to handle the subscription setup as well
-    if (hasInstallments && subscriptionClientSecret) {
-      // For now, we'll just pass the payment success
-      // In a real implementation, you might want to confirm the subscription setup
-      onSuccess({
-        paymentIntent,
-        hasInstallments: true,
-        subscriptionClientSecret,
-      });
+
+    // If there are installments, set up the subscription schedule
+    if (hasInstallments && installmentData) {
+      try {
+        setIsSettingUpInstallments(true);
+
+        const response = await fetch("/api/payments/create-subscription", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json" 
+          },
+          body: JSON.stringify({
+            customer_email: customerEmail,
+            customer_name: customerName,
+            installment_amount: installmentData.amount / 100, // Convert from cents to dollars
+            currency,
+            interval: installmentData.interval,
+            interval_count: installmentData.interval_count,
+            metadata: {
+              ...metadata,
+              payment_type: "installment",
+              deposit_payment_intent_id: paymentIntent.id,
+              booking_id: installmentData.bookingId || "",
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to set up installment plan');
+        }
+
+        const subscriptionData = await response.json();
+
+        // Payment and installments successful
+        onSuccess({
+          paymentIntent,
+          hasInstallments: true,
+          subscriptionSchedule: subscriptionData,
+        });
+
+      } catch (error: any) {
+        // Payment succeeded but installment setup failed
+        onError(`Payment succeeded but failed to set up installments: ${error.message}`);
+      } finally {
+        setIsSettingUpInstallments(false);
+      }
     } else {
+      // No installments needed, just return payment success
       onSuccess({
         paymentIntent,
         hasInstallments: false,
@@ -254,7 +264,27 @@ export default function StripePaymentForm({
     );
   }
 
-  if (paymentCompleted) {
+  if (paymentCompleted && isSettingUpInstallments) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2" data-testid="title-setting-up-installments">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Setting up installment plan...
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-flightpay-slate-600">
+              Your payment was successful! We're now setting up your installment plan.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (paymentCompleted && !isSettingUpInstallments) {
     return (
       <Card>
         <CardHeader>
@@ -293,7 +323,7 @@ export default function StripePaymentForm({
       <CardHeader>
         <CardTitle data-testid="title-payment-details">Payment Details</CardTitle>
       </CardHeader>
-      <CardContent >
+      <CardContent>
         <Elements 
           stripe={stripePromise} 
           options={{ 
@@ -302,7 +332,6 @@ export default function StripePaymentForm({
           }}
         >
           <PaymentForm 
-            clientSecret={clientSecret}
             onSuccess={handlePaymentSuccess}
             onError={onError}
             amount={amount}
@@ -310,7 +339,7 @@ export default function StripePaymentForm({
             paymentType={paymentType}
           />
         </Elements>
-        
+
         {hasInstallments && installmentData && (
           <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex items-start gap-2">
@@ -326,6 +355,9 @@ export default function StripePaymentForm({
                   every {installmentData.interval_count === 1 ? "" : installmentData.interval_count + " "}
                   {installmentData.interval === 'week' ? 'week' : 'month'}
                   {installmentData.interval_count > 1 ? 's' : ''}.
+                </p>
+                <p className="mt-1 text-xs">
+                  Installments will begin one week after today's payment.
                 </p>
               </div>
             </div>
