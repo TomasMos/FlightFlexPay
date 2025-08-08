@@ -25,6 +25,7 @@ export interface PaymentIntentData {
   currency: string;
   metadata?: Record<string, string>;
   customer_email?: string;
+  setup_future_usage?: 'off_session' | 'on_session';
 }
 
 export interface SubscriptionData {
@@ -34,6 +35,7 @@ export interface SubscriptionData {
   interval: "week" | "month";
   interval_count: number; // 1 for weekly, 2 for bi-weekly
   metadata?: Record<string, string>;
+  payment_method_id?: string; // Payment method to attach to customer
 }
 
 export class StripeService {
@@ -41,11 +43,20 @@ export class StripeService {
   static async createPaymentIntent(
     data: PaymentIntentData,
   ): Promise<Stripe.PaymentIntent> {
+    // Get or create customer if email is provided
+    let customerId: string | undefined;
+    if (data.customer_email) {
+      const customer = await this.getOrCreateCustomer(data.customer_email);
+      customerId = customer.id;
+    }
+
     return await stripe.paymentIntents.create({
       amount: Math.round(data.amount), // Ensure it's a whole number
       currency: data.currency,
       metadata: data.metadata || {},
       receipt_email: data.customer_email,
+      customer: customerId,
+      setup_future_usage: data.setup_future_usage, // This is key for saving payment methods
       automatic_payment_methods: {
         enabled: true,
       },
@@ -60,6 +71,52 @@ export class StripeService {
     return await stripe.customers.create({
       email,
       name,
+    });
+  }
+
+  // Get or create customer by email (helpful for handling existing customers)
+  static async getOrCreateCustomer(
+    email: string,
+    name?: string
+  ): Promise<Stripe.Customer> {
+    try {
+      // Try to find existing customer by email
+      const existingCustomers = await stripe.customers.list({
+        email: email,
+        limit: 1,
+      });
+
+      if (existingCustomers.data.length > 0) {
+        return existingCustomers.data[0];
+      }
+
+      // Create new customer if none exists
+      return await this.createCustomer(email, name);
+    } catch (error) {
+      console.error("Error getting or creating customer:", error);
+      throw error;
+    }
+  }
+
+  // Attach payment method to customer
+  static async attachPaymentMethodToCustomer(
+    paymentMethodId: string,
+    customerId: string
+  ): Promise<Stripe.PaymentMethod> {
+    return await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId,
+    });
+  }
+
+  // Set default payment method for customer
+  static async setDefaultPaymentMethod(
+    customerId: string,
+    paymentMethodId: string
+  ): Promise<Stripe.Customer> {
+    return await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
     });
   }
 
@@ -81,6 +138,12 @@ export class StripeService {
       },
       metadata: data.metadata || {},
     });
+
+    // Attach and set default payment method if provided
+    if (data.payment_method_id) {
+      await this.attachPaymentMethodToCustomer(data.payment_method_id, customerId);
+      await this.setDefaultPaymentMethod(customerId, data.payment_method_id);
+    }
 
     // Create the subscription
     return await stripe.subscriptions.create({
@@ -150,11 +213,18 @@ export class StripeService {
     priceId: string,
     interval: 'week' | 'month',
     iterations: number,
+    paymentMethodId?: string, // Payment method to use for the schedule
     metadata?: Record<string, string>
   ) {
     const startDate = Math.floor(Date.now() / 1000) + 7 * 24 * 3600; // 1 week later
 
     try {
+      // If payment method is provided, attach it to the customer and set as default
+      if (paymentMethodId) {
+        await this.attachPaymentMethodToCustomer(paymentMethodId, customerId);
+        await this.setDefaultPaymentMethod(customerId, paymentMethodId);
+      }
+
       const schedule = await stripe.subscriptionSchedules.create({
         customer: customerId,
         start_date: startDate,
@@ -175,30 +245,6 @@ export class StripeService {
     }
   }
 
-  // Get or create customer by email (helpful for handling existing customers)
-  static async getOrCreateCustomer(
-    email: string,
-    name?: string
-  ): Promise<Stripe.Customer> {
-    try {
-      // Try to find existing customer by email
-      const existingCustomers = await stripe.customers.list({
-        email: email,
-        limit: 1,
-      });
-
-      if (existingCustomers.data.length > 0) {
-        return existingCustomers.data[0];
-      }
-
-      // Create new customer if none exists
-      return await this.createCustomer(email, name);
-    } catch (error) {
-      console.error("Error getting or creating customer:", error);
-      throw error;
-    }
-  }
-
   // Retrieve subscription schedule
   static async getSubscriptionSchedule(
     scheduleId: string,
@@ -211,5 +257,22 @@ export class StripeService {
     scheduleId: string,
   ): Promise<Stripe.SubscriptionSchedule> {
     return await stripe.subscriptionSchedules.cancel(scheduleId);
+  }
+
+  // Get customer's payment methods
+  static async getCustomerPaymentMethods(
+    customerId: string,
+    type: 'card' | 'us_bank_account' = 'card'
+  ): Promise<Stripe.PaymentMethod[]> {
+    const paymentMethods = await stripe.paymentMethods.list({
+      customer: customerId,
+      type: type,
+    });
+    return paymentMethods.data;
+  }
+
+  // Get customer by ID
+  static async getCustomer(customerId: string): Promise<Stripe.Customer> {
+    return await stripe.customers.retrieve(customerId) as Stripe.Customer;
   }
 }

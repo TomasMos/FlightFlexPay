@@ -19,9 +19,10 @@ interface PaymentFormProps {
   amount: number;
   currency: string;
   paymentType: "deposit" | "full_payment";
+  hasInstallments: boolean;
 }
 
-function PaymentForm({onSuccess, onError, amount, currency, paymentType }: PaymentFormProps) {
+function PaymentForm({onSuccess, onError, amount, currency, paymentType, hasInstallments }: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);
@@ -37,11 +38,23 @@ function PaymentForm({onSuccess, onError, amount, currency, paymentType }: Payme
     setIsLoading(true);
     setIsProcessing(true);
 
+    // Configure confirmation params based on whether we need to save payment method
+    const confirmParams: any = {
+      return_url: `${window.location.origin}/payment-success`,
+    };
+
+    // If installments are needed, we need to save the payment method
+    if (hasInstallments) {
+      confirmParams.payment_method_options = {
+        card: {
+          setup_future_usage: 'off_session', // This allows future payments without customer present
+        },
+      };
+    }
+
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/payment-success`,
-      },
+      confirmParams,
       redirect: "if_required",
     });
 
@@ -81,6 +94,11 @@ function PaymentForm({onSuccess, onError, amount, currency, paymentType }: Payme
             {formatCurrency(amount, currency)}
           </span>
         </div>
+        {hasInstallments && (
+          <div className="mt-2 text-sm text-flightpay-slate-600">
+            <p>💳 Your payment method will be saved for future installments</p>
+          </div>
+        )}
       </div>
 
       <Button 
@@ -152,10 +170,12 @@ export default function StripePaymentForm({
             amount: amount, // amount in cents
             currency,
             customer_email: customerEmail,
+            setup_future_usage: hasInstallments ? 'off_session' : undefined, // Save payment method if installments needed
             metadata: {
               ...metadata,
               payment_type: paymentType,
               customer_name: customerName || "",
+              has_installments: hasInstallments.toString(),
             },
           }),
           headers: {
@@ -179,7 +199,7 @@ export default function StripePaymentForm({
     };
 
     createPaymentIntent();
-  }, [amount, currency, customerEmail, customerName, paymentType, metadata]);
+  }, [amount, currency, customerEmail, customerName, paymentType, metadata, hasInstallments]);
 
   const handlePaymentSuccess = async (paymentIntent: any) => {
     setPaymentCompleted(true);
@@ -201,6 +221,7 @@ export default function StripePaymentForm({
             currency,
             interval: installmentData.interval,
             interval_count: installmentData.interval_count,
+            payment_method_id: paymentIntent.payment_method, // Pass the payment method from the successful payment
             metadata: {
               ...metadata,
               payment_type: "installment",
@@ -297,7 +318,7 @@ export default function StripePaymentForm({
           <div className="text-center py-4">
             <p className="text-flightpay-slate-600">
               Your payment has been processed successfully.
-              {hasInstallments && " Your installment plan has been set up."}
+              {hasInstallments && " Your installment plan has been set up and your payment method has been saved for future charges."}
             </p>
           </div>
         </CardContent>
@@ -337,6 +358,7 @@ export default function StripePaymentForm({
             amount={amount}
             currency={currency}
             paymentType={paymentType}
+            hasInstallments={hasInstallments}
           />
         </Elements>
 
@@ -357,7 +379,7 @@ export default function StripePaymentForm({
                   {installmentData.interval_count > 1 ? 's' : ''}.
                 </p>
                 <p className="mt-1 text-xs">
-                  Installments will begin one week after today's payment.
+                  Your payment method will be securely saved and charged automatically for each installment starting one week from today.
                 </p>
               </div>
             </div>
