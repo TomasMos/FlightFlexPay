@@ -52,16 +52,16 @@ export function FlightSearchForm({
         const searchData = JSON.parse(savedSearch);
         // Restore form values
         form.reset({
-          origin: searchData.origin || "",
-          destination: searchData.destination || "",
+          origin: searchData.originFull || "",
+          destination: searchData.destinationFull || "",
           departureDate: searchData.departureDate || "",
           returnDate: searchData.returnDate || "",
           passengers: searchData.passengers || 1,
           tripType: searchData.tripType || "roundtrip",
         });
         setTripType(searchData.tripType || "roundtrip");
-        setOriginIata(searchData.originIata || "");
-        setDestinationIata(searchData.destinationIata || "");
+        setOriginIata(searchData.origin || "");
+        setDestinationIata(searchData.destination || "");
       } catch (error) {
         console.error("Error loading saved search:", error);
       }
@@ -73,15 +73,15 @@ export function FlightSearchForm({
     const searchData: FlightSearch = {
       ...data,
       tripType,
-      origin: originIata || data.origin,
-      destination: destinationIata || data.destination,
+      origin: originIata,
+      destination: destinationIata,
     };
     
     // Save search to localStorage for future use
     const searchToSave = {
       ...searchData,
-      originIata,
-      destinationIata,
+      originFull: data.origin,
+      destinationFull: data.destination,
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("lastFlightSearch", JSON.stringify(searchToSave));
