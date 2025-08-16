@@ -17,6 +17,8 @@ interface AmadeusToken {
   expires_at: number;
 }
 
+
+
 interface AmadeusFlightOffer {
   id: string;
   source: string;
@@ -225,15 +227,15 @@ export class AmadeusService {
       }
 
       const data: AmadeusFlightResponse = await response.json();
-      // console.log(`Amadeus.ts - 215 - RAW:`, JSON.stringify(data, null, 2));
+      console.log(`Amadeus.ts - 215 - RAW:`, JSON.stringify(data, null, 2));
       const transformedData = await this.transformEnhancedAmadeusResponse(
         data,
         searchParams,
       );
-      // console.log(
-      //   `Amadeus.ts - 223 - Transformed:`,
-      //   JSON.stringify(transformedData, null, 2),
-      // );
+      console.log(
+        `Amadeus.ts - 223 - Transformed:`,
+        JSON.stringify(transformedData, null, 2),
+      );
       return transformedData;
     } catch (error) {
       console.error("Error searching flights:", error);
@@ -325,6 +327,9 @@ export class AmadeusService {
             // Use the locationMap to find the airport and city names
             const departureLocation = locationMap[segment.departure.iataCode];
             const arrivalLocation = locationMap[segment.arrival.iataCode];
+            const segmentFareDetails = offer.travelerPricings[0].fareDetailsBySegment.find(
+              fd => fd.segmentId === segment.id
+            );
 
             return {
               departure: {
@@ -346,20 +351,9 @@ export class AmadeusService {
               aircraft: segment.aircraft,
               operating: segment.operating,
               duration: segment.duration,
-              cabin:
-                offer.travelerPricings[0]?.fareDetailsBySegment[
-                  Number(segment.id) - 1
-                ]?.cabin || "Economy",
-              includedCheckedBags: (
-                offer.travelerPricings[0]?.fareDetailsBySegment[
-                  Number(segment.id) - 1
-                ] as any
-              )?.includedCheckedBags,
-              includedCabinBags: (
-                offer.travelerPricings[0]?.fareDetailsBySegment[
-                  Number(segment.id) - 1
-                ] as any
-              )?.includedCabinBags,
+              cabin: segmentFareDetails?.cabin || "Economy",
+              includedCheckedBags: segmentFareDetails?.includedCheckedBags,
+              includedCabinBags: (segmentFareDetails as any)?.includedCabinBags,
               id: segment.id,
             };
           }),

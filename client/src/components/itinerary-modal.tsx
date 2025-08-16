@@ -172,11 +172,11 @@ export function ItineraryModal({
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.5, ease: "easeInOut" }}
-                          className="overflow-hidden mt-4 "
+                          className="overflow-hidden"
                           data-testid={`details-content-${itineraryIndex}`}
                         >
                           {itinerary.segments.map((segment, segmentIndex) => (
-                            <div key={segment.id}>
+                            <div key={segment.id} className="flex flex-col gap-4 mt-4">
                               {/* Segment details */}
                               <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-flightpay-slate-200">
                                 <div className="flex-1">
@@ -237,79 +237,9 @@ export function ItineraryModal({
                                     </div>
                                   </div>
                                 </div>
+                                
                               </div>
-
-                              {/* Stopover indicator */}
-                              {segmentIndex < itinerary.segments.length - 1 && (
-                                <div className="flex items-center justify-center py-3  ">
-                                  <div className=" flex items-center gap-2 px-3 py-1 bg-flightpay-slate-100 rounded-full">
-                                    <Clock className="w-3 h-3 text-flightpay-slate-500" />
-                                    <span className="text-xs text-flightpay-slate-600">
-                                      {toTitleCase(itinerary.segments[segmentIndex + 1]
-                                                   .departure.airportName)} (
-                                      {
-                                        itinerary.segments[segmentIndex + 1]
-                                          .departure.iataCode
-                                      }
-                                      ) -{" "}
-                                      {stopoverDuration(
-                                        new Date(segment.arrival.at),
-                                        new Date(
-                                          itinerary.segments[
-                                            segmentIndex + 1
-                                          ].departure.at,
-                                        ),
-                                      )}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Flight Inclusions Collapsible */}
-                  <div className="border-t border-flightpay-slate-200 pt-4 mt-4">
-                    <button
-                      onClick={() => toggleInclusions(itineraryIndex)}
-                      className="flex items-center justify-between w-full p-3 hover:bg-flightpay-slate-100 rounded-lg"
-                      data-testid={`button-toggle-inclusions-${itineraryIndex}`}
-                    >
-                      <span className="text-sm font-medium text-flightpay-slate-700">
-                        Inclusions
-                      </span>
-                      <motion.div
-                        animate={{
-                          rotate: expandedInclusions[itineraryIndex] ? -180 : 0,
-                        }}
-                        transition={{ duration: 0.5 }}
-                      >
-                        {expandedInclusions[itineraryIndex] ? (
-                          <ChevronDown className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
-                      </motion.div>
-                    </button>
-
-                    <AnimatePresence initial={false}>
-                      {expandedInclusions[itineraryIndex] && (
-                        <motion.div
-                          key={`details-${itineraryIndex}`}
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3, ease: "easeInOut" }}
-                          className="overflow-hidden mt-4 space-y-4"
-                          data-testid={`details-content-${itineraryIndex}`}
-                        >
-                          {itinerary.segments.map((segment, segmentIndex) => {
-                            return (
                               <div
-                                key={segment.id}
                                 className="p-4 bg-white rounded-lg border border-flightpay-slate-200"
                               >
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -476,12 +406,40 @@ export function ItineraryModal({
                                   </div>
                                 </div>
                               </div>
-                            );
-                          })}
+
+                              {/* Stopover indicator */}
+                              {segmentIndex < itinerary.segments.length - 1 && (
+                                <div className="flex items-center justify-center   ">
+                                  <div className=" flex items-center gap-2 px-3 py-1 bg-flightpay-slate-100 rounded-full">
+                                    <Clock className="w-3 h-3 text-flightpay-slate-500" />
+                                    <span className="text-xs text-flightpay-slate-600">
+                                      {toTitleCase(itinerary.segments[segmentIndex + 1]
+                                                   .departure.airportName)} (
+                                      {
+                                        itinerary.segments[segmentIndex + 1]
+                                          .departure.iataCode
+                                      }
+                                      ) -{" "}
+                                      {stopoverDuration(
+                                        new Date(segment.arrival.at),
+                                        new Date(
+                                          itinerary.segments[
+                                            segmentIndex + 1
+                                          ].departure.at,
+                                        ),
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
+                 
+                  
                 </div>
               );
             })}
