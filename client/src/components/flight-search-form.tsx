@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { flightSearchSchema, type FlightSearch } from "@shared/schema";
+import { flightSearchSchema, type FlightSearchRequest } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,7 @@ import { Calendar, User, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FlightSearchFormProps {
-  onSearch: (searchParams: FlightSearch) => void;
+  onSearch: (searchParams: FlightSearchRequest) => void;
   isLoading?: boolean;
 }
 
@@ -27,12 +27,12 @@ export function FlightSearchForm({
   isLoading,
 }: FlightSearchFormProps) {
   const [tripType, setTripType] = useState<
-    "roundtrip" | "oneway" | "multicity"
-  >("roundtrip");
+    "return" | "one_way" | "multicity"
+  >("return");
   const [originIata, setOriginIata] = useState("");
   const [destinationIata, setDestinationIata] = useState("");
 
-  const form = useForm<FlightSearch>({
+  const form = useForm<FlightSearchRequest>({
     resolver: zodResolver(flightSearchSchema),
     defaultValues: {
       origin: "",
@@ -40,7 +40,7 @@ export function FlightSearchForm({
       departureDate: "",
       returnDate: "",
       passengers: 1,
-      tripType: "roundtrip",
+      tripType: "return",
     },
   });
 
@@ -57,9 +57,9 @@ export function FlightSearchForm({
           departureDate: searchData.departureDate || "",
           returnDate: searchData.returnDate || "",
           passengers: searchData.passengers || 1,
-          tripType: searchData.tripType || "roundtrip",
+          tripType: searchData.tripType || "return",
         });
-        setTripType(searchData.tripType || "roundtrip");
+        setTripType(searchData.tripType || "return");
         setOriginIata(searchData.origin || "");
         setDestinationIata(searchData.destination || "");
       } catch (error) {
@@ -68,9 +68,9 @@ export function FlightSearchForm({
     }
   }, [form]);
 
-  const onSubmit = (data: FlightSearch) => {
+  const onSubmit = (data: FlightSearchRequest) => {
     // Use IATA codes if available, otherwise fall back to entered text
-    const searchData: FlightSearch = {
+    const searchData: FlightSearchRequest = {
       ...data,
       tripType,
       origin: originIata,
@@ -124,21 +124,21 @@ export function FlightSearchForm({
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
-                  value="roundtrip"
-                  id="roundtrip"
-                  data-testid="radio-roundtrip"
+                  value="return"
+                  id="return"
+                  data-testid="radio-return"
                 />
-                <Label htmlFor="roundtrip" className="text-flightpay-slate-700">
+                <Label htmlFor="return" className="text-flightpay-slate-700">
                   Round trip
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
-                  value="oneway"
-                  id="oneway"
-                  data-testid="radio-oneway"
+                  value="one_way"
+                  id="one_way"
+                  data-testid="radio-one_way"
                 />
-                <Label htmlFor="oneway" className="text-flightpay-slate-700">
+                <Label htmlFor="one_way" className="text-flightpay-slate-700">
                   One way
                 </Label>
               </div>
@@ -208,7 +208,7 @@ export function FlightSearchForm({
                 <Label
                   className={cn(
                     "block text-sm font-medium mb-1",
-                    tripType === "oneway"
+                    tripType === "one_way"
                       ? "text-flightpay-slate-400"
                       : "text-flightpay-slate-700",
                   )}
@@ -220,7 +220,7 @@ export function FlightSearchForm({
                     {...form.register("returnDate")}
                     type="date"
                     min={form.watch("departureDate") || today}
-                    disabled={tripType === "oneway"}
+                    disabled={tripType === "one_way"}
                   className="hide-date-icon pl-10 w-full pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
                     data-testid="input-return-date"
                     // CORRECTED: Use e.target to access the input element

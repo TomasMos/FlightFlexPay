@@ -141,108 +141,10 @@ export const flightSearchSchema = z.object({
   departureDate: z.string().min(1, "Departure date is required"),
   returnDate: z.string().optional(),
   passengers: z.number().min(1).max(9),
-  tripType: z.enum(["roundtrip", "oneway", "multicity"]).default("roundtrip"),
+  tripType: z.enum(["return", "one_way", "multicity"]).default("return"),
 });
 
-// Enhanced flight data with payment plan information (for API responses)
-export const EnhancedFlightWithPaymentPlanSchema = z.object({
-  id: z.string(),
-  source: z.string(),
-  instantTicketingRequired: z.boolean(),
-  nonHomogeneous: z.boolean(),
-  oneWay: z.boolean(),
-  isUpsellOffer: z.boolean().optional(),
-  lastTicketingDate: z.string(),
-  lastTicketingDateTime: z.string(),
-  numberOfBookableSeats: z.number(),
-  itineraries: z.array(z.object({
-    duration: z.string(),
-    segments: z.array(z.object({
-      departure: z.object({
-        iataCode: z.string(),
-        terminal: z.string().optional(),
-        at: z.string(),
-      }),
-      arrival: z.object({
-        iataCode: z.string(),
-        terminal: z.string().optional(),
-        at: z.string(),
-      }),
-      carrierCode: z.string(),
-      number: z.string(),
-      aircraft: z.object({
-        code: z.string(),
-      }),
-      operating: z.object({
-        carrierCode: z.string(),
-      }).optional(),
-      duration: z.string(),
-      id: z.string(),
-      numberOfStops: z.number(),
-      blacklistedInEU: z.boolean(),
-    })),
-  })),
-  price: z.object({
-    currency: z.string(),
-    total: z.string(),
-    base: z.string(),
-    fees: z.array(z.object({
-      amount: z.string(),
-      type: z.string(),
-    })),
-    grandTotal: z.string(),
-    additionalServices: z.array(z.object({
-      amount: z.string(),
-      type: z.string(),
-    })).optional(),
-  }),
-  pricingOptions: z.object({
-    fareType: z.array(z.string()),
-    includedCheckedBagsOnly: z.boolean(),
-  }),
-  validatingAirlineCodes: z.array(z.string()),
-  travelerPricings: z.array(z.object({
-    travelerId: z.string(),
-    fareOption: z.string(),
-    travelerType: z.string(),
-    price: z.object({
-      currency: z.string(),
-      total: z.string(),
-      base: z.string(),
-    }),
-    fareDetailsBySegment: z.array(z.object({
-      segmentId: z.string(),
-      cabin: z.string(),
-      fareBasis: z.string(),
-      brandedFare: z.string().optional(),
-      brandedFareLabel: z.string().optional(),
-      class: z.string(),
-      includedCheckedBags: z.object({
-        weight: z.number().optional(),
-        weightUnit: z.string().optional(),
-        quantity: z.number().optional(),
-      }),
-      amenities: z.array(z.object({
-        description: z.string(),
-        isChargeable: z.boolean(),
-        amenityType: z.string(),
-        amenityProvider: z.object({
-          name: z.string(),
-        }),
-      })).optional(),
-    })),
-  })),
-  paymentPlanEligible: z.boolean(),
-  paymentPlanOptions: z.object({
-    minDeposit: z.number(),
-    maxInstallments: z.number(),
-    frequencies: z.array(z.string()),
-  }).optional(),
-});
-
-export type EnhancedFlightWithPaymentPlan = z.infer<typeof EnhancedFlightWithPaymentPlanSchema>;
-
-// Enhanced flight structures for compatibility
+// Enhanced Amadeus-compatible flight structures
 export interface FlightSegment {
   departure: {
     iataCode: string;
@@ -309,6 +211,15 @@ export interface EnhancedFlight {
     base: string;
   };
 }
+
+export type EnhancedFlightWithPaymentPlan = EnhancedFlight & {
+  paymentPlanEligible: boolean;
+  paymentPlan?: {
+    depositAmount: number;
+    installmentAmount: number;
+    installmentCount: number;
+  };
+};
 
 // Zod schemas for validation
 export const insertFlightSearchSchema = createInsertSchema(flightSearches);

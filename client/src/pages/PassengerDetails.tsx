@@ -281,9 +281,11 @@ export default function PassengerDetails() {
           body: JSON.stringify({
             contactDetails: contactData,
             passengers: allPassengerData,
-            searchId: null // Will be linked later when search history is implemented
+            searchId: 9 // Will be linked later when search history is implemented
           }),
         });
+
+        console.log(`passengerdetails - 288`, response)
 
         const result = await response.json();
         

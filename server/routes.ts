@@ -95,11 +95,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               total: perPersonFlightPrice.flightPrice.toString(), // Per-person price with fees
             },
             paymentPlanEligible: paymentPlan.eligible,
-            paymentPlanOptions: paymentPlan.eligible
+            paymentPlan: paymentPlan.eligible
               ? {
-                  minDeposit: 20,
-                  maxInstallments: paymentPlan.installmentCount!,
-                  frequencies: ["weekly", "bi-weekly"]
+                  depositAmount: paymentPlan.depositAmount!,
+                  installmentAmount: paymentPlan.installmentAmount!,
+                  installmentCount: paymentPlan.installmentCount!,
                 }
               : undefined,
           };
@@ -189,6 +189,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/leads", async (req, res) => {
     try {
       const { contactDetails, passengers, searchId } = req.body;
+
+      console.log(`contactDetails`, contactDetails)
+      console.log(`passengers`, passengers)
+      console.log(`searchId`, searchId)
       
       // Create lead from contact details
       const leadData = {
@@ -203,6 +207,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const [lead] = await db.insert(leads).values(leadData).returning();
+
+      console.log(`lead`, lead)
 
       // Create lead attempt
       await db.insert(leadAttempts).values({
