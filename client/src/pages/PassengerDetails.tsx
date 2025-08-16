@@ -19,7 +19,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Calendar, ChevronUp} from "lucide-react";
+import { Calendar, ChevronUp } from "lucide-react";
 import type { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { countries, diallingCodes } from "@/utils/Lists";
 import {
@@ -32,16 +32,17 @@ import {
   stopoverDuration,
 } from "@/utils/formatters";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 
 // Passenger form schema
 const passengerSchema = z.object({
   title: z
-  .string()
-  .min(1, { message: "Title is required" })
-  .refine((val) => ["Mr", "Mrs", "Ms", "Miss", "Master"].includes(val), {
-    message: "Please select a valid title",
-  }),
+    .string()
+    .min(1, { message: "Title is required" })
+    .refine((val) => ["Mr", "Mrs", "Ms", "Miss", "Master"].includes(val), {
+      message: "Please select a valid title",
+    }),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
@@ -77,7 +78,7 @@ export default function PassengerDetails() {
   // Create forms for each passenger (hooks must be called at top level)
   const passengerForm1 = useForm<PassengerForm>({
     resolver: zodResolver(passengerSchema),
-     mode: "onChange",
+    mode: "onChange",
     defaultValues: {
       title: "",
       firstName: "",
@@ -245,7 +246,10 @@ export default function PassengerDetails() {
         }
 
         // Populate passenger forms based on passengerCount
-        const formsToPopulate = Math.min(passengerCount, storedPassengers.length);
+        const formsToPopulate = Math.min(
+          passengerCount,
+          storedPassengers.length,
+        );
         for (let i = 0; i < formsToPopulate; i++) {
           passengerForms[i].reset(storedPassengers[i]);
         }
@@ -256,7 +260,7 @@ export default function PassengerDetails() {
   const handleContinue = async () => {
     // Trigger validation on all forms
     const passengerValidations = await Promise.all(
-      passengerForms.map((form) => form.trigger())
+      passengerForms.map((form) => form.trigger()),
     );
     const contactValid = await contactForm.trigger();
 
@@ -280,7 +284,6 @@ export default function PassengerDetails() {
     }
   };
 
-
   const handleConfirmEmailPaste = (
     e: React.ClipboardEvent<HTMLInputElement>,
   ) => {
@@ -290,6 +293,7 @@ export default function PassengerDetails() {
   if (!flight) {
     return (
       <div className="min-h-screen bg-flightpay-slate-50 flex items-center justify-center">
+        <Header />
         <div className="text-center">
           <h2 className="text-2xl font-bold text-flightpay-slate-900 mb-2">
             Loading flight details...
@@ -298,6 +302,7 @@ export default function PassengerDetails() {
             Please wait while we load your flight information.
           </p>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -330,6 +335,8 @@ export default function PassengerDetails() {
 
   return (
     <div className="min-h-screen bg-flightpay-slate-50  ">
+      <Header />
+
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Section - Passenger and Contact Forms */}
@@ -391,8 +398,8 @@ export default function PassengerDetails() {
                         {diallingCodes.map((code) => (
                           <SelectItem key={code.key} value={code.value}>
                             {code.display}
-                          </SelectItem>)
-                        )}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -479,20 +486,19 @@ export default function PassengerDetails() {
                     <div className="flex flex-col justify-between  gap-1 pt-1">
                       <Label htmlFor="dateOfBirth">Date of Birth</Label>
                       <div className="relative flex">
-                      
                         <Input
                           {...form.register("dateOfBirth")}
                           type="date"
                           className="hide-date-icon pl-10 w-full pr-4 py-3  focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
                           data-testid={`input-date-of-birth-${index + 1}`}
-                          onClick={(e) => (e.target as HTMLInputElement).showPicker()}
-  
+                          onClick={(e) =>
+                            (e.target as HTMLInputElement).showPicker()
+                          }
                         />
                         <Calendar
-                          className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-flightpay-slate-600 pointer-events-none"  
+                          className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-flightpay-slate-600 pointer-events-none"
                           // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
                         />
-                      
                       </div>
                       {form.formState.errors.dateOfBirth && (
                         <p className="text-red-500 text-sm mt-1">
@@ -504,31 +510,32 @@ export default function PassengerDetails() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                    <Label htmlFor="passportCountry">Passport Country</Label>
-                    <Select
-                      value={form.watch("passportCountry")}
-                      onValueChange={(value) =>
-                        form.setValue("passportCountry", value)
-                      }
-                    >
-                      <SelectTrigger
-                        data-testid={`select-passport-country-${index + 1}`}
+                      <Label htmlFor="passportCountry">Passport Country</Label>
+                      <Select
+                        value={form.watch("passportCountry")}
+                        onValueChange={(value) =>
+                          form.setValue("passportCountry", value)
+                        }
                       >
-                        <SelectValue placeholder="Select country" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {countries.map((country) => (
-                          <SelectItem key={country.code} value={country.name}>
-                            {country.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {form.formState.errors.passportCountry && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {form.formState.errors.passportCountry.message}
-                      </p>
-                    )}</div>
+                        <SelectTrigger
+                          data-testid={`select-passport-country-${index + 1}`}
+                        >
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {countries.map((country) => (
+                            <SelectItem key={country.code} value={country.name}>
+                              {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {form.formState.errors.passportCountry && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {form.formState.errors.passportCountry.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -537,7 +544,7 @@ export default function PassengerDetails() {
 
           {/* Right Section - Price Details */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-6">
+            <div className="sticky top-[98px] space-y-6">
               {/* Flight Summary Header */}
               <div className=" bg-white rounded-lg shadow-sm border border-flightpay-slate-200 p-6 mb-8">
                 <h1
@@ -610,7 +617,10 @@ export default function PassengerDetails() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Collapsible open={priceDetailsOpen} onOpenChange={setPriceDetailsOpen}>
+                      <Collapsible
+                        open={priceDetailsOpen}
+                        onOpenChange={setPriceDetailsOpen}
+                      >
                         <CollapsibleTrigger className="flex items-center justify-between w-full text-left p-0 hover:bg-transparent">
                           <div className="flex items-center justify-between w-full">
                             <span
@@ -620,8 +630,12 @@ export default function PassengerDetails() {
                               Adult ({passengerCount})
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold" data-testid="text-total-price">
-                                {flight.price.currency} {formattedPrice(totalPrice)}
+                              <span
+                                className="font-semibold"
+                                data-testid="text-total-price"
+                              >
+                                {flight.price.currency}{" "}
+                                {formattedPrice(totalPrice)}
                               </span>
                               <motion.div
                                 animate={{
@@ -657,8 +671,9 @@ export default function PassengerDetails() {
                                   >
                                     Flight fare
                                   </span>
-                                  <span data-testid="text-flight-fare" >
-                                    {flight.price.currency} {formattedPrice(flightFare)}
+                                  <span data-testid="text-flight-fare">
+                                    {flight.price.currency}{" "}
+                                    {formattedPrice(flightFare)}
                                   </span>
                                 </div>
                                 <div className="flex justify-between text-sm mr-6">
@@ -669,7 +684,8 @@ export default function PassengerDetails() {
                                     Airline taxes and fees
                                   </span>
                                   <span data-testid="text-airline-taxes">
-                                    {flight.price.currency} {formattedPrice(flightTaxes)}
+                                    {flight.price.currency}{" "}
+                                    {formattedPrice(flightTaxes)}
                                   </span>
                                 </div>
                               </div>
@@ -698,7 +714,6 @@ export default function PassengerDetails() {
                       <p className="text-sm text-flightpay-slate-600 mt-1">
                         Includes taxes and fees
                       </p>
-                      
                     </div>
                   </CardContent>
                 </Card>
@@ -718,6 +733,8 @@ export default function PassengerDetails() {
           </div>
         </div>
       </div>
+      <Footer />
+
     </div>
   );
 }

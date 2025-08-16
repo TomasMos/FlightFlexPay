@@ -26,7 +26,7 @@
 
   /* Custom FlightPay colors */
   --flightpay-primary: hsl(207, 90%, 54%);
-  --flightpay-hover: hsl(207, 64%, 63%);
+  --flightpay-hover: hsl(207, 100%, 86%);
   --flightpay-secondary: hsl(174, 100%, 35%);
   --flightpay-accent: hsl(13, 100%, 60%);
   --flightpay-slate-50: hsl(210, 40%, 98%);
@@ -51,6 +51,7 @@
   --border: hsl(240, 3.7%, 15.9%);
   --input: hsl(240, 3.7%, 15.9%);
   --primary: hsl(207, 90%, 54%);
+  --hover: hsl(207, 64%, 63%);
   --primary-foreground: hsl(211, 100%, 99%);
   --secondary: hsl(174, 100%, 35%);
   --secondary-foreground: hsl(0, 0%, 100%);
@@ -118,6 +119,9 @@
   }
   
   .bg-flightpay-primary {
+    background-color: var(--flightpay-primary);
+  }
+  .bg-flightpay-hover {
     background-color: var(--flightpay-primary);
   }
   .bg-flightpay-secondary {

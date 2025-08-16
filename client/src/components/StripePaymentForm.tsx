@@ -263,7 +263,7 @@ export default function StripePaymentForm({
   const appearance = {
     theme: 'stripe' as const,
     variables: {
-      colorPrimary: '#fb923c', // flightpay-accent color
+      colorPrimary: '#ff5f33', // flightpay-accent color
     },
   };
 
@@ -361,30 +361,6 @@ export default function StripePaymentForm({
             hasInstallments={hasInstallments}
           />
         </Elements>
-
-        {hasInstallments && installmentData && (
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex items-start gap-2">
-              <div className="text-blue-600 mt-0.5">ℹ️</div>
-              <div className="text-sm text-blue-800">
-                <p className="font-medium">Installment Plan Setup</p>
-                <p>
-                  After your {paymentType} payment is processed, your installment plan will be automatically set up for{" "}
-                  {new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: currency.toUpperCase(),
-                  }).format(installmentData.amount / 100)}{" "}
-                  every {installmentData.interval_count === 1 ? "" : installmentData.interval_count + " "}
-                  {installmentData.interval === 'week' ? 'week' : 'month'}
-                  {installmentData.interval_count > 1 ? 's' : ''}.
-                </p>
-                <p className="mt-1 text-xs">
-                  Your payment method will be securely saved and charged automatically for each installment starting one week from today.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
