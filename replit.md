@@ -36,11 +36,15 @@ This is a full-stack web application built with a React frontend and Express.js 
 - **Session-based architecture** with PostgreSQL session storage
 
 ### Database Schema
-The application uses four main tables:
-- **users**: User authentication and profile data
-- **flights**: Flight information including pricing, schedules, and availability
-- **bookings**: User flight bookings with payment plan flags
-- **paymentPlans**: Payment plan details with installment schedules
+The application uses eight main tables following the specification requirements:
+- **flight_searches**: Tracks all flight search queries with session tracking for anonymous users
+- **leads**: Captures potential customer information from passenger details form
+- **lead_attempts**: Links booking attempts to leads and search sessions
+- **users**: Registered users created from successful lead conversions
+- **flights**: Complete flight data stored as JSON with metadata
+- **payment_plans**: Payment plan configurations (full payment or installments)
+- **installments**: Individual payment installment records with due dates
+- **bookings**: Complete booking records linking users, flights, and payment plans
 
 ### Payment Plan System
 - **Customizable Deposits**: Four deposit options (20%, 30%, 40%, 50%) with 30% default
@@ -81,19 +85,29 @@ The application uses four main tables:
 
 ## Data Flow
 
+### Complete Customer Journey (According to Specification)
+1. **Flight Search**: Every search is saved to `flight_searches` table with session tracking
+2. **Passenger Details**: Contact and passenger information saved as `leads` with `lead_attempts`
+3. **Payment Processing**: Successful payment converts lead to registered `users`
+4. **Booking Creation**: Complete booking with flight data, payment plan, and installments created
+5. **Lead Conversion**: Anonymous leads become registered users upon successful payment
+
 ### Flight Search Flow
 1. User types in origin/destination with real-time autocomplete from Amadeus Airport API
 2. System provides airport and city suggestions with IATA codes
 3. Frontend validates input using Zod schema and sends IATA codes for search
-4. Backend calls Amadeus Flight Offers API for flight data
-5. Payment plan eligibility calculated for each flight
-6. Enhanced flight data returned with payment plan information
+4. **Database Tracking**: Flight search saved to database with session ID for anonymous tracking
+5. Backend calls Amadeus Flight Offers API for flight data
+6. Payment plan eligibility calculated for each flight
+7. Enhanced flight data returned with payment plan information
 
-### Booking Flow
-1. User selects flight and payment option
-2. Payment plan details calculated and displayed
-3. Booking created in database with payment plan flag
-4. Payment plan record created if installments selected
+### Lead Generation & Booking Flow
+1. User selects flight and enters passenger details
+2. **Lead Creation**: Contact and passenger data saved as lead with lead attempt record
+3. User selects payment plan and processes payment
+4. **Conversion**: Successful payment creates user account from lead data
+5. **Complete Booking**: Flight, payment plan, installments, and booking records created
+6. **Lead Status Update**: Lead marked as "converted" upon successful booking
 
 ### External Service Integration
 - **Amadeus API**: Flight search and booking data

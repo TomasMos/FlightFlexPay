@@ -1,6 +1,6 @@
 import {
   Flight,
-  FlightSearch,
+  FlightSearchRequest,
   EnhancedFlight,
   FlightSegment,
   FlightItinerary,
@@ -187,7 +187,7 @@ export class AmadeusService {
     }
   }
 
-  async searchFlights(searchParams: FlightSearch): Promise<EnhancedFlight[]> {
+  async searchFlights(searchParams: FlightSearchRequest): Promise<EnhancedFlight[]> {
     // If no API credentials, return empty array with informative error
     if (!this.config.clientId || !this.config.clientSecret) {
       throw new Error(
@@ -203,7 +203,7 @@ export class AmadeusService {
         destinationLocationCode: searchParams.destination,
         departureDate: searchParams.departureDate,
         adults: searchParams.passengers.toString(),
-        max: "10", // Increased for better results
+        max: "1", // Increased for better results
         currencyCode: "USD",
       });
 
@@ -302,7 +302,7 @@ export class AmadeusService {
   // Update the signature to be async
   private async transformEnhancedAmadeusResponse(
     response: AmadeusFlightResponse,
-    searchParams: FlightSearch,
+    searchParams: FlightSearchRequest,
   ): Promise<EnhancedFlight[]> {
     // 1. Collect all unique IATA codes from the flight offer response
     const uniqueIataCodes = new Set<string>();
