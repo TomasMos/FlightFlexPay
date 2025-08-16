@@ -271,16 +271,43 @@ export default function PassengerDetails() {
       const allPassengerData = passengerForms.map((form) => form.getValues());
       const contactData = contactForm.getValues();
 
-      localStorage.setItem(
-        "passengerData",
-        JSON.stringify({
-          passengers: allPassengerData,
-          contact: contactData,
-          flightId: flight?.id,
-          passengerCount,
-        }),
-      );
-      setLocation("/flight-search/book");
+      try {
+        // Save to database as lead
+        const response = await fetch("/api/leads", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contactDetails: contactData,
+            passengers: allPassengerData,
+            searchId: null // Will be linked later when search history is implemented
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to save passenger details");
+        }
+
+        // Save passenger data and lead ID to localStorage
+        localStorage.setItem(
+          "passengerData",
+          JSON.stringify({
+            passengers: allPassengerData,
+            contactDetails: contactData,
+            flightId: flight?.id,
+            passengerCount,
+          }),
+        );
+        localStorage.setItem("leadId", result.leadId.toString());
+
+        setLocation("/flight-search/book");
+      } catch (error) {
+        console.error("Error saving passenger details:", error);
+        alert("Failed to save passenger details. Please try again.");
+      }
     }
   };
 

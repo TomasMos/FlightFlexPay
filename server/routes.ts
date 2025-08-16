@@ -1,14 +1,31 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { db } from "./db";
+import { 
+  flightSearches, 
+  leads, 
+  leadAttempts, 
+  users, 
+  flights, 
+  paymentPlans, 
+  installments, 
+  bookings,
+  flightSearchSchema,
+  EnhancedFlightWithPaymentPlan,
+  insertFlightSearchSchema,
+  insertLeadSchema,
+  insertLeadAttemptSchema,
+  insertUserSchema,
+  insertFlightSchema,
+  insertPaymentPlanSchema,
+  insertInstallmentSchema,
+  insertBookingSchema
+} from "@shared/schema";
 import { amadeusService } from "./services/amadeus";
 import { PaymentPlanService } from "./services/paymentPlan";
 import { StripeService } from "./services/stripe";
-import {
-  flightSearchSchema,
-  EnhancedFlightWithPaymentPlan,
-} from "@shared/schema";
 import { z } from "zod";
+import { eq, and } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Flight search endpoint
@@ -23,6 +40,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tripType: req.query.tripType || "roundtrip",
       });
 
+      // Save flight search to database
+      const sessionId = `anon_${Date.now()}`;
+      const tripTypeMap: Record<string, "one_way" | "return" | "multicity"> = {
+        "oneway": "one_way",
+        "roundtrip": "return",
+        "multicity": "multicity"
+      };
+
+      try {
+        await db.insert(flightSearches).values({
+          userId: null, // Will be updated when user authentication is implemented
+          sessionId,
+          originIata: searchParams.origin,
+          originAirportName: searchParams.origin, // This should be resolved from airport API
+          destinationIata: searchParams.destination,
+          destinationAirportName: searchParams.destination, // This should be resolved from airport API
+          departureDate: searchParams.departureDate,
+          returnDate: searchParams.returnDate || null,
+          tripType: tripTypeMap[searchParams.tripType] || "return",
+          passengerCount: searchParams.passengers,
+          cabin: "Economy"
+        });
+      } catch (error) {
+        console.log("Error saving flight search:", error);
+        // Continue with search even if database save fails
+      }
+
       const flights = await amadeusService.searchFlights(searchParams);
 
       // console.error(
@@ -31,8 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // );
 
       // Transform enhanced flights to include payment plan information
-      const flightsWithPaymentPlans: EnhancedFlightWithPaymentPlan[] =
-        flights.map((flight) => {
+      const flightsWithPaymentPlans = flights.map((flight: any) => {
           const travelDate = new Date(flight.departureTime);
           const totalBaseCost = parseFloat(flight.price.total);
 
@@ -52,11 +95,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               total: perPersonFlightPrice.flightPrice.toString(), // Per-person price with fees
             },
             paymentPlanEligible: paymentPlan.eligible,
-            paymentPlan: paymentPlan.eligible
+            paymentPlanOptions: paymentPlan.eligible
               ? {
-                  depositAmount: paymentPlan.depositAmount!,
-                  installmentAmount: paymentPlan.installmentAmount!,
-                  installmentCount: paymentPlan.installmentCount!,
+                  minDeposit: 20,
+                  maxInstallments: paymentPlan.installmentCount!,
+                  frequencies: ["weekly", "bi-weekly"]
                 }
               : undefined,
           };
@@ -116,74 +159,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create booking with optional payment plan
-  app.post("/api/bookings", async (req, res) => {
-    try {
-      const bookingData = req.body;
-
-      // Validate flight exists
-      const flight = await storage.getFlight(bookingData.flightId);
-      if (!flight) {
-        return res.status(404).json({ message: "Flight not found" });
-      }
-
-      // Create booking
-      const booking = await storage.createBooking({
-        flightId: bookingData.flightId,
-        passengerCount: bookingData.passengerCount,
-        totalAmount: bookingData.totalAmount,
-        paymentPlanEnabled: bookingData.paymentPlanEnabled,
-        travelDate: new Date(bookingData.travelDate),
-        userId: bookingData.userId || null,
-      });
-
-      // Create payment plan if enabled
-      if (bookingData.paymentPlanEnabled) {
-        const paymentPlan = PaymentPlanService.calculatePaymentPlan(
-          parseFloat(bookingData.totalAmount),
-          new Date(bookingData.travelDate),
-        );
-
-        if (paymentPlan.eligible) {
-          await storage.createPaymentPlan({
-            bookingId: booking.id,
-            totalAmount: bookingData.totalAmount,
-            depositAmount: paymentPlan.depositAmount!.toString(),
-            installmentAmount: paymentPlan.installmentAmount!.toString(),
-            installmentCount: paymentPlan.installmentCount!,
-            schedule: paymentPlan.schedule || [],
-          });
-        }
-      }
-
-      res.json(booking);
-    } catch (error) {
-      console.error("Booking creation error:", error);
-      res.status(400).json({ message: "Failed to create booking" });
-    }
-  });
-
   // Get booking details
   app.get("/api/bookings/:id", async (req, res) => {
     try {
-      const booking = await storage.getBooking(req.params.id);
-      if (!booking) {
+      const bookingId = parseInt(req.params.id);
+      
+      const booking = await db.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
+      if (!booking.length) {
         return res.status(404).json({ message: "Booking not found" });
       }
 
-      const flight = await storage.getFlight(booking.flightId);
-      const paymentPlan = booking.paymentPlanEnabled
-        ? await storage.getPaymentPlanByBooking(booking.id)
-        : null;
+      const flight = await db.select().from(flights).where(eq(flights.id, booking[0].flightId)).limit(1);
+      const paymentPlan = await db.select().from(paymentPlans).where(eq(paymentPlans.id, booking[0].paymentPlanId)).limit(1);
+      const installmentList = await db.select().from(installments).where(eq(installments.paymentPlanId, booking[0].paymentPlanId));
 
       res.json({
-        ...booking,
-        flight,
-        paymentPlan,
+        ...booking[0],
+        flight: flight[0] || null,
+        paymentPlan: paymentPlan[0] || null,
+        installments: installmentList
       });
     } catch (error) {
       console.error("Get booking error:", error);
       res.status(500).json({ message: "Failed to get booking" });
+    }
+  });
+
+  // Save passenger details as leads
+  app.post("/api/leads", async (req, res) => {
+    try {
+      const { contactDetails, passengers, searchId } = req.body;
+      
+      // Create lead from contact details
+      const leadData = {
+        email: contactDetails.email,
+        diallingCode: contactDetails.diallingCode || null,
+        phoneNumber: contactDetails.phoneNumber || null,
+        title: passengers[0]?.title || null,
+        firstName: passengers[0]?.firstName || null,
+        lastName: passengers[0]?.lastName || null,
+        dob: passengers[0]?.dateOfBirth ? new Date(passengers[0].dateOfBirth).toISOString().split('T')[0] : null,
+        passportCountry: passengers[0]?.passportCountry || null
+      };
+
+      const [lead] = await db.insert(leads).values(leadData).returning();
+
+      // Create lead attempt
+      await db.insert(leadAttempts).values({
+        leadId: lead.id,
+        searchId: searchId || null,
+        passengerData: { contactDetails, passengers }
+      });
+
+      res.json({ leadId: lead.id, success: true });
+    } catch (error) {
+      console.error("Error saving lead:", error);
+      res.status(400).json({ error: "Failed to save passenger details" });
+    }
+  });
+
+  // Complete booking flow
+  app.post("/api/bookings/complete", async (req, res) => {
+    try {
+      const { 
+        flightData, 
+        passengerData, 
+        paymentPlan, 
+        paymentIntentId,
+        leadId 
+      } = req.body;
+
+      let userId: number;
+
+      // Check if user exists or create new user from lead data
+      const lead = await db.select().from(leads).where(eq(leads.id, leadId)).limit(1);
+      if (!lead.length) {
+        return res.status(404).json({ error: "Lead not found" });
+      }
+
+      const existingUser = await db.select().from(users).where(eq(users.email, lead[0].email)).limit(1);
+      
+      if (existingUser.length > 0) {
+        // Use existing user
+        userId = existingUser[0].id;
+      } else {
+        // Create new user from lead data and first passenger
+        const firstPassenger = passengerData.passengers[0];
+        const [newUser] = await db.insert(users).values({
+          email: lead[0].email,
+          diallingCode: lead[0].diallingCode,
+          phoneNumber: lead[0].phoneNumber,
+          title: firstPassenger.title,
+          firstName: firstPassenger.firstName,
+          lastName: firstPassenger.lastName,
+          dob: firstPassenger.dateOfBirth ? new Date(firstPassenger.dateOfBirth).toISOString().split('T')[0] : null,
+          passportCountry: firstPassenger.passportCountry
+        }).returning();
+        
+        userId = newUser.id;
+
+        // Update lead status to converted
+        await db.update(leads).set({ status: "converted" }).where(eq(leads.id, leadId));
+      }
+
+      // Create flight record
+      const tripTypeMap: Record<string, "one_way" | "return" | "multicity"> = {
+        "oneway": "one_way",
+        "roundtrip": "return",
+        "multicity": "multicity"
+      };
+
+      const [flight] = await db.insert(flights).values({
+        flightOffer: flightData,
+        originIata: flightData.itineraries[0].segments[0].departure.iataCode,
+        originAirportName: flightData.itineraries[0].segments[0].departure.iataCode, // Should be resolved from airport name
+        destinationIata: flightData.itineraries[0].segments[flightData.itineraries[0].segments.length - 1].arrival.iataCode,
+        destinationAirportName: flightData.itineraries[0].segments[flightData.itineraries[0].segments.length - 1].arrival.iataCode, // Should be resolved from airport name
+        departureDate: new Date(flightData.itineraries[0].segments[0].departure.at).toISOString().split('T')[0],
+        returnDate: flightData.itineraries[1] ? new Date(flightData.itineraries[1].segments[0].departure.at).toISOString().split('T')[0] : null,
+        tripType: flightData.oneWay ? "one_way" : "return",
+        passengerCount: passengerData.passengers.length,
+        cabin: "Economy"
+      }).returning();
+
+      // Create payment plan
+      const [paymentPlanRecord] = await db.insert(paymentPlans).values({
+        type: paymentPlan.depositPercentage === 100 ? "full" : "installments",
+        depositAmount: paymentPlan.depositPercentage === 100 ? null : paymentPlan.depositAmount.toString(),
+        installmentCount: paymentPlan.depositPercentage === 100 ? null : paymentPlan.installmentCount,
+        installmentFrequency: paymentPlan.depositPercentage === 100 ? null : (paymentPlan.installmentType === "weekly" ? "weekly" : "bi_weekly"),
+        totalAmount: paymentPlan.totalAmount.toString(),
+        currency: "USD"
+      }).returning();
+
+      // Create installments if payment plan is installments
+      if (paymentPlan.depositPercentage < 100) {
+        const installmentRecords = paymentPlan.installmentDates.map((dateStr: string, index: number) => ({
+          paymentPlanId: paymentPlanRecord.id,
+          dueDate: new Date(dateStr).toISOString().split('T')[0],
+          amount: paymentPlan.installmentAmount.toString(),
+          currency: "USD"
+        }));
+
+        await db.insert(installments).values(installmentRecords);
+      }
+
+      // Create booking
+      const [booking] = await db.insert(bookings).values({
+        userId,
+        flightId: flight.id,
+        paymentPlanId: paymentPlanRecord.id,
+        status: "paid",
+        totalPrice: paymentPlan.totalAmount.toString()
+      }).returning();
+
+      res.json({ 
+        bookingId: booking.id, 
+        flightId: flight.id,
+        paymentPlanId: paymentPlanRecord.id,
+        success: true 
+      });
+    } catch (error) {
+      console.error("Error completing booking:", error);
+      res.status(400).json({ error: "Failed to complete booking" });
     }
   });
 

@@ -181,29 +181,73 @@ export default function FlightBooking() {
     setShowPaymentForm(true);
   };
 
-  const handlePaymentSuccess = (paymentResult: any) => {
+  const handlePaymentSuccess = async (paymentResult: any) => {
     setPaymentCompleted(true);
 
-    // Save booking details to localStorage
-    const bookingData = {
-      flight,
-      passengers: passengerData,
-      paymentPlan: {
-        depositPercentage: selectedDeposit,
-        depositAmount,
-        installmentType: selectedInstallment,
-        installmentCount,
-        installmentAmount,
-        installmentDates: installmentDates.map((date) => date.toISOString()),
-        totalAmount: flightTotal,
-        remainingAmount,
-      },
-      paymentResult,
-      bookingDate: new Date().toISOString(),
-    };
+    try {
+      const leadId = localStorage.getItem("leadId");
+      if (!leadId) {
+        throw new Error("Lead ID not found. Please go back and re-enter passenger details.");
+      }
 
-    localStorage.setItem("bookingData", JSON.stringify(bookingData));
-    setBookingConfirmed(true);
+      // Complete booking in database
+      const response = await fetch("/api/bookings/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          flightData: flight,
+          passengerData,
+          paymentPlan: {
+            depositPercentage: selectedDeposit,
+            depositAmount,
+            installmentType: selectedInstallment,
+            installmentCount,
+            installmentAmount,
+            installmentDates: installmentDates.map((date) => date.toISOString()),
+            totalAmount: flightTotal,
+            remainingAmount,
+          },
+          paymentIntentId: paymentResult.paymentIntentId,
+          leadId: parseInt(leadId)
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to complete booking");
+      }
+
+      // Save booking details to localStorage for confirmation page
+      const bookingData = {
+        bookingId: result.bookingId,
+        flightId: result.flightId,
+        paymentPlanId: result.paymentPlanId,
+        flight,
+        passengers: passengerData,
+        paymentPlan: {
+          depositPercentage: selectedDeposit,
+          depositAmount,
+          installmentType: selectedInstallment,
+          installmentCount,
+          installmentAmount,
+          installmentDates: installmentDates.map((date) => date.toISOString()),
+          totalAmount: flightTotal,
+          remainingAmount,
+        },
+        paymentResult,
+        bookingDate: new Date().toISOString(),
+      };
+
+      localStorage.setItem("bookingData", JSON.stringify(bookingData));
+      setBookingConfirmed(true);
+    } catch (error) {
+      console.error("Error completing booking:", error);
+      alert(`Failed to complete booking: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setPaymentCompleted(false);
+    }
   };
 
   const handlePaymentError = (error: string) => {

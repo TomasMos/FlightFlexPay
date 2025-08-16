@@ -1,102 +1,140 @@
 import { sql } from "drizzle-orm";
 import {
   pgTable,
-  text,
+  serial,
   varchar,
-  decimal,
+  text,
   timestamp,
+  decimal,
   integer,
   boolean,
-  jsonb,
+  json,
+  date,
+  pgEnum,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
+// Enums for database constraints
+export const tripTypeEnum = pgEnum("trip_type", ["one_way", "return", "multicity"]);
+export const leadStatusEnum = pgEnum("lead_status", ["in_progress", "abandoned", "converted"]);
+export const paymentPlanTypeEnum = pgEnum("payment_plan_type", ["full", "installments"]);
+export const installmentFrequencyEnum = pgEnum("installment_frequency", ["weekly", "bi_weekly", "monthly"]);
+export const paymentPlanStatusEnum = pgEnum("payment_plan_status", ["in_process", "completed", "defaulted"]);
+export const installmentStatusEnum = pgEnum("installment_status", ["unpaid", "paid", "overdue", "cancelled"]);
+export const bookingStatusEnum = pgEnum("booking_status", ["payment_pending", "paid", "cancelled"]);
 
-export const flights = pgTable("flights", {
-  id: varchar("id").primaryKey(),
-  airline: text("airline").notNull(),
-  flightNumber: text("flight_number").notNull(),
-  origin: text("origin").notNull(),
-  destination: text("destination").notNull(),
-  departureTime: timestamp("departure_time").notNull(),
-  arrivalTime: timestamp("arrival_time").notNull(),
-  duration: text("duration").notNull(),
-  stops: integer("stops").notNull().default(0),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  currency: text("currency").notNull().default("USD"),
-  cabin: text("cabin").notNull().default("ECONOMY"),
-  availableSeats: integer("available_seats").notNull(),
-  amenities: jsonb("amenities"),
-});
-
-export const bookings = pgTable("bookings", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id),
-  flightId: varchar("flight_id")
-    .references(() => flights.id)
-    .notNull(),
+// Flight searches table - tracks all search queries
+export const flightSearches = pgTable("flight_searches", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id), // nullable for anonymous
+  sessionId: varchar("session_id", { length: 255 }), // for anonymous tracking
+  originIata: varchar("origin_iata", { length: 3 }).notNull(),
+  originAirportName: varchar("origin_airport_name", { length: 255 }).notNull(),
+  destinationIata: varchar("destination_iata", { length: 3 }).notNull(),
+  destinationAirportName: varchar("destination_airport_name", { length: 255 }).notNull(),
+  departureDate: date("departure_date").notNull(),
+  returnDate: date("return_date"), // nullable for one-way trips
+  tripType: tripTypeEnum("trip_type").notNull(),
   passengerCount: integer("passenger_count").notNull(),
-  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
-  paymentPlanEnabled: boolean("payment_plan_enabled").notNull().default(false),
-  status: text("status").notNull().default("PENDING"), // PENDING, CONFIRMED, CANCELLED
-  createdAt: timestamp("created_at")
-    .notNull()
-    .default(sql`now()`),
-  travelDate: timestamp("travel_date").notNull(),
+  cabin: varchar("cabin", { length: 50 }).default("Economy"),
+  searchTimestamp: timestamp("search_timestamp").defaultNow(),
 });
 
+// Leads table - tracks potential customers
+export const leads = pgTable("leads", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull(), // not necessarily unique
+  diallingCode: varchar("dialling_code", { length: 10 }),
+  phoneNumber: varchar("phone_number", { length: 20 }),
+  title: varchar("title", { length: 10 }),
+  firstName: varchar("first_name", { length: 100 }),
+  lastName: varchar("last_name", { length: 100 }),
+  dob: date("dob"), // nullable
+  passportCountry: varchar("passport_country", { length: 3 }),
+  status: leadStatusEnum("status").default("in_progress"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Lead attempts table - tracks booking attempts
+export const leadAttempts = pgTable("lead_attempts", {
+  id: serial("id").primaryKey(),
+  leadId: integer("lead_id").references(() => leads.id).notNull(),
+  searchId: integer("search_id").references(() => flightSearches.id).notNull(),
+  attemptedAt: timestamp("attempted_at").defaultNow(),
+  passengerData: json("passenger_data").notNull(), // JSON containing passenger details
+});
+
+// Users table for authenticated users
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  diallingCode: varchar("dialling_code", { length: 10 }),
+  phoneNumber: varchar("phone_number", { length: 20 }),
+  title: varchar("title", { length: 10 }),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  dob: date("dob"), // optional
+  passportNumber: varchar("passport_number", { length: 50 }),
+  passportCountry: varchar("passport_country", { length: 3 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Flights table for flight information
+export const flights = pgTable("flights", {
+  id: serial("id").primaryKey(),
+  flightOffer: json("flight_offer").notNull(), // JSON - selectedFlight
+  originIata: varchar("origin_iata", { length: 3 }).notNull(),
+  originAirportName: varchar("origin_airport_name", { length: 255 }).notNull(),
+  destinationIata: varchar("destination_iata", { length: 3 }).notNull(),
+  destinationAirportName: varchar("destination_airport_name", { length: 255 }).notNull(),
+  departureDate: date("departure_date").notNull(),
+  returnDate: date("return_date"), // nullable for one-way trips
+  tripType: tripTypeEnum("trip_type").notNull(),
+  passengerCount: integer("passenger_count").notNull(),
+  cabin: varchar("cabin", { length: 50 }).default("Economy"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Payment plans table
 export const paymentPlans = pgTable("payment_plans", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  bookingId: varchar("booking_id")
-    .references(() => bookings.id)
-    .notNull(),
+  id: serial("id").primaryKey(),
+  type: paymentPlanTypeEnum("type").notNull(),
+  depositAmount: decimal("deposit_amount", { precision: 10, scale: 2 }), // nullable if type='full'
+  installmentCount: integer("installment_count"), // nullable if type='full'
+  installmentFrequency: installmentFrequencyEnum("installment_frequency"), // nullable if type='full'
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
-  depositAmount: decimal("deposit_amount", {
-    precision: 10,
-    scale: 2,
-  }).notNull(),
-  installmentAmount: decimal("installment_amount", {
-    precision: 10,
-    scale: 2,
-  }).notNull(),
-  installmentCount: integer("installment_count").notNull(),
-  schedule: jsonb("schedule").notNull(), // Array of payment dates and amounts
-  createdAt: timestamp("created_at")
-    .notNull()
-    .default(sql`now()`),
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  status: paymentPlanStatusEnum("status").default("in_process"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+// Installments table
+export const installments = pgTable("installments", {
+  id: serial("id").primaryKey(),
+  paymentPlanId: integer("payment_plan_id").references(() => paymentPlans.id).notNull(),
+  dueDate: date("due_date").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  status: installmentStatusEnum("status").default("unpaid"),
+  paidAt: timestamp("paid_at"), // nullable
 });
 
-export const insertFlightSchema = createInsertSchema(flights);
-
-export const insertBookingSchema = createInsertSchema(bookings).omit({
-  id: true,
-  createdAt: true,
+// Bookings table
+export const bookings = pgTable("bookings", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  flightId: integer("flight_id").references(() => flights.id).notNull(),
+  paymentPlanId: integer("payment_plan_id").references(() => paymentPlans.id).notNull(),
+  status: bookingStatusEnum("status").default("payment_pending"),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertPaymentPlanSchema = createInsertSchema(paymentPlans).omit({
-  id: true,
-  createdAt: true,
-});
-
-// Flight search schema
+// Flight search schema for API requests
 export const flightSearchSchema = z.object({
   origin: z.string().min(3, "Origin is required"),
   destination: z.string().min(3, "Destination is required"),
@@ -106,22 +144,105 @@ export const flightSearchSchema = z.object({
   tripType: z.enum(["roundtrip", "oneway", "multicity"]).default("roundtrip"),
 });
 
-// Types
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+// Enhanced flight data with payment plan information (for API responses)
+export const EnhancedFlightWithPaymentPlanSchema = z.object({
+  id: z.string(),
+  source: z.string(),
+  instantTicketingRequired: z.boolean(),
+  nonHomogeneous: z.boolean(),
+  oneWay: z.boolean(),
+  isUpsellOffer: z.boolean().optional(),
+  lastTicketingDate: z.string(),
+  lastTicketingDateTime: z.string(),
+  numberOfBookableSeats: z.number(),
+  itineraries: z.array(z.object({
+    duration: z.string(),
+    segments: z.array(z.object({
+      departure: z.object({
+        iataCode: z.string(),
+        terminal: z.string().optional(),
+        at: z.string(),
+      }),
+      arrival: z.object({
+        iataCode: z.string(),
+        terminal: z.string().optional(),
+        at: z.string(),
+      }),
+      carrierCode: z.string(),
+      number: z.string(),
+      aircraft: z.object({
+        code: z.string(),
+      }),
+      operating: z.object({
+        carrierCode: z.string(),
+      }).optional(),
+      duration: z.string(),
+      id: z.string(),
+      numberOfStops: z.number(),
+      blacklistedInEU: z.boolean(),
+    })),
+  })),
+  price: z.object({
+    currency: z.string(),
+    total: z.string(),
+    base: z.string(),
+    fees: z.array(z.object({
+      amount: z.string(),
+      type: z.string(),
+    })),
+    grandTotal: z.string(),
+    additionalServices: z.array(z.object({
+      amount: z.string(),
+      type: z.string(),
+    })).optional(),
+  }),
+  pricingOptions: z.object({
+    fareType: z.array(z.string()),
+    includedCheckedBagsOnly: z.boolean(),
+  }),
+  validatingAirlineCodes: z.array(z.string()),
+  travelerPricings: z.array(z.object({
+    travelerId: z.string(),
+    fareOption: z.string(),
+    travelerType: z.string(),
+    price: z.object({
+      currency: z.string(),
+      total: z.string(),
+      base: z.string(),
+    }),
+    fareDetailsBySegment: z.array(z.object({
+      segmentId: z.string(),
+      cabin: z.string(),
+      fareBasis: z.string(),
+      brandedFare: z.string().optional(),
+      brandedFareLabel: z.string().optional(),
+      class: z.string(),
+      includedCheckedBags: z.object({
+        weight: z.number().optional(),
+        weightUnit: z.string().optional(),
+        quantity: z.number().optional(),
+      }),
+      amenities: z.array(z.object({
+        description: z.string(),
+        isChargeable: z.boolean(),
+        amenityType: z.string(),
+        amenityProvider: z.object({
+          name: z.string(),
+        }),
+      })).optional(),
+    })),
+  })),
+  paymentPlanEligible: z.boolean(),
+  paymentPlanOptions: z.object({
+    minDeposit: z.number(),
+    maxInstallments: z.number(),
+    frequencies: z.array(z.string()),
+  }).optional(),
+});
 
-export type InsertFlight = z.infer<typeof insertFlightSchema>;
-export type Flight = typeof flights.$inferSelect;
+export type EnhancedFlightWithPaymentPlan = z.infer<typeof EnhancedFlightWithPaymentPlanSchema>;
 
-export type InsertBooking = z.infer<typeof insertBookingSchema>;
-export type Booking = typeof bookings.$inferSelect;
-
-export type InsertPaymentPlan = z.infer<typeof insertPaymentPlanSchema>;
-export type PaymentPlan = typeof paymentPlans.$inferSelect;
-
-export type FlightSearch = z.infer<typeof flightSearchSchema>;
-
-// Enhanced Amadeus-compatible flight structures
+// Enhanced flight structures for compatibility
 export interface FlightSegment {
   departure: {
     iataCode: string;
@@ -189,11 +310,38 @@ export interface EnhancedFlight {
   };
 }
 
-export type EnhancedFlightWithPaymentPlan = EnhancedFlight & {
-  paymentPlanEligible: boolean;
-  paymentPlan?: {
-    depositAmount: number;
-    installmentAmount: number;
-    installmentCount: number;
-  };
-};
+// Zod schemas for validation
+export const insertFlightSearchSchema = createInsertSchema(flightSearches);
+export const selectFlightSearchSchema = createSelectSchema(flightSearches);
+export const insertLeadSchema = createInsertSchema(leads);
+export const selectLeadSchema = createSelectSchema(leads);
+export const insertLeadAttemptSchema = createInsertSchema(leadAttempts);
+export const selectLeadAttemptSchema = createSelectSchema(leadAttempts);
+export const insertUserSchema = createInsertSchema(users);
+export const selectUserSchema = createSelectSchema(users);
+export const insertFlightSchema = createInsertSchema(flights);
+export const selectFlightSchema = createSelectSchema(flights);
+export const insertPaymentPlanSchema = createInsertSchema(paymentPlans);
+export const selectPaymentPlanSchema = createSelectSchema(paymentPlans);
+export const insertInstallmentSchema = createInsertSchema(installments);
+export const selectInstallmentSchema = createSelectSchema(installments);
+export const insertBookingSchema = createInsertSchema(bookings);
+export const selectBookingSchema = createSelectSchema(bookings);
+
+export type InsertFlightSearch = z.infer<typeof insertFlightSearchSchema>;
+export type FlightSearch = z.infer<typeof selectFlightSearchSchema>;
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type Lead = z.infer<typeof selectLeadSchema>;
+export type InsertLeadAttempt = z.infer<typeof insertLeadAttemptSchema>;
+export type LeadAttempt = z.infer<typeof selectLeadAttemptSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = z.infer<typeof selectUserSchema>;
+export type InsertFlight = z.infer<typeof insertFlightSchema>;
+export type Flight = z.infer<typeof selectFlightSchema>;
+export type InsertPaymentPlan = z.infer<typeof insertPaymentPlanSchema>;
+export type PaymentPlan = z.infer<typeof selectPaymentPlanSchema>;
+export type InsertInstallment = z.infer<typeof insertInstallmentSchema>;
+export type Installment = z.infer<typeof selectInstallmentSchema>;
+export type InsertBooking = z.infer<typeof insertBookingSchema>;
+export type Booking = z.infer<typeof selectBookingSchema>;
+export type FlightSearchRequest = z.infer<typeof flightSearchSchema>;
