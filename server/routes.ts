@@ -185,12 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { contactDetails, passengers, searchId } = req.body;
 
-      console.log(`contactDetails`, contactDetails)
-      console.log(`passengers`, passengers)
-      console.log(`searchId`, searchId)
-
-
-      // Create lead from contact details
+      // Data for the lead entry, including details for the first passenger
       const leadData = {
         email: contactDetails.email,
         diallingCode: contactDetails.diallingCode || null,
@@ -198,19 +193,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: passengers[0]?.title || null,
         firstName: passengers[0]?.firstName || null,
         lastName: passengers[0]?.lastName || null,
-        dob: passengers[0]?.dateOfBirth ? new Date(passengers[0].dateOfBirth).toISOString().split('T')[0] : null,
-        passportCountry: passengers[0]?.passportCountry || null
+        dob: passengers[0]?.dateOfBirth
+          ? new Date(passengers[0].dateOfBirth).toISOString().split('T')[0]
+          : null,
+        passportCountry: passengers[0]?.passportCountry || null,
       };
 
-      const [lead] = await db.insert(leads).values(leadData).returning();
+      // Use onConflictDoUpdate to either create a new lead or update an existing one.
+      const [lead] = await db
+        .insert(leads)
+        .values(leadData)
+        .onConflictDoUpdate({
+          target: leads.email, // The unique column to check for a conflict
+          set: {
+            diallingCode: leadData.diallingCode,
+            phoneNumber: leadData.phoneNumber,
+            title: leadData.title,
+            firstName: leadData.firstName,
+            lastName: leadData.lastName,
+            dob: leadData.dob,
+            passportCountry: leadData.passportCountry,
+          },
+        })
+        .returning();
 
-      console.log(`lead`, lead)
-
-      // Create lead attempt
+      // Create a new lead attempt, linking it to the lead
       await db.insert(leadAttempts).values({
         leadId: lead.id,
         searchId: searchId || null,
-        passengerData: { contactDetails, passengers }
+        passengerData: { contactDetails, passengers },
       });
 
       res.json({ leadId: lead.id, success: true });

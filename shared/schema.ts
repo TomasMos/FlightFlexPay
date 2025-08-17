@@ -11,18 +11,47 @@ import {
   json,
   date,
   pgEnum,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Enums for database constraints
-export const tripTypeEnum = pgEnum("trip_type", ["one_way", "return", "multicity"]);
-export const leadStatusEnum = pgEnum("lead_status", ["in_progress", "abandoned", "converted"]);
-export const paymentPlanTypeEnum = pgEnum("payment_plan_type", ["full", "installments"]);
-export const installmentFrequencyEnum = pgEnum("installment_frequency", ["weekly", "bi_weekly", "monthly"]);
-export const paymentPlanStatusEnum = pgEnum("payment_plan_status", ["in_process", "completed", "defaulted"]);
-export const installmentStatusEnum = pgEnum("installment_status", ["unpaid", "paid", "overdue", "cancelled"]);
-export const bookingStatusEnum = pgEnum("booking_status", ["payment_pending", "paid", "cancelled"]);
+export const tripTypeEnum = pgEnum("trip_type", [
+  "one_way",
+  "return",
+  "multicity",
+]);
+export const leadStatusEnum = pgEnum("lead_status", [
+  "in_progress",
+  "abandoned",
+  "converted",
+]);
+export const paymentPlanTypeEnum = pgEnum("payment_plan_type", [
+  "full",
+  "installments",
+]);
+export const installmentFrequencyEnum = pgEnum("installment_frequency", [
+  "weekly",
+  "bi_weekly",
+  "monthly",
+]);
+export const paymentPlanStatusEnum = pgEnum("payment_plan_status", [
+  "in_process",
+  "completed",
+  "defaulted",
+]);
+export const installmentStatusEnum = pgEnum("installment_status", [
+  "unpaid",
+  "paid",
+  "overdue",
+  "cancelled",
+]);
+export const bookingStatusEnum = pgEnum("booking_status", [
+  "payment_pending",
+  "paid",
+  "cancelled",
+]);
 
 // Flight searches table - tracks all search queries
 export const flightSearches = pgTable("flight_searches", {
@@ -32,7 +61,9 @@ export const flightSearches = pgTable("flight_searches", {
   originIata: varchar("origin_iata", { length: 3 }).notNull(),
   originAirportName: varchar("origin_airport_name", { length: 255 }).notNull(),
   destinationIata: varchar("destination_iata", { length: 3 }).notNull(),
-  destinationAirportName: varchar("destination_airport_name", { length: 255 }).notNull(),
+  destinationAirportName: varchar("destination_airport_name", {
+    length: 255,
+  }).notNull(),
   departureDate: date("departure_date").notNull(),
   returnDate: date("return_date"), // nullable for one-way trips
   tripType: tripTypeEnum("trip_type").notNull(),
@@ -42,26 +73,39 @@ export const flightSearches = pgTable("flight_searches", {
 });
 
 // Leads table - tracks potential customers
-export const leads = pgTable("leads", {
-  id: serial("id").primaryKey(),
-  email: varchar("email", { length: 255 }).notNull(), // not necessarily unique
-  diallingCode: varchar("dialling_code", { length: 10 }),
-  phoneNumber: varchar("phone_number", { length: 20 }),
-  title: varchar("title", { length: 10 }),
-  firstName: varchar("first_name", { length: 100 }),
-  lastName: varchar("last_name", { length: 100 }),
-  dob: date("dob"), // nullable
-  passportCountry: varchar("passport_country", { length: 3 }),
-  status: leadStatusEnum("status").default("in_progress"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export const leads = pgTable(
+  "leads",
+  {
+    id: serial("id").primaryKey(),
+    email: varchar("email", { length: 255 }).notNull().unique(),
+    diallingCode: varchar("dialling_code", { length: 10 }),
+    phoneNumber: varchar("phone_number", { length: 20 }),
+    title: varchar("title", { length: 10 }),
+    firstName: varchar("first_name", { length: 100 }),
+    lastName: varchar("last_name", { length: 100 }),
+    dob: date("dob"), // nullable
+    passportCountry: varchar("passport_country", { length: 3 }),
+    status: leadStatusEnum("status").default("in_progress"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => {
+    return {
+      // Add the unique index here
+      emailIdx: uniqueIndex("email_idx").on(table.email),
+    };
+  },
+);
 
 // Lead attempts table - tracks booking attempts
 export const leadAttempts = pgTable("lead_attempts", {
   id: serial("id").primaryKey(),
-  leadId: integer("lead_id").references(() => leads.id).notNull(),
-  searchId: integer("search_id").references(() => flightSearches.id).notNull(),
+  leadId: integer("lead_id")
+    .references(() => leads.id)
+    .notNull(),
+  searchId: integer("search_id")
+    .references(() => flightSearches.id)
+    .notNull(),
   attemptedAt: timestamp("attempted_at").defaultNow(),
   passengerData: json("passenger_data").notNull(), // JSON containing passenger details
 });
@@ -89,7 +133,9 @@ export const flights = pgTable("flights", {
   originIata: varchar("origin_iata", { length: 3 }).notNull(),
   originAirportName: varchar("origin_airport_name", { length: 255 }).notNull(),
   destinationIata: varchar("destination_iata", { length: 3 }).notNull(),
-  destinationAirportName: varchar("destination_airport_name", { length: 255 }).notNull(),
+  destinationAirportName: varchar("destination_airport_name", {
+    length: 255,
+  }).notNull(),
   departureDate: date("departure_date").notNull(),
   returnDate: date("return_date"), // nullable for one-way trips
   tripType: tripTypeEnum("trip_type").notNull(),
@@ -114,7 +160,9 @@ export const paymentPlans = pgTable("payment_plans", {
 // Installments table
 export const installments = pgTable("installments", {
   id: serial("id").primaryKey(),
-  paymentPlanId: integer("payment_plan_id").references(() => paymentPlans.id).notNull(),
+  paymentPlanId: integer("payment_plan_id")
+    .references(() => paymentPlans.id)
+    .notNull(),
   dueDate: date("due_date").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 3 }).default("USD"),
@@ -125,9 +173,15 @@ export const installments = pgTable("installments", {
 // Bookings table
 export const bookings = pgTable("bookings", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  flightId: integer("flight_id").references(() => flights.id).notNull(),
-  paymentPlanId: integer("payment_plan_id").references(() => paymentPlans.id).notNull(),
+  userId: integer("user_id")
+    .references(() => users.id)
+    .notNull(),
+  flightId: integer("flight_id")
+    .references(() => flights.id)
+    .notNull(),
+  paymentPlanId: integer("payment_plan_id")
+    .references(() => paymentPlans.id)
+    .notNull(),
   status: bookingStatusEnum("status").default("payment_pending"),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
