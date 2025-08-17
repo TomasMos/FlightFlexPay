@@ -37,82 +37,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         departureDate: req.query.departureDate,
         returnDate: req.query.returnDate,
         passengers: parseInt(req.query.passengers as string) || 1,
-        tripType: req.query.tripType || "roundtrip",
+        tripType: req.query.tripType,
       });
 
-      // Save flight search to database
-      const sessionId = `anon_${Date.now()}`;
-      const tripTypeMap: Record<string, "one_way" | "return" | "multicity"> = {
-        "oneway": "one_way",
-        "roundtrip": "return",
-        "multicity": "multicity"
-      };
+      let searchId = 0;
 
       try {
-        await db.insert(flightSearches).values({
-          userId: null, // Will be updated when user authentication is implemented
-          sessionId,
-          originIata: searchParams.origin,
-          originAirportName: searchParams.origin, // This should be resolved from airport API
-          destinationIata: searchParams.destination,
-          destinationAirportName: searchParams.destination, // This should be resolved from airport API
-          departureDate: searchParams.departureDate,
-          returnDate: searchParams.returnDate || null,
-          tripType: tripTypeMap[searchParams.tripType] || "return",
-          passengerCount: searchParams.passengers,
-          cabin: "Economy"
-        });
+        // Save flight search to database and return the newly created record
+        const [newSearch] = await db
+          .insert(flightSearches)
+          .values({
+            userId: null,
+            sessionId: `anon_${Date.now()}`,
+            originIata: searchParams.origin,
+            originAirportName: searchParams.origin,
+            destinationIata: searchParams.destination,
+            destinationAirportName: searchParams.destination,
+            departureDate: searchParams.departureDate,
+            returnDate: searchParams.returnDate || null,
+            tripType: searchParams.tripType,
+            passengerCount: searchParams.passengers,
+            cabin: "Economy"
+          })
+          .returning({ id: flightSearches.id }); // Add .returning() to get the ID
+
+        searchId = newSearch.id;
       } catch (error) {
         console.log("Error saving flight search:", error);
-        // Continue with search even if database save fails
+        // searchId will remain null if the database save fails
       }
 
       const flights = await amadeusService.searchFlights(searchParams);
 
-      // console.error(
-      //   "routes.ts - 31 - Enhanced Flight Data:",
-      //   JSON.stringify(flights, null, 2),
-      // );
+      const flightsWithPaymentPlans = flights.map((flight) => {
+        const travelDate = new Date(flight.departureTime);
+        const totalBaseCost = parseFloat(flight.price.total);
 
-      // Transform enhanced flights to include payment plan information
-      const flightsWithPaymentPlans = flights.map((flight: any) => {
-          const travelDate = new Date(flight.departureTime);
-          const totalBaseCost = parseFloat(flight.price.total);
+        const paymentPlan = PaymentPlanService.calculatePaymentPlan(
+          totalBaseCost,
+          travelDate,
+        );
+        const perPersonFlightPrice = PaymentPlanService.calculateFlightPrice(
+          totalBaseCost,
+          travelDate,
+        );
 
-          const paymentPlan = PaymentPlanService.calculatePaymentPlan(
-            totalBaseCost,
-            travelDate,
-          );
-          const perPersonFlightPrice = PaymentPlanService.calculateFlightPrice(
-            totalBaseCost,
-            travelDate,
-          );
+        return {
+          ...flight,
+          price: {
+            ...flight.price,
+            total: perPersonFlightPrice.flightPrice.toString(),
+          },
+          paymentPlanEligible: paymentPlan.eligible,
+          paymentPlan: paymentPlan.eligible
+            ? {
+              depositAmount: paymentPlan.depositAmount,
+              installmentAmount: paymentPlan.installmentAmount,
+              installmentCount: paymentPlan.installmentCount,
+            }
+            : undefined,
+        };
+      });
 
-          return {
-            ...flight,
-            price: {
-              ...flight.price,
-              total: perPersonFlightPrice.flightPrice.toString(), // Per-person price with fees
-            },
-            paymentPlanEligible: paymentPlan.eligible,
-            paymentPlan: paymentPlan.eligible
-              ? {
-                  depositAmount: paymentPlan.depositAmount!,
-                  installmentAmount: paymentPlan.installmentAmount!,
-                  installmentCount: paymentPlan.installmentCount!,
-                }
-              : undefined,
-          };
-        });
-
-      // console.log(`routes.ts - 61 - Flights with Payment Plans:`, JSON.stringify(flightsWithPaymentPlans, null, 2))
-
-      res.json({ flights: flightsWithPaymentPlans });
+      // Add the searchId to the response payload
+      res.json({
+        searchId,
+        flights: flightsWithPaymentPlans,
+      });
     } catch (error) {
       console.error("Flight search error:", error);
       res.status(400).json({
-        message:
-          error instanceof Error ? error.message : "Failed to search flights",
+        message: error instanceof Error ? error.message : "Failed to search flights",
         flights: [],
       });
     }

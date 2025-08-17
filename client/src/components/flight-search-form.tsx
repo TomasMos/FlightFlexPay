@@ -129,7 +129,7 @@ export function FlightSearchForm({
                   data-testid="radio-return"
                 />
                 <Label htmlFor="return" className="text-flightpay-slate-700">
-                  Round trip
+                  Return
                 </Label>
               </div>
               <div className="flex items-center space-x-2">

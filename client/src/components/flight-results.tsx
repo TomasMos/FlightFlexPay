@@ -16,12 +16,14 @@ import { parseDurationToMinutes } from "@/utils/formatters";
 
 interface FlightResultsProps {
   flights: EnhancedFlightWithPaymentPlan[];
+  searchId: number;
   isLoading: boolean;
   error?: string;
 }
 
 export function FlightResults({
   flights,
+  searchId,
   isLoading,
   error,
 }: FlightResultsProps) {
@@ -33,6 +35,8 @@ export function FlightResults({
   const getFlightPrice = (flight: EnhancedFlightWithPaymentPlan): number => {
     return parseFloat(flight.price.total);
   };
+
+  localStorage.setItem("searchId", String(searchId));
 
   const getTotalItineraryDuration = (
     flight: EnhancedFlightWithPaymentPlan,

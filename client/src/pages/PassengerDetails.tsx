@@ -72,6 +72,7 @@ export default function PassengerDetails() {
     null,
   );
   const [passengerCount, setPassengerCount] = useState(1);
+  const [searchId, setSearchId] = useState(0);
   const [priceDetailsOpen, setPriceDetailsOpen] = useState(false);
   const [userCountry, setUserCountry] = useState("ZA"); // Default to South Africa
 
@@ -219,6 +220,12 @@ export default function PassengerDetails() {
 
   // Load flight data from localStorage or API
   useEffect(() => {
+
+    const searchIdLS = localStorage.getItem("searchId")
+    if (searchIdLS) {
+      setSearchId(Number(searchIdLS))
+    }
+    
     if (params?.flightId) {
       // Load flight data
       const flightData = localStorage.getItem("selectedFlight");
@@ -281,7 +288,7 @@ export default function PassengerDetails() {
           body: JSON.stringify({
             contactDetails: contactData,
             passengers: allPassengerData,
-            searchId: 9 // Will be linked later when search history is implemented
+            searchId: searchId // Will be linked later when search history is implemented
           }),
         });
 

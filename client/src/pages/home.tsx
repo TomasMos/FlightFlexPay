@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  FlightSearch,
+  FlightSearchRequest,
   EnhancedFlightWithPaymentPlan,
 } from "@shared/schema";
 import { Header } from "@/components/header";
@@ -10,16 +10,20 @@ import { FlightResults } from "@/components/flight-results";
 import { TrustSection } from "@/components/trust-section";
 import { Footer } from "@/components/footer";
 
+// New: Define the type for the API response
+interface FlightSearchResponse {
+  searchId: number; // The ID from the backend
+  flights: EnhancedFlightWithPaymentPlan[];
+}
+
 export default function Home() {
-  const [searchParams, setSearchParams] = useState<FlightSearch | null>(null);
+  const [searchParams, setSearchParams] = useState<FlightSearchRequest | null>(null);
 
   const {
     data: flightData,
     isLoading,
     error,
-  } = useQuery<{
-    flights: (EnhancedFlightWithPaymentPlan)[];
-  }>({
+  } = useQuery<FlightSearchResponse>({
     queryKey: ["/api/flights/search", searchParams],
     queryFn: async ({ queryKey }) => {
       const [, params] = queryKey;
@@ -39,7 +43,7 @@ export default function Home() {
   });
   console.log("Home.ts - 41 - Frontend Data:", JSON.stringify(flightData, null, 2));
 
-  const handleSearch = (params: FlightSearch) => {
+  const handleSearch = (params: FlightSearchRequest) => {
     setSearchParams(params);
   };
 
@@ -52,6 +56,7 @@ export default function Home() {
       {searchParams && (
         <FlightResults
           flights={flightData?.flights || []}
+          searchId={flightData?.searchId || 0}
           isLoading={isLoading}
           error={error instanceof Error ? error.message : undefined}
         />
