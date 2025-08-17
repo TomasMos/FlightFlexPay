@@ -185,6 +185,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { contactDetails, passengers, searchId } = req.body;
 
+      console.log(`contactDetails`, contactDetails)
+      console.log(`passengers`, passengers)
+      console.log(`searchId`, searchId)
+
+
       // Create lead from contact details
       const leadData = {
         email: contactDetails.email,

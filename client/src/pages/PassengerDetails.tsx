@@ -244,8 +244,10 @@ export default function PassengerDetails() {
       // Load and populate passenger data
       const storedPassengerData = localStorage.getItem("passengerData");
       if (storedPassengerData) {
-        const { passengers: storedPassengers, contact: storedContact } =
+        const { passengers: storedPassengers, contactDetails: storedContact } =
           JSON.parse(storedPassengerData);
+
+        console.log(storedPassengerData)
 
         // Populate contact form
         if (storedContact) {
@@ -257,6 +259,9 @@ export default function PassengerDetails() {
           passengerCount,
           storedPassengers.length,
         );
+
+        
+        
         for (let i = 0; i < formsToPopulate; i++) {
           passengerForms[i].reset(storedPassengers[i]);
         }
@@ -292,7 +297,7 @@ export default function PassengerDetails() {
           }),
         });
 
-        console.log(`passengerdetails - 288`, response)
+        // console.log(`passengerdetails - 288`, response)
 
         const result = await response.json();
         
@@ -560,7 +565,7 @@ export default function PassengerDetails() {
                         </SelectTrigger>
                         <SelectContent className="max-h-60">
                           {countries.map((country) => (
-                            <SelectItem key={country.code} value={country.name}>
+                            <SelectItem key={country.code} value={country.code}>
                               {country.name}
                             </SelectItem>
                           ))}
