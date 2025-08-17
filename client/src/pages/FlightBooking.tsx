@@ -123,7 +123,6 @@ export default function FlightBooking() {
 
   const installmentDates = generateInstallmentDates();
   const firstInstallmentDate = installmentDates[0];
-  console.log(firstInstallmentDate);
   const lastInstallmentDate = installmentDates[installmentDates.length - 1];
 
   const formatCurrency = (amount: number) => {

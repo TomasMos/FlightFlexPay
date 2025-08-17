@@ -16,8 +16,6 @@ export function FlightCard({
   const pricePerTraveller =
     parseFloat(flight.price.total) / (flight?.numberOfPassengers || 1);
 
-  console.log(`flight-card - 19 - `, flight)
-
   return (
     <div
       className="bg-white rounded-xl shadow-md border border-flightpay-slate-200 hover:shadow-md transition-shadow p-6 cursor-pointer"
