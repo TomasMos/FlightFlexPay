@@ -649,7 +649,7 @@ export default function PassengerDetails() {
                   );
                 })}
               </div>
-              <div className="sticky top-8">
+              <div className="lg:sticky top-8">
                 <Card>
                   <CardHeader>
                     <CardTitle data-testid="title-price-details">
