@@ -42,7 +42,7 @@ export default function FlightBooking() {
   useEffect(() => {
     const flightData = localStorage.getItem("selectedFlight");
     const passengerInfo = localStorage.getItem("passengerData");
-
+    
     if (flightData) {
       setFlight(JSON.parse(flightData));
     }
@@ -257,7 +257,7 @@ export default function FlightBooking() {
 
   if (bookingConfirmed) {
     return (
-      <div className="min-h-screen bg-flightpay-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-flightpay-slate-50 flex flex-col gap-8">
         <Header />
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -511,7 +511,7 @@ export default function FlightBooking() {
                 <StripePaymentForm
                   amount={Math.round(depositAmount * 100)} // Convert to cents
                   currency="usd"
-                  customerEmail={passengerData?.contact?.email || ""}
+                  customerEmail={passengerData?.contactDetails?.email}
                   customerName={`${passengerData?.passengers?.[0]?.firstName} ${passengerData?.passengers?.[0]?.lastName}`}
                   paymentType={
                     selectedDeposit === 100 ? "full_payment" : "deposit"
