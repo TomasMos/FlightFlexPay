@@ -59,11 +59,7 @@ export const flightSearches = pgTable("flight_searches", {
   userId: integer("user_id").references(() => users.id), // nullable for anonymous
   sessionId: varchar("session_id", { length: 255 }), // for anonymous tracking
   originIata: varchar("origin_iata", { length: 3 }).notNull(),
-  originAirportName: varchar("origin_airport_name", { length: 255 }).notNull(),
   destinationIata: varchar("destination_iata", { length: 3 }).notNull(),
-  destinationAirportName: varchar("destination_airport_name", {
-    length: 255,
-  }).notNull(),
   departureDate: date("departure_date").notNull(),
   returnDate: date("return_date"), // nullable for one-way trips
   tripType: tripTypeEnum("trip_type").notNull(),
@@ -131,11 +127,7 @@ export const flights = pgTable("flights", {
   id: serial("id").primaryKey(),
   flightOffer: json("flight_offer").notNull(), // JSON - selectedFlight
   originIata: varchar("origin_iata", { length: 3 }).notNull(),
-  originAirportName: varchar("origin_airport_name", { length: 255 }).notNull(),
   destinationIata: varchar("destination_iata", { length: 3 }).notNull(),
-  destinationAirportName: varchar("destination_airport_name", {
-    length: 255,
-  }).notNull(),
   departureDate: date("departure_date").notNull(),
   returnDate: date("return_date"), // nullable for one-way trips
   tripType: tripTypeEnum("trip_type").notNull(),

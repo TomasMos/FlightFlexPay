@@ -189,6 +189,9 @@ export default function FlightBooking() {
         throw new Error("Lead ID not found. Please go back and re-enter passenger details.");
       }
 
+      const searchId = localStorage.getItem("searchId");
+      console.log(`searchId`,searchId)
+
       // Complete booking in database
       const response = await fetch("/api/bookings/complete", {
         method: "POST",
@@ -209,7 +212,8 @@ export default function FlightBooking() {
             remainingAmount,
           },
           paymentIntentId: paymentResult.paymentIntentId,
-          leadId: parseInt(leadId)
+          leadId: parseInt(leadId),
+          searchId: searchId
         }),
       });
 
