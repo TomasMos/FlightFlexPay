@@ -22,6 +22,7 @@ import {
   insertBookingSchema,
 } from "@shared/schema";
 import { amadeusService } from "./services/amadeus";
+import { emailService } from "./services/email";
 import { PaymentPlanService } from "./services/paymentPlan";
 import { StripeService } from "./services/stripe";
 import { z } from "zod";
@@ -303,6 +304,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         userId = newUser.id;
 
+        // Send welcome email to new user
+        try {
+          await emailService.sendWelcomeEmail(
+            newUser.email,
+            `${newUser.firstName} ${newUser.lastName}`
+          );
+        } catch (error) {
+          console.error('Failed to send welcome email:', error);
+        }
+
         // Update lead status to converted
         await db
           .update(leads)
@@ -393,6 +404,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalPrice: paymentPlan.totalAmount.toString(),
         })
         .returning();
+
+      // Send booking confirmation email
+      try {
+        const user = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        
+        if (user.length > 0) {
+          const firstItinerary = flightData.itineraries[0];
+          const lastItinerary = flightData.itineraries[flightData.itineraries.length - 1];
+          
+          await emailService.sendBookingConfirmation(user[0].email, {
+            customerName: `${user[0].firstName} ${user[0].lastName}`,
+            flightDetails: {
+              origin: flightData.origin,
+              destination: flightData.destination,
+              departureDate: firstItinerary.segments[0].departure.at,
+              returnDate: flightData.itineraries.length > 1 
+                ? lastItinerary.segments[0].departure.at 
+                : undefined,
+              flightNumber: firstItinerary.segments[0].number,
+              passengers: passengerData.passengers.length,
+            },
+            paymentPlan: {
+              totalAmount: paymentPlan.totalAmount,
+              depositAmount: paymentPlan.depositAmount,
+              installmentAmount: paymentPlan.installmentAmount,
+              installmentCount: paymentPlan.installmentCount,
+              frequency: paymentPlan.installmentType,
+            },
+            bookingReference: `FP${booking.id.toString().padStart(6, '0')}`,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to send booking confirmation email:', error);
+      }
 
       res.json({
         bookingId: booking.id,
