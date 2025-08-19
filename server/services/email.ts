@@ -98,8 +98,17 @@ export class EmailService {
       await mailService.send(msg);
       console.log('Email sent successfully to:', params.to);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('SendGrid email error:', error);
+      
+      // Provide more specific error information
+      if (error.code === 403) {
+        console.error('SendGrid 403 Error: This is likely due to:');
+        console.error('1. Sender email not verified in SendGrid');
+        console.error('2. API key lacks permissions');
+        console.error('3. Domain authentication required');
+      }
+      
       return false;
     }
   }

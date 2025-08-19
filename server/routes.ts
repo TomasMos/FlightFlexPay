@@ -658,6 +658,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
+  // Email endpoints
+  app.post("/api/send-payment-reminder", async (req, res) => {
+    try {
+      const { bookingId } = req.body;
+
+      // Get booking details with user and installment information
+      const booking = await db
+        .select({
+          booking: bookings,
+          user: users,
+          installment: installments,
+          paymentPlan: paymentPlans,
+        })
+        .from(bookings)
+        .leftJoin(users, eq(bookings.userId, users.id))
+        .leftJoin(paymentPlans, eq(bookings.paymentPlanId, paymentPlans.id))
+        .leftJoin(installments, eq(paymentPlans.id, installments.paymentPlanId))
+        .where(eq(bookings.id, parseInt(bookingId)))
+        .limit(1);
+
+      if (!booking.length) {
+        return res.status(404).json({ error: "Booking not found" });
+      }
+
+      const { user, installment } = booking[0];
+      if (!user || !installment) {
+        return res.status(400).json({ error: "Invalid booking data" });
+      }
+
+      // Send payment reminder
+      const success = await emailService.sendPaymentReminder(user.email, {
+        customerName: `${user.firstName} ${user.lastName}`,
+        dueAmount: parseFloat(installment.amount),
+        dueDate: installment.dueDate,
+        bookingReference: `FP${booking[0].booking.id.toString().padStart(6, '0')}`,
+        paymentUrl: `${process.env.BASE_URL || 'http://localhost:5000'}/payment/${booking[0].booking.id}`,
+      });
+
+      res.json({ success, sent: success });
+    } catch (error) {
+      console.error("Error sending payment reminder:", error);
+      res.status(400).json({ error: "Failed to send payment reminder" });
+    }
+  });
+
+  // Test email endpoint (development only)
+  app.post("/api/test-email", async (req, res) => {
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(403).json({ error: "Test endpoint only available in development" });
+    }
+
+    try {
+      const { type, email } = req.body;
+
+      let success = false;
+      switch (type) {
+        case 'welcome':
+          success = await emailService.sendWelcomeEmail(email, "Test User");
+          break;
+        case 'booking':
+          success = await emailService.sendBookingConfirmation(email, {
+            customerName: "Test User",
+            flightDetails: {
+              origin: "LAX",
+              destination: "JFK",
+              departureDate: new Date().toISOString(),
+              flightNumber: "AA123",
+              passengers: 1,
+            },
+            paymentPlan: {
+              totalAmount: 500,
+              depositAmount: 100,
+              installmentAmount: 100,
+              installmentCount: 4,
+              frequency: "weekly",
+            },
+            bookingReference: "FP000001",
+          });
+          break;
+        case 'reminder':
+          success = await emailService.sendPaymentReminder(email, {
+            customerName: "Test User",
+            dueAmount: 100,
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            bookingReference: "FP000001",
+            paymentUrl: "http://localhost:5000/payment/1",
+          });
+          break;
+        default:
+          return res.status(400).json({ error: "Invalid email type" });
+      }
+
+      res.json({ success, type, recipient: email });
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      res.status(400).json({ error: "Failed to send test email" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -83,6 +83,14 @@ The application uses eight main tables following the specification requirements:
 - **Flight Summary Integration**: Persistent flight details and passenger information display
 - **Navigation Flow**: Passenger Details → Payment Plan Selection → Booking Confirmation
 
+### Email Communication System
+- **SendGrid Integration**: Professional transactional email service with configurable templates
+- **Booking Confirmations**: Automatic emails sent upon successful payment with detailed flight and payment plan information
+- **Welcome Emails**: Sent to new users when they complete their first booking
+- **Payment Reminders**: Automated reminders for upcoming installment payments
+- **Email Testing**: Development-only endpoint for testing all email types
+- **Error Handling**: Graceful fallback when SendGrid is not configured
+
 ## Data Flow
 
 ### Complete Customer Journey (According to Specification)
@@ -112,7 +120,8 @@ The application uses eight main tables following the specification requirements:
 ### External Service Integration
 - **Amadeus API**: Flight search and booking data
 - **Neon Database**: Serverless PostgreSQL hosting
-- **Payment Processing**: Structured for future payment gateway integration
+- **Stripe Payment Processing**: Complete payment intent and subscription handling
+- **SendGrid Email Service**: Transactional emails for booking confirmations, welcome messages, and payment reminders
 
 ## External Dependencies
 
