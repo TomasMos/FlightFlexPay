@@ -11,15 +11,6 @@ import {
   installments,
   bookings,
   flightSearchSchema,
-  EnhancedFlightWithPaymentPlan,
-  insertFlightSearchSchema,
-  insertLeadSchema,
-  insertLeadAttemptSchema,
-  insertUserSchema,
-  insertFlightSchema,
-  insertPaymentPlanSchema,
-  insertInstallmentSchema,
-  insertBookingSchema,
 } from "@shared/schema";
 import { amadeusService } from "./services/amadeus";
 import { emailService } from "./services/email";
@@ -239,6 +230,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         passengerData: { contactDetails, passengers },
       });
 
+       await emailService.addLeadToList(leadData.email, leadData.firstName, leadData.lastName);
+      
+
       res.json({ leadId: lead.id, success: true });
     } catch (error) {
       console.error("Error saving lead:", error);
@@ -257,10 +251,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         leadId,
         searchId
       } = req.body;
-
-      console.log(`flightData`, flightData)
-      console.log(`passengerData`, passengerData)
-      console.log(`paymentPlan`, paymentPlan)
 
       let userId: number;
 
@@ -304,16 +294,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         userId = newUser.id;
 
-        // Send welcome email to new user
-        try {
-          await emailService.sendWelcomeEmail(
-            newUser.email,
-            `${newUser.firstName} ${newUser.lastName}`
-          );
-        } catch (error) {
-          console.error('Failed to send welcome email:', error);
-        }
-
         // Update lead status to converted
         await db
           .update(leads)
@@ -322,13 +302,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await db.update(flightSearches).set({userId: userId}).where(eq(flightSearches.id, searchId))
-
-      // Create flight record
-      const tripTypeMap: Record<string, "one_way" | "return" | "multicity"> = {
-        oneway: "one_way",
-        roundtrip: "return",
-        multicity: "multicity",
-      };
 
       const [flight] = await db
         .insert(flights)
@@ -441,6 +414,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } catch (error) {
         console.error('Failed to send booking confirmation email:', error);
+      }
+
+      try {
+        await emailService.moveLeadToCustomers(passengerData.contactDetails.email);
+      } catch {
+        console.error('Failed to move contact into customer list')
       }
 
       res.json({
