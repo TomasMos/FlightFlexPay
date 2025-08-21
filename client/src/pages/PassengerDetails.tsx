@@ -32,6 +32,7 @@ import {
   stopoverDuration,
 } from "@/utils/formatters";
 import { motion, AnimatePresence } from "framer-motion";
+import { Navbar } from "@/components/navbar";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
@@ -375,7 +376,8 @@ export default function PassengerDetails() {
   const totalPrice = parseFloat(flight.price.total);
 
   return (
-    <div className="min-h-screen bg-flightpay-slate-50  ">
+    <div className="min-h-screen bg-flightpay-slate-50">
+      <Navbar />
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 py-8">

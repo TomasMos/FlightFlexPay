@@ -4,6 +4,7 @@ import {
   FlightSearchRequest,
   EnhancedFlightWithPaymentPlan,
 } from "@shared/schema";
+import { Navbar } from "@/components/navbar";
 import { Header } from "@/components/header";
 import { FlightSearchForm } from "@/components/flight-search-form";
 import { FlightResults } from "@/components/flight-results";
@@ -49,6 +50,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-flightpay-slate-50" data-testid="page-home">
+      <Navbar />
       <Header />
 
       <FlightSearchForm onSearch={handleSearch} isLoading={isLoading} />

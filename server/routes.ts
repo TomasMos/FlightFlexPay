@@ -16,6 +16,7 @@ import { amadeusService } from "./services/amadeus";
 import { emailService } from "./services/email";
 import { PaymentPlanService } from "./services/paymentPlan";
 import { StripeService } from "./services/stripe";
+import { adminAuth } from "./services/firebaseAdmin";
 import { z } from "zod";
 import { eq, and } from "drizzle-orm";
 
@@ -733,6 +734,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error sending test email:", error);
       res.status(400).json({ error: "Failed to send test email" });
+    }
+  });
+
+  // Auth verification endpoint
+  app.post("/api/auth/verify-user", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      // Check if user exists in our database
+      const user = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
+      res.json({ exists: user.length > 0 });
+    } catch (error) {
+      console.error("Error verifying user:", error);
+      res.status(500).json({ error: "Failed to verify user" });
     }
   });
 

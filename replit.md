@@ -85,11 +85,23 @@ The application uses eight main tables following the specification requirements:
 
 ### Email Communication System
 - **SendGrid Integration**: Professional transactional email service with configurable templates
-- **Booking Confirmations**: Automatic emails sent upon successful payment with detailed flight and payment plan information
+- **Booking Confirmations**: Automatic emails sent upon successful payment with detailed flight and payment plan information including account signup button
 - **Welcome Emails**: Sent to new users when they complete their first booking
 - **Payment Reminders**: Automated reminders for upcoming installment payments
 - **Email Testing**: Development-only endpoint for testing all email types
 - **Error Handling**: Graceful fallback when SendGrid is not configured
+
+### Firebase Authentication System
+- **Restricted Access**: Users can only sign in after completing a booking (booking-first requirement)
+- **Email/Password Authentication**: Traditional signup with email and password validation
+- **Google OAuth Integration**: Single sign-on with Google accounts
+- **Account Linking**: Automatic linking of same email between different auth providers
+- **Database Verification**: All auth attempts verified against users table before allowing access
+- **Password Reset**: Secure password reset functionality with database verification
+- **Mobile-Friendly**: Responsive sign-in page with professional FlightPay branding
+- **Session Management**: Firebase Auth sessions with PostgreSQL session storage
+- **Profile Management**: User profile page with auth provider information and sign-out functionality
+- **Navbar Integration**: Profile dropdown with authentication state management across all pages
 
 ## Data Flow
 

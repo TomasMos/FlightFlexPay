@@ -20,6 +20,7 @@ import {
   formattedPrice,
   stopoverDuration,
 } from "@/utils/formatters";
+import { Navbar } from "@/components/navbar";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
@@ -288,6 +289,7 @@ export default function FlightBooking() {
 
   return (
     <div className="min-h-screen bg-flightpay-slate-50">
+      <Navbar />
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 py-8">

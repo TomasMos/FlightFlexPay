@@ -162,6 +162,12 @@ export class EmailService {
         
         <p>Thank you for choosing FlightPay! We'll send you reminders for upcoming payments.</p>
         
+        <div style="background: #f0f9ff; padding: 20px; margin: 30px 0; border-radius: 8px; text-align: center;">
+          <h3 style="color: #1e40af; margin-top: 0;">Complete Your Account Setup</h3>
+          <p style="margin: 10px 0;">Create your FlightPay account to manage your bookings and payment schedule:</p>
+          <a href="${process.env.BASE_URL || 'http://localhost:5000'}/signin" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 10px;">Create Account</a>
+        </div>
+        
         <p style="color: #6b7280; font-size: 14px; margin-top: 40px;">
           If you have any questions, please contact our support team.
         </p>
@@ -187,12 +193,16 @@ Payment Plan:
 - Deposit Paid: $${data.paymentPlan.depositAmount.toFixed(2)}
 ${data.paymentPlan.installmentAmount ? `- Installments: ${data.paymentPlan.installmentCount} payments of $${data.paymentPlan.installmentAmount.toFixed(2)} ${data.paymentPlan.frequency}` : ""}
 
+Complete Your Account Setup:
+Create your FlightPay account to manage your bookings and payment schedule.
+Visit: ${process.env.BASE_URL || 'http://localhost:5000'}/signin
+
 Thank you for choosing FlightPay!
     `;
 
     return this.sendEmail({
       to: email,
-      from: "tmoschides@gmail.com",
+      from: "bookings@flightpay.com",
       subject,
       text,
       html,
@@ -251,7 +261,7 @@ Thank you for choosing FlightPay!
 
     return this.sendEmail({
       to: email,
-      from: "tmoschides@gmail.com",
+      from: "reminders@flightpay.com",
       subject,
       text,
       html,
@@ -310,7 +320,7 @@ The FlightPay Team
 
     return this.sendEmail({
       to: email,
-      from: "tmoschides@gmail.com",
+      from: "welcome@flightpay.com",
       subject,
       text,
       html,
