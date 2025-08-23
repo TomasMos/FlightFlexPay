@@ -18,7 +18,7 @@ import { PaymentPlanService } from "./services/paymentPlan";
 import { StripeService } from "./services/stripe";
 import { adminAuth } from "./services/firebaseAdmin";
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Flight search endpoint
@@ -790,6 +790,152 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user currency:", error);
       res.status(500).json({ error: "Failed to fetch user currency" });
+    }
+  });
+
+  // Get user bookings with flight and payment plan data
+  app.get("/api/bookings/user", async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      // First get the user ID
+      const user = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, email as string))
+        .limit(1);
+        
+      if (user.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Get bookings with joined flight and payment plan data
+      const userBookings = await db
+        .select({
+          booking: bookings,
+          flight: flights,
+          paymentPlan: paymentPlans,
+        })
+        .from(bookings)
+        .leftJoin(flights, eq(bookings.flightId, flights.id))
+        .leftJoin(paymentPlans, eq(bookings.paymentPlanId, paymentPlans.id))
+        .where(eq(bookings.userId, user[0].id))
+        .orderBy(desc(bookings.createdAt));
+
+      // Format the response
+      const formattedBookings = userBookings.map(({ booking, flight, paymentPlan }) => ({
+        ...booking,
+        flight,
+        paymentPlan
+      }));
+
+      res.json(formattedBookings);
+    } catch (error) {
+      console.error("Error fetching user bookings:", error);
+      res.status(500).json({ error: "Failed to fetch user bookings" });
+    }
+  });
+
+  // Get user payment plans with installment details
+  app.get("/api/billing/payment-plans", async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      // Get user ID
+      const user = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, email as string))
+        .limit(1);
+        
+      if (user.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Get payment plans for user's bookings
+      const userPaymentPlans = await db
+        .select({
+          paymentPlan: paymentPlans,
+          bookingId: bookings.id,
+        })
+        .from(paymentPlans)
+        .innerJoin(bookings, eq(paymentPlans.id, bookings.paymentPlanId))
+        .where(eq(bookings.userId, user[0].id))
+        .orderBy(desc(paymentPlans.createdAt));
+
+      // Get installments for each payment plan
+      const plansWithInstallments = await Promise.all(
+        userPaymentPlans.map(async ({ paymentPlan, bookingId }) => {
+          const planInstallments = await db
+            .select()
+            .from(installments)
+            .where(eq(installments.paymentPlanId, paymentPlan.id))
+            .orderBy(installments.dueDate);
+
+          const paidInstallments = planInstallments.filter(i => i.status === 'paid').length;
+          const hasOverdue = planInstallments.some(i => i.status === 'overdue');
+
+          return {
+            ...paymentPlan,
+            bookingId,
+            installments: planInstallments,
+            paidInstallments,
+            totalInstallments: planInstallments.length,
+            hasOverdue,
+            route: "SYD-LON", // TODO: Get actual route from flight data
+            isRoundTrip: true // TODO: Determine from flight data
+          };
+        })
+      );
+
+      res.json(plansWithInstallments);
+    } catch (error) {
+      console.error("Error fetching payment plans:", error);
+      res.status(500).json({ error: "Failed to fetch payment plans" });
+    }
+  });
+
+  // Get user payment methods (Stripe)
+  app.get("/api/billing/payment-methods", async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      // TODO: Implement Stripe payment methods retrieval
+      // For now, return empty array
+      res.json([]);
+    } catch (error) {
+      console.error("Error fetching payment methods:", error);
+      res.status(500).json({ error: "Failed to fetch payment methods" });
+    }
+  });
+
+  // Get user payment history (Stripe)
+  app.get("/api/billing/payment-history", async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      // TODO: Implement Stripe payment history retrieval
+      // For now, return empty array
+      res.json([]);
+    } catch (error) {
+      console.error("Error fetching payment history:", error);
+      res.status(500).json({ error: "Failed to fetch payment history" });
     }
   });
 
