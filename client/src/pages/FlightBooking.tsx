@@ -23,9 +23,11 @@ import {
 import { Navbar } from "@/components/navbar";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
+  const { currencySymbol, currency } = useCurrency();
   const [flight, setFlight] = useState<EnhancedFlightWithPaymentPlan | null>(
     null,
   );
@@ -129,7 +131,7 @@ export default function FlightBooking() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: currency,
     }).format(amount);
   };
 

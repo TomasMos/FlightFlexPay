@@ -118,6 +118,7 @@ export const users = pgTable("users", {
   dob: date("dob"), // optional
   passportNumber: varchar("passport_number", { length: 50 }),
   passportCountry: varchar("passport_country", { length: 3 }),
+  preferredCurrency: varchar("currency", { length: 3 }).notNull().default("USD"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -190,6 +191,7 @@ export const flightSearchSchema = z.object({
   returnDate: z.string().optional(),
   passengers: z.number().min(1).max(9),
   tripType: z.enum(["return", "one_way", "multicity"]).default("return"),
+  currency: z.string().length(3, "Currency must be a 3-letter code").default("USD"),
 });
 
 // Enhanced Amadeus-compatible flight structures

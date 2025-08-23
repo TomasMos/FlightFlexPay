@@ -204,7 +204,7 @@ export class AmadeusService {
         departureDate: searchParams.departureDate,
         adults: searchParams.passengers.toString(),
         // max: "1", // Increased for better results
-        currencyCode: "USD",
+        currencyCode: searchParams.currency || "USD",
       });
 
       if (searchParams.returnDate && searchParams.tripType === "return") {

@@ -44,7 +44,7 @@ export default function Home() {
   });
   // console.log("Home.ts - 41 - Frontend Data:", JSON.stringify(flightData, null, 2));
 
-  const handleSearch = (params: FlightSearchRequest) => {
+  const handleSearch = (params: FlightSearchRequest & { currency: string }) => {
     setSearchParams(params);
   };
 

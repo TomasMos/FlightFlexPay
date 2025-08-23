@@ -22,6 +22,7 @@ import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Carrier } from "@/components/carrier";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface ItineraryModalProps {
   flight: EnhancedFlightWithPaymentPlan;
@@ -35,6 +36,7 @@ export function ItineraryModal({
   onClose,
 }: ItineraryModalProps) {
   const [, setLocation] = useLocation();
+  const { currencySymbol } = useCurrency();
   const [expandedDetails, setExpandedDetails] = useState<{
     [key: number]: boolean;
   }>({});
@@ -451,11 +453,11 @@ export function ItineraryModal({
           <div className="flex items-center justify-between">
             <div className="">
               <div className="text-2xl font-bold">
-                ${parseFloat(flight.price.total).toFixed(2)}
+                {currencySymbol}{parseFloat(flight.price.total).toFixed(2)}
               </div>
               {flight.paymentPlanEligible && (
                 <div className="text-splickets-slate-300 text-sm">
-                  ${flight.paymentPlan?.installmentAmount?.toFixed(2) || "0.00"}
+                  {currencySymbol}{flight.paymentPlan?.installmentAmount?.toFixed(2) || "0.00"}
                   /week
                 </div>
               )}

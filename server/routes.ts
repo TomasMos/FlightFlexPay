@@ -31,6 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         returnDate: req.query.returnDate,
         passengers: parseInt(req.query.passengers as string) || 1,
         tripType: req.query.tripType,
+        currency: req.query.currency || "USD",
       });
 
       let searchId = 0;
@@ -276,6 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (existingUser.length > 0) {
         // Use existing user
         userId = existingUser[0].id;
+        await db.update(users).set({ preferredCurrency: flightData.price.currency }).where(eq(users.id, userId));
       } else {
         // Create new user from lead data and first passenger
         const firstPassenger = passengerData.passengers[0];
@@ -292,6 +294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               ? new Date(firstPassenger.dateOfBirth).toISOString().split("T")[0]
               : null,
             passportCountry: firstPassenger.passportCountry,
+            preferredCurrency: flightData.price.currency
           })
           .returning();
 

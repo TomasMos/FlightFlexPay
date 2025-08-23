@@ -14,11 +14,13 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AirportAutocomplete } from "./airport-autocomplete.tsx";
-import { Calendar, User, Search } from "lucide-react";
+import { Calendar, User, Search, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SUPPORTED_CURRENCIES, determineUserCurrency, saveCurrencyToStorage, type CurrencyCode } from "@/utils/currency";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface FlightSearchFormProps {
-  onSearch: (searchParams: FlightSearchRequest) => void;
+  onSearch: (searchParams: FlightSearchRequest & { currency: CurrencyCode }) => void;
   isLoading?: boolean;
 }
 
@@ -31,6 +33,8 @@ export function FlightSearchForm({
   >("return");
   const [originIata, setOriginIata] = useState("");
   const [destinationIata, setDestinationIata] = useState("");
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('USD');
+  const { currentUser } = useAuth();
 
   const form = useForm<FlightSearchRequest>({
     resolver: zodResolver(flightSearchSchema),
@@ -44,8 +48,22 @@ export function FlightSearchForm({
     },
   });
 
-  // Load previous search from localStorage on component mount
+  // Initialize currency and load previous search from localStorage on component mount
   useEffect(() => {
+    const initializeCurrency = async () => {
+      try {
+        // For now, we'll get user preference from database separately
+        // TODO: Fetch user preferred currency from database if currentUser exists
+        const currency = await determineUserCurrency(null);
+        setSelectedCurrency(currency);
+      } catch (error) {
+        console.error('Error initializing currency:', error);
+        setSelectedCurrency('USD');
+      }
+    };
+    
+    initializeCurrency();
+    
     const savedSearch = localStorage.getItem("lastFlightSearch");
     if (savedSearch) {
       try {
@@ -62,20 +80,28 @@ export function FlightSearchForm({
         setTripType(searchData.tripType || "return");
         setOriginIata(searchData.origin || "");
         setDestinationIata(searchData.destination || "");
+        // Restore currency if saved
+        if (searchData.currency) {
+          setSelectedCurrency(searchData.currency);
+        }
       } catch (error) {
         console.error("Error loading saved search:", error);
       }
     }
-  }, [form]);
+  }, [form, currentUser]);
 
   const onSubmit = (data: FlightSearchRequest) => {
     // Use IATA codes if available, otherwise fall back to entered text
-    const searchData: FlightSearchRequest = {
+    const searchData = {
       ...data,
       tripType,
       origin: originIata,
       destination: destinationIata,
+      currency: selectedCurrency,
     };
+    
+    // Save currency to localStorage
+    saveCurrencyToStorage(selectedCurrency);
     
     // Save search to localStorage for future use
     const searchToSave = {
@@ -116,33 +142,63 @@ export function FlightSearchForm({
             className="space-y-4"
             data-testid="form-flight-search"
           >
-            <RadioGroup
-              value={tripType}
-              onValueChange={(value) => setTripType(value as typeof tripType)}
-              className="flex flex-wrap gap-4 mb-6"
-              data-testid="radiogroup-trip-type"
-            >
+            <div className="flex flex-wrap justify-between items-center mb-6">
+              <RadioGroup
+                value={tripType}
+                onValueChange={(value) => setTripType(value as typeof tripType)}
+                className="flex flex-wrap gap-4"
+                data-testid="radiogroup-trip-type"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value="return"
+                    id="return"
+                    data-testid="radio-return"
+                  />
+                  <Label htmlFor="return" className="text-splickets-slate-700">
+                    Return
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value="one_way"
+                    id="one_way"
+                    data-testid="radio-one_way"
+                  />
+                  <Label htmlFor="one_way" className="text-splickets-slate-700">
+                    One way
+                  </Label>
+                </div>
+              </RadioGroup>
+              
+              {/* Currency Dropdown */}
               <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="return"
-                  id="return"
-                  data-testid="radio-return"
-                />
-                <Label htmlFor="return" className="text-splickets-slate-700">
-                  Return
+                <Label className="text-sm font-medium text-splickets-slate-700">
+                  Currency
                 </Label>
+                <div className="relative">
+                  <Select
+                    value={selectedCurrency}
+                    onValueChange={(value) => setSelectedCurrency(value as CurrencyCode)}
+                  >
+                    <SelectTrigger
+                      className="w-24 pl-8 pr-4 py-2 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white"
+                      data-testid="select-currency"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SUPPORTED_CURRENCIES.map((currency) => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.code}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <DollarSign className="absolute left-2 top-2.5 h-3 w-3 text-splickets-slate-600 pointer-events-none" />
+                </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="one_way"
-                  id="one_way"
-                  data-testid="radio-one_way"
-                />
-                <Label htmlFor="one_way" className="text-splickets-slate-700">
-                  One way
-                </Label>
-              </div>
-            </RadioGroup>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Origin */}

@@ -4,6 +4,7 @@ import { Shield } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { Carrier } from "@/components/carrier";
 import { formatTime, formatDuration, toTitleCase } from "@/utils/formatters";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 
 export function FlightCard({
@@ -13,6 +14,7 @@ export function FlightCard({
   flight: EnhancedFlightWithPaymentPlan;
   onSelect: (flight: EnhancedFlightWithPaymentPlan) => void;
 }) {
+  const { currencySymbol } = useCurrency();
   const pricePerTraveller =
     parseFloat(flight.price.total) / (flight?.numberOfPassengers || 1);
 
@@ -103,7 +105,7 @@ export function FlightCard({
                   className="text-2xl text-center font-bold text-splickets-slate-900  mb-1"
                   data-testid={`text-price-${flight.id}`}
                 >
-                  ${pricePerTraveller.toFixed(0)}
+                  {currencySymbol}{pricePerTraveller.toFixed(0)}
                 </div>
                 <div className="text-sm text-center text-splickets-slate-500">
                   per person
@@ -115,7 +117,7 @@ export function FlightCard({
                     className="text-2xl text-center font-bold  text-splickets-slate-900  mb-1"
                     data-testid={`text-price-${flight.id}`}
                   >
-                    ${parseFloat(flight.price.total).toFixed(0)}
+                    {currencySymbol}{parseFloat(flight.price.total).toFixed(0)}
                   </div>
                   <div className="text-sm text-splickets-slate-500">
                     in total
@@ -138,8 +140,8 @@ export function FlightCard({
                   </span>
                 </div>
                 <div className="text-sm text-splickets-slate-600">
-                  Pay ${flight.paymentPlan.depositAmount.toFixed(0)} today, from
-                  ${flight.paymentPlan.installmentAmount.toFixed(0)} per week
+                  Pay {currencySymbol}{flight.paymentPlan.depositAmount.toFixed(0)} today, from
+                  {currencySymbol}{flight.paymentPlan.installmentAmount.toFixed(0)} per week
                 </div>
               </div>
             ) : (
