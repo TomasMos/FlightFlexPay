@@ -1,7 +1,7 @@
-# FlightPay - Flight Booking with Payment Plans
+# Splickets - Flight Booking with Payment Plans
 
 ## Overview
-FlightPay is a modern flight booking application that allows users to search for flights and book them with flexible payment plans. The application enables customers to pay just 20% upfront and spread the remaining amount over installments, making travel more accessible.
+Splickets is a modern flight booking application that allows users to search for flights and book them with flexible payment plans. The application enables customers to pay just 20% upfront and spread the remaining amount over installments, making travel more accessible.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -98,7 +98,7 @@ The application uses eight main tables following the specification requirements:
 - **Account Linking**: Automatic linking of same email between different auth providers
 - **Database Verification**: All auth attempts verified against users table before allowing access
 - **Password Reset**: Secure password reset functionality with database verification
-- **Mobile-Friendly**: Responsive sign-in page with professional FlightPay branding
+- **Mobile-Friendly**: Responsive sign-in page with professional Splickets branding
 - **Session Management**: Firebase Auth sessions with PostgreSQL session storage
 - **Profile Management**: User profile page with auth provider information and sign-out functionality
 - **Navbar Integration**: Profile dropdown with authentication state management across all pages

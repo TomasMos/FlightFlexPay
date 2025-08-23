@@ -66,7 +66,7 @@ export default function Profile() {
                 </AvatarFallback>
               </Avatar>
             </div>
-            <CardTitle>{currentUser.displayName || 'FlightPay User'}</CardTitle>
+            <CardTitle>{currentUser.displayName || 'Splickets User'}</CardTitle>
             <CardDescription>{currentUser.email}</CardDescription>
           </CardHeader>
           
@@ -145,7 +145,7 @@ export default function Profile() {
             onClick={() => setLocation('/')}
             data-testid="button-back-home"
           >
-            ← Back to FlightPay
+            ← Back to Splickets
           </Button>
         </div>
       </div>

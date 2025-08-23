@@ -112,18 +112,18 @@ export function FlightResults({
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-xl shadow-sm border border-flightpay-slate-200 p-6 animate-pulse"
+              className="bg-white rounded-xl shadow-sm border border-splickets-slate-200 p-6 animate-pulse"
             >
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-center">
                 <div className="lg:col-span-2 space-y-4">
-                  <div className="h-4 bg-flightpay-slate-200 rounded w-3/4"></div>
-                  <div className="h-6 bg-flightpay-slate-200 rounded w-full"></div>
+                  <div className="h-4 bg-splickets-slate-200 rounded w-3/4"></div>
+                  <div className="h-6 bg-splickets-slate-200 rounded w-full"></div>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-8 bg-flightpay-slate-200 rounded w-20"></div>
-                  <div className="h-4 bg-flightpay-slate-200 rounded w-16"></div>
+                  <div className="h-8 bg-splickets-slate-200 rounded w-20"></div>
+                  <div className="h-4 bg-splickets-slate-200 rounded w-16"></div>
                 </div>
-                <div className="h-10 bg-flightpay-slate-200 rounded w-24"></div>
+                <div className="h-10 bg-splickets-slate-200 rounded w-24"></div>
               </div>
             </div>
           ))}
@@ -151,11 +151,11 @@ export function FlightResults({
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-flightpay-slate-900 mb-2">
+          <h3 className="text-lg font-semibold text-splickets-slate-900 mb-2">
             Search Error
           </h3>
-          <p className="text-flightpay-slate-600 mb-4">{error}</p>
-          <p className="text-sm text-flightpay-slate-500">
+          <p className="text-splickets-slate-600 mb-4">{error}</p>
+          <p className="text-sm text-splickets-slate-500">
             Please try again with different search criteria.
           </p>
         </div>
@@ -167,7 +167,7 @@ export function FlightResults({
     return (
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12" data-testid="empty-state">
-          <div className="text-flightpay-slate-400 mb-4">
+          <div className="text-splickets-slate-400 mb-4">
             <svg
               className="w-12 h-12 mx-auto mb-4"
               fill="none"
@@ -182,10 +182,10 @@ export function FlightResults({
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-flightpay-slate-900 mb-2">
+          <h3 className="text-lg font-semibold text-splickets-slate-900 mb-2">
             No Flights Found
           </h3>
-          <p className="text-flightpay-slate-600">
+          <p className="text-splickets-slate-600">
             Try adjusting your search criteria or dates.
           </p>
         </div>
@@ -201,7 +201,7 @@ export function FlightResults({
       >
         <div className="flex justify-between items-center mb-6">
           <h2
-            className="text-2xl font-bold text-flightpay-slate-900"
+            className="text-2xl font-bold text-splickets-slate-900"
             data-testid="title-flight-options"
           >
             Flight Options

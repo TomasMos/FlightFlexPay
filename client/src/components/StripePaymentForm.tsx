@@ -77,7 +77,7 @@ function PaymentForm({onSuccess, onError, amount, currency, paymentType, hasInst
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="border border-flightpay-slate-200 rounded-lg p-4">
+      <div className="border border-splickets-slate-200 rounded-lg p-4">
         <PaymentElement 
           options={{
             layout: "tabs",
@@ -85,17 +85,17 @@ function PaymentForm({onSuccess, onError, amount, currency, paymentType, hasInst
         />
       </div>
 
-      <div className="bg-flightpay-slate-50 rounded-lg p-4">
+      <div className="bg-splickets-slate-50 rounded-lg p-4">
         <div className="flex justify-between items-center">
-          <span className="text-flightpay-slate-700">
+          <span className="text-splickets-slate-700">
             {paymentType === "deposit" ? "Deposit Amount" : "Total Amount"}
           </span>
-          <span className="font-bold text-flightpay-slate-900">
+          <span className="font-bold text-splickets-slate-900">
             {formatCurrency(amount, currency)}
           </span>
         </div>
         {hasInstallments && (
-          <div className="mt-2 text-sm text-flightpay-slate-600">
+          <div className="mt-2 text-sm text-splickets-slate-600">
             <p>💳 Your payment method will be saved for future installments</p>
           </div>
         )}
@@ -104,7 +104,7 @@ function PaymentForm({onSuccess, onError, amount, currency, paymentType, hasInst
       <Button 
         type="submit" 
         disabled={!stripe || isLoading || isProcessing}
-        className="w-full bg-flightpay-accent hover:bg-orange-600 text-white"
+        className="w-full bg-splickets-accent hover:bg-orange-600 text-white"
         data-testid="button-pay-now"
       >
         {isLoading || isProcessing ? (
@@ -263,7 +263,7 @@ export default function StripePaymentForm({
   const appearance = {
     theme: 'stripe' as const,
     variables: {
-      colorPrimary: '#ff5f33', // flightpay-accent color
+      colorPrimary: '#ff5f33', // splickets-accent color
     },
   };
 
@@ -278,7 +278,7 @@ export default function StripePaymentForm({
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-flightpay-slate-600">Please wait while we prepare your payment.</p>
+            <p className="text-splickets-slate-600">Please wait while we prepare your payment.</p>
           </div>
         </CardContent>
       </Card>
@@ -296,7 +296,7 @@ export default function StripePaymentForm({
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-flightpay-slate-600">
+            <p className="text-splickets-slate-600">
               Your payment was successful! We're now setting up your installment plan.
             </p>
           </div>
@@ -316,7 +316,7 @@ export default function StripePaymentForm({
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
-            <p className="text-flightpay-slate-600">
+            <p className="text-splickets-slate-600">
               Your payment has been processed successfully.
               {hasInstallments && " Your installment plan has been set up and your payment method has been saved for future charges."}
             </p>

@@ -82,7 +82,7 @@ export class EmailService {
     try {
       const msg: any = {
         to: params.to,
-        from: params.from || process.env.FROM_EMAIL || "noreply@flightpay.com",
+        from: params.from || process.env.FROM_EMAIL || "noreply@splickets.com",
         subject: params.subject,
       };
 
@@ -141,8 +141,8 @@ export class EmailService {
         <div style="background: #f8fafc; padding: 20px; margin: 20px 0; border-radius: 8px;">
           <h3 style="color: #374151; margin-top: 0;">Flight Details</h3>
           <p><strong>Route:</strong> ${data.flightDetails.origin} → ${data.flightDetails.destination}</p>
-          <p><strong>Departure:</strong> ${new Date(data.flightDetails.departureDate).toLocaleDateString()}</p>
-          ${data.flightDetails.returnDate ? `<p><strong>Return:</strong> ${new Date(data.flightDetails.returnDate).toLocaleDateString()}</p>` : ""}
+          <p><strong>Departure:</strong> ${new Date(data.flightDetails.departureDate)}</p>
+          ${data.flightDetails.returnDate ? `<p><strong>Return:</strong> ${new Date(data.flightDetails.returnDate)}</p>` : ""}
           <p><strong>Passengers:</strong> ${data.flightDetails.passengers}</p>
           <p><strong>Booking Reference:</strong> ${data.bookingReference}</p>
         </div>
@@ -160,12 +160,12 @@ export class EmailService {
           }
         </div>
         
-        <p>Thank you for choosing FlightPay! We'll send you reminders for upcoming payments.</p>
+        <p>Thank you for choosing Splickets! We'll send you reminders for upcoming payments.</p>
         
         <div style="background: #f0f9ff; padding: 20px; margin: 30px 0; border-radius: 8px; text-align: center;">
           <h3 style="color: #1e40af; margin-top: 0;">Complete Your Account Setup</h3>
-          <p style="margin: 10px 0;">Create your FlightPay account to manage your bookings and payment schedule:</p>
-          <a href="${process.env.BASE_URL || 'http://localhost:5000'}/signin" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 10px;">Create Account</a>
+          <p style="margin: 10px 0;">Create your Splickets account to manage your bookings and payment schedule:</p>
+          <a href="${'https://ed801cdd-18e8-4f91-90d2-632b822ebf55-00-3kn0zrdci336.spock.replit.dev/signin?signup=true' }" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 10px;">Create Account</a>
         </div>
         
         <p style="color: #6b7280; font-size: 14px; margin-top: 40px;">
@@ -194,15 +194,15 @@ Payment Plan:
 ${data.paymentPlan.installmentAmount ? `- Installments: ${data.paymentPlan.installmentCount} payments of $${data.paymentPlan.installmentAmount.toFixed(2)} ${data.paymentPlan.frequency}` : ""}
 
 Complete Your Account Setup:
-Create your FlightPay account to manage your bookings and payment schedule.
+Create your Splickets account to manage your bookings and payment schedule.
 Visit: ${process.env.BASE_URL || 'http://localhost:5000'}/signin
 
-Thank you for choosing FlightPay!
+Thank you for choosing Splickets!
     `;
 
     return this.sendEmail({
       to: email,
-      from: "bookings@flightpay.com",
+      from: "tmoschides@gmail.com",
       subject,
       text,
       html,
@@ -256,12 +256,12 @@ Payment Details:
 
 Please make your payment at: ${data.paymentUrl}
 
-Thank you for choosing FlightPay!
+Thank you for choosing Splickets!
     `;
 
     return this.sendEmail({
       to: email,
-      from: "reminders@flightpay.com",
+      from: "tmoschides@gmail.com",
       subject,
       text,
       html,
@@ -272,15 +272,15 @@ Thank you for choosing FlightPay!
     email: string,
     customerName: string,
   ): Promise<boolean> {
-    const subject = "Welcome to FlightPay!";
+    const subject = "Welcome to Splickets!";
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #2563eb;">Welcome to FlightPay!</h2>
+        <h2 style="color: #2563eb;">Welcome to Splickets!</h2>
         
         <p>Dear ${customerName},</p>
         
-        <p>Welcome to FlightPay! We're excited to help you book flights with flexible payment plans.</p>
+        <p>Welcome to Splickets! We're excited to help you book flights with flexible payment plans.</p>
         
         <div style="background: #f0f9ff; padding: 20px; margin: 20px 0; border-radius: 8px;">
           <h3 style="color: #1e40af; margin-top: 0;">What's Next?</h3>
@@ -295,16 +295,16 @@ Thank you for choosing FlightPay!
         <p>If you have any questions, our support team is here to help.</p>
         
         <p>Happy travels!</p>
-        <p>The FlightPay Team</p>
+        <p>The Splickets Team</p>
       </div>
     `;
 
     const text = `
-Welcome to FlightPay!
+Welcome to Splickets!
 
 Dear ${customerName},
 
-Welcome to FlightPay! We're excited to help you book flights with flexible payment plans.
+Welcome to Splickets! We're excited to help you book flights with flexible payment plans.
 
 What's Next?
 - Search for flights with our easy-to-use interface
@@ -315,12 +315,12 @@ What's Next?
 If you have any questions, our support team is here to help.
 
 Happy travels!
-The FlightPay Team
+The Splickets Team
     `;
 
     return this.sendEmail({
       to: email,
-      from: "welcome@flightpay.com",
+      from: "tmoschides@gmail.com",
       subject,
       text,
       html,

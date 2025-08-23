@@ -24,7 +24,7 @@ export function Carrier({
         <div>
           <div className={`text-${textSize} font-semibold`}>Multiple Carriers</div>
           <div
-            className="text-sm font-normal text-flightpay-slate-900"
+            className="text-sm font-normal text-splickets-slate-900"
             data-testid={`text-airline-name-${flight.id}`}
           >
             {toTitleCase(joinedAirlines)}
@@ -32,7 +32,7 @@ export function Carrier({
         </div>
       ) : (
         <div
-          className="font-medium text-flightpay-slate-900"
+          className="font-medium text-splickets-slate-900"
           data-testid={`text-airline-name-${flight.id}`}
         >
           {toTitleCase(joinedAirlines)}

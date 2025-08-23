@@ -62,11 +62,11 @@ export function ItineraryModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 sm:p-10">
       <div className="bg-white w-full h-full sm:max-w-4xl sm:rounded-xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className=" flex flex-row items-spread justify-between h-md:p-6 h-md:py-3 px-6 border-b border-flightpay-slate-200">
+        <div className=" flex flex-row items-spread justify-between h-md:p-6 h-md:py-3 px-6 border-b border-splickets-slate-200">
           <Carrier flight={flight} textSize="xl" />
           <button
             onClick={onClose}
-            className="p-2 hover:bg-flightpay-slate-100 rounded-lg"
+            className="p-2 hover:bg-splickets-slate-100 rounded-lg"
             data-testid="button-close-modal"
           >
             <X className="w-5 h-5" />
@@ -87,21 +87,21 @@ export function ItineraryModal({
               return (
                 <div
                   key={itineraryIndex}
-                  className="bg-flightpay-slate-50 rounded-lg p-6 border border-flightpay-slate-200"
+                  className="bg-splickets-slate-50 rounded-lg p-6 border border-splickets-slate-200"
                   data-testid={`itinerary-section-${itineraryIndex}`}
                 >
                   {/* Route Overview */}
                   <div className="flex items-center justify-between mb-6">
                     {/* Origin */}
                     <div className="text-left">
-                      <div className="text-xl font-bold text-flightpay-slate-900">
+                      <div className="text-xl font-bold text-splickets-slate-900">
                         {firstSegment.departure.iataCode}
                       </div>
-                      <div className="text-sm text-flightpay-slate-600">
+                      <div className="text-sm text-splickets-slate-600">
                         {toTitleCase(firstSegment.departure.cityName)}
                         
                       </div>
-                      <div className="text-sm font-medium text-flightpay-slate-900 mt-1">
+                      <div className="text-sm font-medium text-splickets-slate-900 mt-1">
                         {formatTime(firstSegment.departure.at)}
                       </div>
                     </div>
@@ -109,45 +109,45 @@ export function ItineraryModal({
                     {/* Flight info */}
                     <div className="flex-1 mx-8 text-center">
                       <div className="flex items-center justify-center mb-2">
-                        <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
-                        <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                        <div className="w-2 h-2 bg-splickets-slate-300 rounded-full"></div>
+                        <div className="flex-1 h-px bg-splickets-slate-300 mx-2"></div>
                         <Plane className="w-4 h-4 text-green-600" />
-                        <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
-                        <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                        <div className="flex-1 h-px bg-splickets-slate-300 mx-2"></div>
+                        <div className="w-2 h-2 bg-splickets-slate-300 rounded-full"></div>
                       </div>
-                      <div className="text-sm text-flightpay-slate-600 mb-1">
+                      <div className="text-sm text-splickets-slate-600 mb-1">
                         {stops === 0
                           ? "Nonstop"
                           : `${stops} stop${stops > 1 ? "s" : ""}`}
                       </div>
-                      <div className="text-sm text-flightpay-slate-500">
+                      <div className="text-sm text-splickets-slate-500">
                         {formatDuration(itinerary.duration)}
                       </div>
                     </div>
 
                     {/* Destination */}
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-flightpay-slate-900">
+                      <div className="text-2xl font-bold text-splickets-slate-900">
                         {lastSegment.arrival.iataCode}
                       </div>
-                      <div className="text-sm text-flightpay-slate-600">
+                      <div className="text-sm text-splickets-slate-600">
                         {toTitleCase(lastSegment.arrival.cityName)}
                         {/* {lastSegment.arrival.cityName} */}
                       </div>
-                      <div className="text-sm font-medium text-flightpay-slate-900 mt-1">
+                      <div className="text-sm font-medium text-splickets-slate-900 mt-1">
                         {formatTime(lastSegment.arrival.at)}
                       </div>
                     </div>
                   </div>
 
                   {/* Flight Details Collapsible */}
-                  <div className="border-t border-flightpay-slate-200 pt-4">
+                  <div className="border-t border-splickets-slate-200 pt-4">
                     <button
                       onClick={() => toggleDetails(itineraryIndex)}
-                      className="flex items-center justify-between w-full p-3 hover:bg-flightpay-slate-100 rounded-lg"
+                      className="flex items-center justify-between w-full p-3 hover:bg-splickets-slate-100 rounded-lg"
                       data-testid={`button-toggle-details-${itineraryIndex}`}
                     >
-                      <span className="text-sm font-medium text-flightpay-slate-700">
+                      <span className="text-sm font-medium text-splickets-slate-700">
                         Details
                       </span>
                       <motion.div
@@ -178,18 +178,18 @@ export function ItineraryModal({
                           {itinerary.segments.map((segment, segmentIndex) => (
                             <div key={segment.id} className="flex flex-col gap-4 mt-4">
                               {/* Segment details */}
-                              <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-flightpay-slate-200">
+                              <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-splickets-slate-200">
                                 <div className="flex-1">
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {/* Departure */}
                                     <div>
                                       <div className="flex items-center gap-2 mb-2">
-                                        <div className=" font-medium text-flightpay-slate-900">
+                                        <div className=" font-medium text-splickets-slate-900">
                                           {formatTime(segment.departure.at)} -{" "}
                                           {formatDate(segment.departure.at)}
                                         </div>
                                       </div>
-                                      <div className="text-sm text-flightpay-slate-900">
+                                      <div className="text-sm text-splickets-slate-900">
                                         <p>
                                           {" "}
                                           {toTitleCase(segment.departure.airportName)} (
@@ -216,12 +216,12 @@ export function ItineraryModal({
                                     {/* Arrival */}
                                     <div>
                                       <div className="flex items-center gap-2 mb-2">
-                                        <div className=" font-medium text-flightpay-slate-900">
+                                        <div className=" font-medium text-splickets-slate-900">
                                           {formatTime(segment.arrival.at)} -{" "}
                                           {formatDate(segment.arrival.at)}
                                         </div>
                                       </div>
-                                      <div className="text-sm text-flightpay-slate-900">
+                                      <div className="text-sm text-splickets-slate-900">
                                         <p>
                                           {" "}
                                           {toTitleCase(segment.arrival.airportName)} (
@@ -240,17 +240,17 @@ export function ItineraryModal({
                                 
                               </div>
                               <div
-                                className="p-4 bg-white rounded-lg border border-flightpay-slate-200"
+                                className="p-4 bg-white rounded-lg border border-splickets-slate-200"
                               >
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   {/* Baggage */}
                                   <div>
-                                    <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
+                                    <h5 className="text-sm font-medium text-splickets-slate-900 mb-2">
                                       Baggage
                                     </h5>
                                     <div className="space-y-1">
                                       <div className="flex items-center gap-2">
-                                        <span className="text-sm text-flightpay-slate-600">
+                                        <span className="text-sm text-splickets-slate-600">
                                           {segment.includedCabinBags
                                             ?.quantity &&
                                           segment.includedCabinBags?.weight &&
@@ -258,7 +258,7 @@ export function ItineraryModal({
                                             ?.weightUnit ? (
                                             <div className="flex flex-row gap-2">
                                               <Check className="w-4 h-4 text-green-600" />
-                                              <span className="text-sm text-flightpay-slate-600">
+                                              <span className="text-sm text-splickets-slate-600">
                                                 {
                                                   segment.includedCabinBags
                                                     ?.weight
@@ -278,7 +278,7 @@ export function ItineraryModal({
                                               ?.weight ? (
                                             <div className="flex flex-row gap-2">
                                               <Check className="w-4 h-4 text-green-600" />
-                                              <span className="text-sm text-flightpay-slate-600">
+                                              <span className="text-sm text-splickets-slate-600">
                                                 {
                                                   segment.includedCabinBags
                                                     ?.weight
@@ -291,7 +291,7 @@ export function ItineraryModal({
                                               ?.quantity ? (
                                             <div className="flex flex-row gap-2">
                                               <Check className="w-4 h-4 text-green-600" />
-                                              <span className="text-sm text-flightpay-slate-600">
+                                              <span className="text-sm text-splickets-slate-600">
                                                 {
                                                   segment.includedCabinBags
                                                     ?.quantity
@@ -312,7 +312,7 @@ export function ItineraryModal({
                                           ?.weightUnit ? (
                                           <div className="flex flex-row gap-2">
                                             <Check className="w-4 h-4 text-green-600" />
-                                            <span className="text-sm text-flightpay-slate-600">
+                                            <span className="text-sm text-splickets-slate-600">
                                               {
                                                 segment.includedCheckedBags
                                                   ?.weight
@@ -332,7 +332,7 @@ export function ItineraryModal({
                                             ?.weight ? (
                                           <div className="flex flex-row gap-2">
                                             <Check className="w-4 h-4 text-green-600" />
-                                            <span className="text-sm text-flightpay-slate-600">
+                                            <span className="text-sm text-splickets-slate-600">
                                               {
                                                 segment.includedCheckedBags
                                                   ?.weight
@@ -345,7 +345,7 @@ export function ItineraryModal({
                                             ?.quantity ? (
                                           <div className="flex flex-row gap-2">
                                             <Check className="w-4 h-4 text-green-600" />
-                                            <span className="text-sm text-flightpay-slate-600">
+                                            <span className="text-sm text-splickets-slate-600">
                                               {
                                                 segment.includedCheckedBags
                                                   ?.quantity
@@ -362,7 +362,7 @@ export function ItineraryModal({
 
                                   {/* Flexibility */}
                                   <div>
-                                    <h5 className="text-sm font-medium text-flightpay-slate-900 mb-2">
+                                    <h5 className="text-sm font-medium text-splickets-slate-900 mb-2">
                                       Flexibility
                                     </h5>
                                     <div className="space-y-2">
@@ -410,9 +410,9 @@ export function ItineraryModal({
                               {/* Stopover indicator */}
                               {segmentIndex < itinerary.segments.length - 1 && (
                                 <div className="flex items-center justify-center   ">
-                                  <div className=" flex items-center gap-2 px-3 py-1 bg-flightpay-slate-100 rounded-full">
-                                    <Clock className="w-3 h-3 text-flightpay-slate-500" />
-                                    <span className="text-xs text-flightpay-slate-600">
+                                  <div className=" flex items-center gap-2 px-3 py-1 bg-splickets-slate-100 rounded-full">
+                                    <Clock className="w-3 h-3 text-splickets-slate-500" />
+                                    <span className="text-xs text-splickets-slate-600">
                                       {toTitleCase(itinerary.segments[segmentIndex + 1]
                                                    .departure.airportName)} (
                                       {
@@ -447,14 +447,14 @@ export function ItineraryModal({
         </div>
 
         {/* Footer with pricing and select button */}
-        <div className="border-t border-flightpay-slate-200 h-md:p-6 h-md:py-3 px-6 bg-flightpay-slate-900">
+        <div className="border-t border-splickets-slate-200 h-md:p-6 h-md:py-3 px-6 bg-splickets-slate-900">
           <div className="flex items-center justify-between">
             <div className="">
               <div className="text-2xl font-bold">
                 ${parseFloat(flight.price.total).toFixed(2)}
               </div>
               {flight.paymentPlanEligible && (
-                <div className="text-flightpay-slate-300 text-sm">
+                <div className="text-splickets-slate-300 text-sm">
                   ${flight.paymentPlan?.installmentAmount?.toFixed(2) || "0.00"}
                   /week
                 </div>

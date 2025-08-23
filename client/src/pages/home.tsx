@@ -49,7 +49,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-flightpay-slate-50" data-testid="page-home">
+    <div className="min-h-screen bg-splickets-slate-50" data-testid="page-home">
       <Navbar />
       <Header />
 

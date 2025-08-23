@@ -3,13 +3,13 @@ import { SiX, SiFacebook, SiInstagram } from "react-icons/si";
 
 export function Footer() {
   return (
-    <footer className="bg-flightpay-slate-900 text-white" data-testid="footer">
+    <footer className="bg-splickets-slate-900 text-white" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div data-testid="footer-brand">
             <div className="flex items-center space-x-2 mb-4">
-              <Plane className="text-flightpay-secondary text-xl h-5 w-5" />
-              <span className="font-bold text-lg">FlightPay</span>
+              <Plane className="text-splickets-secondary text-xl h-5 w-5" />
+              <span className="font-bold text-lg">Splickets</span>
             </div>
             <p className="text-slate-300 text-sm mb-4">
               Making travel accessible with flexible payment plans. Book now, pay later.
@@ -60,7 +60,7 @@ export function Footer() {
 
         <div className="border-t border-slate-700 mt-8 pt-8 text-center" data-testid="footer-copyright">
           <p className="text-slate-400 text-sm">
-            &copy; 2024 FlightPay. All rights reserved. | Powered by Amadeus API
+            &copy; 2024 Splickets. All rights reserved. | Powered by Amadeus API
           </p>
         </div>
       </div>

@@ -92,17 +92,17 @@ export function FlightSearchForm({
   const today = new Date().toISOString().split("T")[0];
 
   return (
-    <section className="bg-white border-b border-flightpay-slate-200">
+    <section className="bg-white border-b border-splickets-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-8">
           <h1
-            className="text-3xl md:text-4xl font-bold text-flightpay-slate-900 mb-4"
+            className="text-3xl md:text-4xl font-bold text-splickets-slate-900 mb-4"
             data-testid="title-main"
           >
             Book Your Flight, Pay Over Time
           </h1>
           <p
-            className="text-lg text-flightpay-slate-600 max-w-2xl mx-auto"
+            className="text-lg text-splickets-slate-600 max-w-2xl mx-auto"
             data-testid="text-subtitle"
           >
             Search and book flights with flexible payment plans. Pay just 20%
@@ -110,7 +110,7 @@ export function FlightSearchForm({
           </p>
         </div>
 
-        <div className="bg-flightpay-slate-50 rounded-2xl p-6 shadow-sm border border-flightpay-slate-200">
+        <div className="bg-splickets-slate-50 rounded-2xl p-6 shadow-sm border border-splickets-slate-200">
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4"
@@ -128,7 +128,7 @@ export function FlightSearchForm({
                   id="return"
                   data-testid="radio-return"
                 />
-                <Label htmlFor="return" className="text-flightpay-slate-700">
+                <Label htmlFor="return" className="text-splickets-slate-700">
                   Return
                 </Label>
               </div>
@@ -138,7 +138,7 @@ export function FlightSearchForm({
                   id="one_way"
                   data-testid="radio-one_way"
                 />
-                <Label htmlFor="one_way" className="text-flightpay-slate-700">
+                <Label htmlFor="one_way" className="text-splickets-slate-700">
                   One way
                 </Label>
               </div>
@@ -175,7 +175,7 @@ export function FlightSearchForm({
 
               {/* Departure Date */}
               <div className="relative">
-                <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">
+                <Label className="block text-sm font-medium text-splickets-slate-700 mb-1">
                   Departure
                 </Label>
                 <div className="relative flex">
@@ -183,14 +183,14 @@ export function FlightSearchForm({
                     {...form.register("departureDate")}
                     type="date"
                     min={today}
-                  className="hide-date-icon pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary cursor-pointer"
+                  className="hide-date-icon pl-10 pr-4 py-3 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary cursor-pointer"
                     data-testid="input-departure-date"
                     // CORRECTED: Use e.target to access the input element
                     onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                   />
                   <Calendar
                     // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
-                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-flightpay-slate-600 pointer-events-none"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-splickets-slate-600 pointer-events-none"
                   />
                 </div>
                 {form.formState.errors.departureDate && (
@@ -209,8 +209,8 @@ export function FlightSearchForm({
                   className={cn(
                     "block text-sm font-medium mb-1",
                     tripType === "one_way"
-                      ? "text-flightpay-slate-400"
-                      : "text-flightpay-slate-700",
+                      ? "text-splickets-slate-400"
+                      : "text-splickets-slate-700",
                   )}
                 >
                   Return
@@ -221,13 +221,13 @@ export function FlightSearchForm({
                     type="date"
                     min={form.watch("departureDate") || today}
                     disabled={tripType === "one_way"}
-                  className="hide-date-icon pl-10 w-full pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
+                  className="hide-date-icon pl-10 w-full pr-4 py-3 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white cursor-pointer"
                     data-testid="input-return-date"
                     // CORRECTED: Use e.target to access the input element
                     onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                   />
                   <Calendar
-                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-flightpay-slate-600 pointer-events-none" 
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-splickets-slate-600 pointer-events-none" 
                     // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
                   />
                   
@@ -236,7 +236,7 @@ export function FlightSearchForm({
 
               {/* Passengers */}
               <div className="relative">
-                <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">
+                <Label className="block text-sm font-medium text-splickets-slate-700 mb-1">
                   Passengers
                 </Label>
                 <div className="relative">
@@ -247,7 +247,7 @@ export function FlightSearchForm({
                     }
                   >
                     <SelectTrigger
-                      className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white"
+                      className="pl-10 pr-4 py-3 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white"
                       data-testid="select-passengers"
                     >
                       <SelectValue />
@@ -261,7 +261,7 @@ export function FlightSearchForm({
                       <SelectItem value="6">6 Adults</SelectItem>
                     </SelectContent>
                   </Select>
-                  <User className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 pointer-events-none" />
+                  <User className="absolute left-3 top-3.5 h-4 w-4 text-splickets-slate-600 pointer-events-none" />
                 </div>
               </div>
             </div>
@@ -270,7 +270,7 @@ export function FlightSearchForm({
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-flightpay-accent hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
+                className="bg-splickets-accent hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
                 data-testid="button-search-flights"
               >
                 <Search className="h-4 w-4" />

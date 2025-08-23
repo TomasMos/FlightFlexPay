@@ -24,19 +24,19 @@
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
 
-  /* Custom FlightPay colors */
-  --flightpay-primary: hsl(207, 90%, 54%);
-  --flightpay-hover: hsl(207, 100%, 86%);
-  --flightpay-secondary: hsl(174, 100%, 35%);
-  --flightpay-accent: hsl(13, 100%, 60%);
-  --flightpay-slate-50: hsl(210, 40%, 98%);
-  --flightpay-slate-100: hsl(210, 40%, 96%);
-  --flightpay-slate-200: hsl(214, 32%, 91%);
-  --flightpay-slate-300: hsl(213, 27%, 84%);
-  --flightpay-slate-700: hsl(0, 0%, 0%);
-  --flightpay-slate-600: hsl(215, 16%, 47%);
-  --flightpay-slate-400: hsl(215, 19%, 35%);
-  --flightpay-slate-900: hsl(222, 84%, 5%);
+  /* Custom Splickets colors */
+  --splickets-primary: hsl(207, 90%, 54%);
+  --splickets-hover: hsl(207, 100%, 86%);
+  --splickets-secondary: hsl(174, 100%, 35%);
+  --splickets-accent: hsl(13, 100%, 60%);
+  --splickets-slate-50: hsl(210, 40%, 98%);
+  --splickets-slate-100: hsl(210, 40%, 96%);
+  --splickets-slate-200: hsl(214, 32%, 91%);
+  --splickets-slate-300: hsl(213, 27%, 84%);
+  --splickets-slate-700: hsl(0, 0%, 0%);
+  --splickets-slate-600: hsl(215, 16%, 47%);
+  --splickets-slate-400: hsl(215, 19%, 35%);
+  --splickets-slate-900: hsl(222, 84%, 5%);
 }
 
 .dark {
@@ -118,55 +118,55 @@
     display: none;
   }
   
-  .bg-flightpay-primary {
-    background-color: var(--flightpay-primary);
+  .bg-splickets-primary {
+    background-color: var(--splickets-primary);
   }
-  .bg-flightpay-hover {
-    background-color: var(--flightpay-primary);
+  .bg-splickets-hover {
+    background-color: var(--splickets-primary);
   }
-  .bg-flightpay-secondary {
-    background-color: var(--flightpay-secondary);
+  .bg-splickets-secondary {
+    background-color: var(--splickets-secondary);
   }
-  .bg-flightpay-hover {
-    background-color: var(--flightpay-hover);
+  .bg-splickets-hover {
+    background-color: var(--splickets-hover);
   }
-  .bg-flightpay-accent {
-    background-color: var(--flightpay-accent);
+  .bg-splickets-accent {
+    background-color: var(--splickets-accent);
   }
-  .text-flightpay-primary {
-    color: var(--flightpay-primary);
+  .text-splickets-primary {
+    color: var(--splickets-primary);
   }
-  .text-flightpay-secondary {
-    color: var(--flightpay-secondary);
+  .text-splickets-secondary {
+    color: var(--splickets-secondary);
   }
-  .text-flightpay-accent {
-    color: var(--flightpay-accent);
+  .text-splickets-accent {
+    color: var(--splickets-accent);
   }
-  .bg-flightpay-slate-50 {
-    background-color: var(--flightpay-slate-50);
+  .bg-splickets-slate-50 {
+    background-color: var(--splickets-slate-50);
   }
-  .bg-flightpay-slate-100 {
-    background-color: var(--flightpay-slate-100);
+  .bg-splickets-slate-100 {
+    background-color: var(--splickets-slate-100);
   }
-  .bg-flightpay-slate-200 {
-    background-color: var(--flightpay-slate-200);
+  .bg-splickets-slate-200 {
+    background-color: var(--splickets-slate-200);
   }
-  .text-flightpay-slate-400 {
-    color: var(--flightpay-slate-400);
+  .text-splickets-slate-400 {
+    color: var(--splickets-slate-400);
   }
-  .text-flightpay-slate-600 {
-    color: var(--flightpay-slate-600);
+  .text-splickets-slate-600 {
+    color: var(--splickets-slate-600);
   }
-  .text-flightpay-slate-700 {
-    color: var(--flightpay-slate-700);
+  .text-splickets-slate-700 {
+    color: var(--splickets-slate-700);
   }
-  .text-flightpay-slate-900 {
-    color: var(--flightpay-slate-900);
+  .text-splickets-slate-900 {
+    color: var(--splickets-slate-900);
   }
-  .border-flightpay-slate-200 {
-    border-color: var(--flightpay-slate-200);
+  .border-splickets-slate-200 {
+    border-color: var(--splickets-slate-200);
   }
-  .border-flightpay-slate-300 {
-    border-color: var(--flightpay-slate-300);
+  .border-splickets-slate-300 {
+    border-color: var(--splickets-slate-300);
   }
 }

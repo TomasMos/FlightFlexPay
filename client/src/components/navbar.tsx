@@ -44,7 +44,7 @@ export function Navbar() {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Plane className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">FlightPay</span>
+              <span className="text-xl font-bold text-gray-900">Splickets</span>
             </div>
           </Link>
 

@@ -55,12 +55,12 @@ export default function FlightBooking() {
 
   if (!flight) {
     return (
-      <div className="min-h-screen bg-flightpay-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-splickets-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-flightpay-slate-900 mb-2">
+          <h2 className="text-xl font-semibold text-splickets-slate-900 mb-2">
             Loading...
           </h2>
-          <p className="text-flightpay-slate-600">
+          <p className="text-splickets-slate-600">
             Please wait while we load your flight details.
           </p>
         </div>
@@ -262,22 +262,22 @@ export default function FlightBooking() {
 
   if (bookingConfirmed) {
     return (
-      <div className="min-h-screen bg-flightpay-slate-50 flex flex-col gap-8">
+      <div className="min-h-screen bg-splickets-slate-50 flex flex-col gap-8">
         <Header />
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-blue-600" />
           </div>
-          <h2 className="text-2xl font-bold text-flightpay-slate-900 mb-2">
+          <h2 className="text-2xl font-bold text-splickets-slate-900 mb-2">
             Booking Confirmed!
           </h2>
-          <p className="text-flightpay-slate-600 mb-6">
+          <p className="text-splickets-slate-600 mb-6">
             Your flight has been successfully booked and payment processed.
             {selectedDeposit < 100 && " Your installment plan has been set up."}
           </p>
           <Button
             onClick={() => setLocation("/")}
-            className="bg-flightpay-accent hover:bg-orange-600 text-white"
+            className="bg-splickets-accent hover:bg-orange-600 text-white"
           >
             Return to Home
           </Button>
@@ -288,7 +288,7 @@ export default function FlightBooking() {
   }
 
   return (
-    <div className="min-h-screen bg-flightpay-slate-50">
+    <div className="min-h-screen bg-splickets-slate-50">
       <Navbar />
       <Header />
 
@@ -320,7 +320,7 @@ export default function FlightBooking() {
                           "h-12 text-base font-semibold",
                           selectedDeposit === option.value
                             ? "bg-primary text-white "
-                            : "border-flightpay-slate-300 text-flightpay-slate-700 hover:bg-flightpay-hover hover:text-flightpay-slate-700",
+                            : "border-splickets-slate-300 text-splickets-slate-700 hover:bg-splickets-hover hover:text-splickets-slate-700",
                         )}
                         onClick={() => setSelectedDeposit(option.value)}
                         data-testid={`button-deposit-${option.value}`}
@@ -346,7 +346,7 @@ export default function FlightBooking() {
                         "relative border-2 rounded-lg p-4 cursor-pointer transition-colors",
                         selectedInstallment === "weekly"
                           ? "border-primary bg-blue-50"
-                          : "border-flightpay-slate-200 hover:border-flightpay-slate-300",
+                          : "border-splickets-slate-200 hover:border-splickets-slate-300",
                       )}
                       onClick={() => setSelectedInstallment("weekly")}
                       data-testid="button-weekly-installments"
@@ -359,7 +359,7 @@ export default function FlightBooking() {
                         </div>
                       )}
                       <div className="text-center">
-                        <div className="text-sm font-medium text-flightpay-slate-600 mb-1">
+                        <div className="text-sm font-medium text-splickets-slate-600 mb-1">
                           Weekly
                         </div>
                         <div
@@ -367,12 +367,12 @@ export default function FlightBooking() {
                             "text-xl font-bold ",
                             selectedInstallment === "weekly"
                               ? "text-primary"
-                              : "text-flightpay-slate-700",
+                              : "text-splickets-slate-700",
                           )}
                         >
                           {formatCurrency(weeklyAmount)}
                         </div>
-                        <div className="text-xs text-flightpay-slate-500">
+                        <div className="text-xs text-splickets-slate-500">
                           x {weeklyInstallments}
                         </div>
                       </div>
@@ -383,7 +383,7 @@ export default function FlightBooking() {
                         "relative border-2 rounded-lg p-4 cursor-pointer transition-colors",
                         selectedInstallment === "bi-weekly"
                           ? "border-primary bg-blue-50"
-                          : "border-flightpay-slate-200 hover:border-flightpay-slate-300",
+                          : "border-splickets-slate-200 hover:border-splickets-slate-300",
                       )}
                       onClick={() => setSelectedInstallment("bi-weekly")}
                       data-testid="button-biweekly-installments"
@@ -396,7 +396,7 @@ export default function FlightBooking() {
                         </div>
                       )}
                       <div className="text-center">
-                        <div className="text-sm font-medium text-flightpay-slate-600 mb-1">
+                        <div className="text-sm font-medium text-splickets-slate-600 mb-1">
                           Bi-weekly
                         </div>
                         <div
@@ -404,12 +404,12 @@ export default function FlightBooking() {
                             "text-xl font-bold ",
                             selectedInstallment === "bi-weekly"
                               ? "text-primary"
-                              : "text-flightpay-slate-700",
+                              : "text-splickets-slate-700",
                           )}
                         >
                           {formatCurrency(biWeeklyAmount)}
                         </div>
-                        <div className="text-xs text-flightpay-slate-500">
+                        <div className="text-xs text-splickets-slate-500">
                           x {biWeeklyInstallments}
                         </div>
                       </div>
@@ -417,7 +417,7 @@ export default function FlightBooking() {
                   </div>
 
                   <div
-                    className=" text-sm text-flightpay-slate-600"
+                    className=" text-sm text-splickets-slate-600"
                     data-testid="text-installment-schedule"
                   >
                     {installmentCount} installments, starting{" "}
@@ -437,13 +437,13 @@ export default function FlightBooking() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center ">
                     <span
-                      className="font-medium text-flightpay-slate-900"
+                      className="font-medium text-splickets-slate-900"
                       data-testid="text-total-due"
                     >
                       Total
                     </span>
                     <span
-                      className="font-semibold text-flightpay-slate-900 mr-6 "
+                      className="font-semibold text-splickets-slate-900 mr-6 "
                       data-testid="text-total-amount"
                     >
                       {formatCurrency(flightTotal)}
@@ -452,13 +452,13 @@ export default function FlightBooking() {
 
                   <div className="flex justify-between items-center ">
                     <span
-                      className="text-flightpay-slate-700"
+                      className="text-splickets-slate-700"
                       data-testid="text-deposit-due"
                     >
                       Deposit ({selectedDeposit}% - due today)
                     </span>
                     <span
-                      className="font-semibold text-flightpay-slate-900  mr-6"
+                      className="font-semibold text-splickets-slate-900  mr-6"
                       data-testid="text-deposit-amount"
                     >
                       {formatCurrency(depositAmount)}
@@ -470,20 +470,20 @@ export default function FlightBooking() {
                     onOpenChange={setInstallmentDetailsOpen}
                   >
                     <CollapsibleTrigger
-                      className="flex justify-between items-center w-full hover:bg-flightpay-slate-50 rounded "
+                      className="flex justify-between items-center w-full hover:bg-splickets-slate-50 rounded "
                       data-testid="button-toggle-installments"
                     >
-                      <span className="text-flightpay-slate-700">
+                      <span className="text-splickets-slate-700">
                         Installments ({installmentCount})
                       </span>
                       <div className="flex items-center gap-2 ">
-                        <span className="font-semibold text-flightpay-slate-900">
+                        <span className="font-semibold text-splickets-slate-900">
                           {formatCurrency(remainingAmount)}
                         </span>
                         {installmentDetailsOpen ? (
-                          <ChevronUp className="h-4 w-4 text-flightpay-slate-500" />
+                          <ChevronUp className="h-4 w-4 text-splickets-slate-500" />
                         ) : (
-                          <ChevronDown className="h-4 w-4 text-flightpay-slate-500" />
+                          <ChevronDown className="h-4 w-4 text-splickets-slate-500" />
                         )}
                       </div>
                     </CollapsibleTrigger>
@@ -491,16 +491,16 @@ export default function FlightBooking() {
                       {installmentDates.map((date, index) => (
                         <div
                           key={index}
-                          className="flex justify-between items-center py-1 text-sm border-l-2 border-flightpay-slate-200 pl-4"
+                          className="flex justify-between items-center py-1 text-sm border-l-2 border-splickets-slate-200 pl-4"
                         >
                           <span
-                            className="text-flightpay-slate-600"
+                            className="text-splickets-slate-600"
                             data-testid={`text-installment-date-${index + 1}`}
                           >
                             {formatDate(String(date))}
                           </span>
                           <span
-                            className="text-flightpay-slate-900"
+                            className="text-splickets-slate-900"
                             data-testid={`text-installment-amount-${index + 1}`}
                           >
                             {formatCurrency(installmentAmount)}
@@ -551,9 +551,9 @@ export default function FlightBooking() {
             {/* Right Section - Flight Summary */}
             <div className="lg:col-span-1">
               <div className=" sticky top-[98px] space-y-6">
-                <div className=" bg-white rounded-lg shadow-sm border border-flightpay-slate-200 p-6 mb-8">
+                <div className=" bg-white rounded-lg shadow-sm border border-splickets-slate-200 p-6 mb-8">
                   <h1
-                    className="text-2xl font-bold text-flightpay-slate-900 mb-4"
+                    className="text-2xl font-bold text-splickets-slate-900 mb-4"
                     data-testid="title-passenger-details"
                   >
                     Flight Summary
@@ -569,7 +569,7 @@ export default function FlightBooking() {
                       <div
                         key={itineraryIndex}
                         data-testid={`itinerary-section-${itineraryIndex}`}
-                        className="text-flightpay-slate-900 text-sm grid grid-cols-3 mb-8"
+                        className="text-splickets-slate-900 text-sm grid grid-cols-3 mb-8"
                       >
                         {/* Origin */}
                         <div className="text-left col-span-1">
@@ -613,11 +613,11 @@ export default function FlightBooking() {
                     );
                   })}
                   {passengerData && (
-                    <div className="border-t border-flightpay-slate-200 pt-4">
-                      <h4 className="font-medium text-flightpay-slate-900 mb-2">
+                    <div className="border-t border-splickets-slate-200 pt-4">
+                      <h4 className="font-medium text-splickets-slate-900 mb-2">
                         Passengers ({passengerData.passengerCount || 1})
                       </h4>
-                      <div className="space-y-1 text-sm text-flightpay-slate-600">
+                      <div className="space-y-1 text-sm text-splickets-slate-600">
                         {passengerData.passengers?.map(
                           (passenger: any, index: number) => (
                             <div

@@ -18,7 +18,7 @@ export function FlightCard({
 
   return (
     <div
-      className="bg-white rounded-xl shadow-md border border-flightpay-slate-200 hover:shadow-md transition-shadow p-6 cursor-pointer"
+      className="bg-white rounded-xl shadow-md border border-splickets-slate-200 hover:shadow-md transition-shadow p-6 cursor-pointer"
       data-testid={`card-flight-${flight.id}`}
       onClick={() => onSelect(flight)}
     >
@@ -41,13 +41,13 @@ export function FlightCard({
                 >
                   <div className="text-left w-[100px] ">
                     <div
-                      className="text-lg font-bold text-flightpay-slate-900"
+                      className="text-lg font-bold text-splickets-slate-900"
                       data-testid={`text-departure-time-${flight.id}-${index}`}
                     >
                       {formatTime(firstSegment.departure.at)}
                     </div>
                     <div
-                      className="text-sm text-flightpay-slate-500"
+                      className="text-sm text-splickets-slate-500"
                       data-testid={`text-origin-${flight.id}-${index}`}
                     >
                       {firstSegment.departure.iataCode}
@@ -55,19 +55,19 @@ export function FlightCard({
                   </div>
                   <div className="flex-1 mx-4">
                     <div className="flex items-center">
-                      <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
-                      <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
+                      <div className="w-2 h-2 bg-splickets-slate-300 rounded-full"></div>
+                      <div className="flex-1 h-px bg-splickets-slate-300 mx-2"></div>
                       <div
-                        className="text-xs text-flightpay-slate-500"
+                        className="text-xs text-splickets-slate-500"
                         data-testid={`text-duration-${flight.id}-${index}`}
                       >
                         {formatDuration(itinerary.duration)}
                       </div>
-                      <div className="flex-1 h-px bg-flightpay-slate-300 mx-2"></div>
-                      <div className="w-2 h-2 bg-flightpay-slate-300 rounded-full"></div>
+                      <div className="flex-1 h-px bg-splickets-slate-300 mx-2"></div>
+                      <div className="w-2 h-2 bg-splickets-slate-300 rounded-full"></div>
                     </div>
                     <div
-                      className="text-center text-xs text-flightpay-slate-500 mt-1"
+                      className="text-center text-xs text-splickets-slate-500 mt-1"
                       data-testid={`text-stops-${flight.id}-${index}`}
                     >
                       {itinerary.segments.length - 1 === 0
@@ -77,13 +77,13 @@ export function FlightCard({
                   </div>
                   <div className="text-right w-[100px]">
                     <div
-                      className="text-lg font-bold text-flightpay-slate-900 "
+                      className="text-lg font-bold text-splickets-slate-900 "
                       data-testid={`text-arrival-time-${flight.id}-${index}`}
                     >
                       {formatTime(lastSegment.arrival.at)}
                     </div>
                     <div
-                      className="text-sm text-flightpay-slate-500"
+                      className="text-sm text-splickets-slate-500"
                       data-testid={`text-destination-${flight.id}-${index}`}
                     >
                       {lastSegment.arrival.iataCode}
@@ -100,24 +100,24 @@ export function FlightCard({
             <div className="flex flex-row w-full  justify-center ">
               <div className="w-full">
                 <div
-                  className="text-2xl text-center font-bold text-flightpay-slate-900  mb-1"
+                  className="text-2xl text-center font-bold text-splickets-slate-900  mb-1"
                   data-testid={`text-price-${flight.id}`}
                 >
                   ${pricePerTraveller.toFixed(0)}
                 </div>
-                <div className="text-sm text-center text-flightpay-slate-500">
+                <div className="text-sm text-center text-splickets-slate-500">
                   per person
                 </div>
               </div>
               {flight?.numberOfPassengers && flight.numberOfPassengers > 1 ? (
                 <div className="  w-full text-center">
                   <div
-                    className="text-2xl text-center font-bold  text-flightpay-slate-900  mb-1"
+                    className="text-2xl text-center font-bold  text-splickets-slate-900  mb-1"
                     data-testid={`text-price-${flight.id}`}
                   >
                     ${parseFloat(flight.price.total).toFixed(0)}
                   </div>
-                  <div className="text-sm text-flightpay-slate-500">
+                  <div className="text-sm text-splickets-slate-500">
                     in total
                   </div>
                 </div>
@@ -128,22 +128,22 @@ export function FlightCard({
 
             {flight.paymentPlanEligible && flight.paymentPlan ? (
               <div
-                className="bg-flightpay-secondary/10 rounded-lg p-3 border border-flightpay-secondary/20 flex flex-col items-center"
+                className="bg-splickets-secondary/10 rounded-lg p-3 border border-splickets-secondary/20 flex flex-col items-center"
                 data-testid={`payment-plan-preview-${flight.id}`}
               >
                 <div className="flex  items-center gap-2 mb-2">
-                  <Shield className="w-4 h-4 text-flightpay-secondary" />
-                  <span className="text-sm font-medium text-flightpay-secondary">
+                  <Shield className="w-4 h-4 text-splickets-secondary" />
+                  <span className="text-sm font-medium text-splickets-secondary">
                     Payment Plan Available
                   </span>
                 </div>
-                <div className="text-sm text-flightpay-slate-600">
+                <div className="text-sm text-splickets-slate-600">
                   Pay ${flight.paymentPlan.depositAmount.toFixed(0)} today, from
                   ${flight.paymentPlan.installmentAmount.toFixed(0)} per week
                 </div>
               </div>
             ) : (
-              <div className="text-sm text-center text-flightpay-slate-500">
+              <div className="text-sm text-center text-splickets-slate-500">
                 No payment plans available <br />
                 (departure is within 14 days)
               </div>

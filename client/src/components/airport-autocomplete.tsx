@@ -143,9 +143,9 @@ export function AirportAutocomplete({
 
   const IconComponent =
     icon === "departure" ? (
-      <Plane className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 rotate-45" />
+      <Plane className="absolute left-3 top-3.5 h-4 w-4 text-splickets-slate-600 rotate-45" />
     ) : (
-      <Plane className="absolute left-3 top-3.5 h-4 w-4 text-flightpay-slate-600 -rotate-45" />
+      <Plane className="absolute left-3 top-3.5 h-4 w-4 text-splickets-slate-600 -rotate-45" />
     );
 
   const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -154,7 +154,7 @@ export function AirportAutocomplete({
 
   return (
     <div className="relative ">
-      <Label className="block text-sm font-medium text-flightpay-slate-700 mb-1">
+      <Label className="block text-sm font-medium text-splickets-slate-700 mb-1">
         {label}
       </Label>
       <div className="relative">
@@ -165,7 +165,7 @@ export function AirportAutocomplete({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           onFocus={handleFocus} 
-          className="pl-10 pr-4 py-3 border-flightpay-slate-300 focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white w-full min-w-[140px] cursor-pointer"
+          className="pl-10 pr-4 py-3 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white w-full min-w-[140px] cursor-pointer"
           data-testid={testId}
           autoComplete="off"
         />
@@ -174,35 +174,35 @@ export function AirportAutocomplete({
         {isOpen && airports.length > 0 && (
           <ul
             ref={listRef}
-            className="absolute z-50 w-full min-w-[320px] mt-1 bg-white border border-flightpay-slate-300 rounded-md shadow-lg max-h-60 overflow-auto"
+            className="absolute z-50 w-full min-w-[320px] mt-1 bg-white border border-splickets-slate-300 rounded-md shadow-lg max-h-60 overflow-auto"
             data-testid={`${testId}-suggestions`}
           >
             {airports.map((airport, index) => (
               <li
                 key={`${airport.code}-${index}`}
                 className={cn(
-                  "px-4 py-3 cursor-pointer border-b border-flightpay-slate-100 last:border-b-0 hover:bg-flightpay-slate-50",
-                  selectedIndex === index && "bg-flightpay-primary/10",
+                  "px-4 py-3 cursor-pointer border-b border-splickets-slate-100 last:border-b-0 hover:bg-splickets-slate-50",
+                  selectedIndex === index && "bg-splickets-primary/10",
                 )}
                 onClick={() => handleSelectAirport(airport)}
                 data-testid={`${testId}-option-${airport.code}`}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-flightpay-primary/10 rounded-full flex items-center justify-center">
-                      <MapPin className="h-4 w-4 text-flightpay-primary" />
+                    <div className="w-8 h-8 bg-splickets-primary/10 rounded-full flex items-center justify-center">
+                      <MapPin className="h-4 w-4 text-splickets-primary" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-flightpay-slate-900 truncate">
+                    <div className="text-sm font-medium text-splickets-slate-900 truncate">
                       {toTitleCase(airport.city)}
                     </div>
-                    <div className="text-sm text-flightpay-slate-500 truncate">
+                    <div className="text-sm text-splickets-slate-500 truncate">
                       {toTitleCase(airport.name)}
                     </div>
                   </div>
                   <div className="flex-shrink-0">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-flightpay-slate-100 text-flightpay-slate-800">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-splickets-slate-100 text-splickets-slate-800">
                       {airport.code}
                     </span>
                   </div>

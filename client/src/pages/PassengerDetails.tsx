@@ -334,13 +334,13 @@ export default function PassengerDetails() {
 
   if (!flight) {
     return (
-      <div className="min-h-screen bg-flightpay-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-splickets-slate-50 flex items-center justify-center">
         <Header />
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-flightpay-slate-900 mb-2">
+          <h2 className="text-2xl font-bold text-splickets-slate-900 mb-2">
             Loading flight details...
           </h2>
-          <p className="text-flightpay-slate-600">
+          <p className="text-splickets-slate-600">
             Please wait while we load your flight information.
           </p>
         </div>
@@ -376,7 +376,7 @@ export default function PassengerDetails() {
   const totalPrice = parseFloat(flight.price.total);
 
   return (
-    <div className="min-h-screen bg-flightpay-slate-50">
+    <div className="min-h-screen bg-splickets-slate-50">
       <Navbar />
       <Header />
 
@@ -390,7 +390,7 @@ export default function PassengerDetails() {
                 <CardTitle data-testid="title-contact-details">
                   Contact Details
                 </CardTitle>
-                <p className="text-sm text-flightpay-slate-600">
+                <p className="text-sm text-splickets-slate-600">
                   Confirmation and account details
                 </p>
               </CardHeader>
@@ -532,14 +532,14 @@ export default function PassengerDetails() {
                         <Input
                           {...form.register("dateOfBirth")}
                           type="date"
-                          className="hide-date-icon pl-10 w-full pr-4 py-3  focus:ring-2 focus:ring-flightpay-primary focus:border-flightpay-primary bg-white cursor-pointer"
+                          className="hide-date-icon pl-10 w-full pr-4 py-3  focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white cursor-pointer"
                           data-testid={`input-date-of-birth-${index + 1}`}
                           onClick={(e) =>
                             (e.target as HTMLInputElement).showPicker()
                           }
                         />
                         <Calendar
-                          className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-flightpay-slate-600 pointer-events-none"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-splickets-slate-600 pointer-events-none"
                           // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
                         />
                       </div>
@@ -589,9 +589,9 @@ export default function PassengerDetails() {
           <div className="lg:col-span-1">
             <div className="sticky top-[98px] space-y-6">
               {/* Flight Summary Header */}
-              <div className=" bg-white rounded-lg shadow-sm border border-flightpay-slate-200 p-6 mb-8">
+              <div className=" bg-white rounded-lg shadow-sm border border-splickets-slate-200 p-6 mb-8">
                 <h1
-                  className="text-2xl font-bold text-flightpay-slate-900 mb-4"
+                  className="text-2xl font-bold text-splickets-slate-900 mb-4"
                   data-testid="title-passenger-details"
                 >
                   Flight Summary
@@ -607,7 +607,7 @@ export default function PassengerDetails() {
                     <div
                       key={itineraryIndex}
                       data-testid={`itinerary-section-${itineraryIndex}`}
-                      className="text-flightpay-slate-900 text-sm grid grid-cols-3 mb-8"
+                      className="text-splickets-slate-900 text-sm grid grid-cols-3 mb-8"
                     >
                       {/* Origin */}
                       <div className="text-left col-span-1">
@@ -667,7 +667,7 @@ export default function PassengerDetails() {
                         <CollapsibleTrigger className="flex items-center justify-between w-full text-left p-0 hover:bg-transparent">
                           <div className="flex items-center justify-between w-full">
                             <span
-                              className="text-flightpay-slate-900"
+                              className="text-splickets-slate-900"
                               data-testid="text-adult-count"
                             >
                               Adult ({passengerCount})
@@ -704,12 +704,12 @@ export default function PassengerDetails() {
                               animate={{ height: "auto", opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
                               transition={{ duration: 0.2, ease: "easeInOut" }}
-                              className="overflow-hidden  pl-4 border-l-2 border-flightpay-slate-100"
+                              className="overflow-hidden  pl-4 border-l-2 border-splickets-slate-100"
                             >
                               <div className="space-y-2 mt-4">
                                 <div className="flex justify-between text-sm mr-6">
                                   <span
-                                    className="text-flightpay-slate-600"
+                                    className="text-splickets-slate-600"
                                     data-testid="text-flight-fare-label"
                                   >
                                     Flight fare
@@ -721,7 +721,7 @@ export default function PassengerDetails() {
                                 </div>
                                 <div className="flex justify-between text-sm mr-6">
                                   <span
-                                    className="text-flightpay-slate-600"
+                                    className="text-splickets-slate-600"
                                     data-testid="text-airline-taxes-label"
                                   >
                                     Airline taxes and fees
@@ -738,23 +738,23 @@ export default function PassengerDetails() {
                       </Collapsible>
                     </div>
 
-                    <div className="border-t border-flightpay-slate-200 pt-4">
+                    <div className="border-t border-splickets-slate-200 pt-4">
                       <div className="flex justify-between items-center mr-6">
                         <span
-                          className="text-lg font-bold text-flightpay-slate-900"
+                          className="text-lg font-bold text-splickets-slate-900"
                           data-testid="text-total-label"
                         >
                           Total
                         </span>
                         <span
-                          className="text-lg font-bold text-flightpay-slate-900"
+                          className="text-lg font-bold text-splickets-slate-900"
                           data-testid="text-final-total"
                         >
                           {/* formattedPrice(totalPrice) */}
                           {flight.price.currency} {formattedPrice(totalPrice)}
                         </span>
                       </div>
-                      <p className="text-sm text-flightpay-slate-600 mt-1">
+                      <p className="text-sm text-splickets-slate-600 mt-1">
                         Includes taxes and fees
                       </p>
                     </div>
