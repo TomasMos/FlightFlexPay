@@ -255,6 +255,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let userId: number;
 
+      console.log(flightData)
+
       // Check if user exists or create new user from lead data
       const lead = await db
         .select()
@@ -349,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 ? "weekly"
                 : "bi_weekly",
           totalAmount: paymentPlan.totalAmount.toString(),
-          currency: "USD",
+          currency: flightData.price.currency,
         })
         .returning();
 
@@ -360,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             paymentPlanId: paymentPlanRecord.id,
             dueDate: new Date(dateStr).toISOString().split("T")[0],
             amount: paymentPlan.installmentAmount.toString(),
-            currency: "USD",
+            currency: flightData.price.currency,
           }),
         );
 
@@ -377,6 +379,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           passengers: passengerData.passengers,
           status: "paid",
           totalPrice: paymentPlan.totalAmount.toString(),
+          currency: flightData.price.currency
         })
         .returning();
 

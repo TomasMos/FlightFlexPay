@@ -177,6 +177,7 @@ export const bookings = pgTable("bookings", {
   passengers: json("passengers"), // JSON containing passenger details (nullable for existing bookings)
   status: bookingStatusEnum("status").default("payment_pending"),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).notNull().default("USD"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
