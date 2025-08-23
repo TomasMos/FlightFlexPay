@@ -21,8 +21,22 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initializeCurrency = async () => {
       try {
-        // TODO: Fetch user's preferred currency from database when logged in
-        const userCurrency = await determineUserCurrency(null);
+        let userPreferredCurrency = null;
+        
+        // Fetch user's preferred currency from database when logged in
+        if (currentUser?.email) {
+          try {
+            const response = await fetch(`/api/user/currency?email=${encodeURIComponent(currentUser.email)}`);
+            if (response.ok) {
+              const data = await response.json();
+              userPreferredCurrency = data.preferredCurrency;
+            }
+          } catch (error) {
+            console.warn('Failed to fetch user preferred currency:', error);
+          }
+        }
+        
+        const userCurrency = await determineUserCurrency(userPreferredCurrency);
         setCurrencyState(userCurrency);
       } catch (error) {
         console.error('Error initializing currency:', error);

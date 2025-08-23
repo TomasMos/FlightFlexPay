@@ -767,6 +767,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's preferred currency
+  app.get("/api/user/currency", async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+      
+      const user = await db
+        .select({ preferredCurrency: users.preferredCurrency })
+        .from(users)
+        .where(eq(users.email, email as string))
+        .limit(1);
+        
+      if (user.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json({ preferredCurrency: user[0].preferredCurrency });
+    } catch (error) {
+      console.error("Error fetching user currency:", error);
+      res.status(500).json({ error: "Failed to fetch user currency" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

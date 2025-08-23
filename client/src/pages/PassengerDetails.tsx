@@ -248,8 +248,6 @@ export default function PassengerDetails() {
         const { passengers: storedPassengers, contactDetails: storedContact } =
           JSON.parse(storedPassengerData);
 
-        console.log(storedPassengerData)
-
         // Populate contact form
         if (storedContact) {
           contactForm.reset(storedContact);
