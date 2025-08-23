@@ -374,6 +374,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId,
           flightId: flight.id,
           paymentPlanId: paymentPlanRecord.id,
+          passengers: passengerData.passengers,
           status: "paid",
           totalPrice: paymentPlan.totalAmount.toString(),
         })

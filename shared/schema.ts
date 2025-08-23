@@ -174,6 +174,7 @@ export const bookings = pgTable("bookings", {
   paymentPlanId: integer("payment_plan_id")
     .references(() => paymentPlans.id)
     .notNull(),
+  passengers: json("passengers"), // JSON containing passenger details (nullable for existing bookings)
   status: bookingStatusEnum("status").default("payment_pending"),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
