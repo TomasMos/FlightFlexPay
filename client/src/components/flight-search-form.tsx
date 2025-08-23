@@ -18,6 +18,7 @@ import { Calendar, User, Search, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SUPPORTED_CURRENCIES, determineUserCurrency, saveCurrencyToStorage, type CurrencyCode } from "@/utils/currency";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface FlightSearchFormProps {
   onSearch: (searchParams: FlightSearchRequest & { currency: CurrencyCode }) => void;
@@ -33,7 +34,7 @@ export function FlightSearchForm({
   >("return");
   const [originIata, setOriginIata] = useState("");
   const [destinationIata, setDestinationIata] = useState("");
-  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('USD');
+  const { setCurrency, currency: selectedCurrency } = useCurrency();
   const { currentUser } = useAuth();
 
   const form = useForm<FlightSearchRequest>({
@@ -50,19 +51,6 @@ export function FlightSearchForm({
 
   // Initialize currency and load previous search from localStorage on component mount
   useEffect(() => {
-    const initializeCurrency = async () => {
-      try {
-        // For now, we'll get user preference from database separately
-        // TODO: Fetch user preferred currency from database if currentUser exists
-        const currency = await determineUserCurrency(null);
-        setSelectedCurrency(currency);
-      } catch (error) {
-        console.error('Error initializing currency:', error);
-        setSelectedCurrency('USD');
-      }
-    };
-    
-    initializeCurrency();
     
     const savedSearch = localStorage.getItem("lastFlightSearch");
     if (savedSearch) {
@@ -80,10 +68,6 @@ export function FlightSearchForm({
         setTripType(searchData.tripType || "return");
         setOriginIata(searchData.origin || "");
         setDestinationIata(searchData.destination || "");
-        // Restore currency if saved
-        if (searchData.currency) {
-          setSelectedCurrency(searchData.currency);
-        }
       } catch (error) {
         console.error("Error loading saved search:", error);
       }
@@ -179,7 +163,7 @@ export function FlightSearchForm({
                 <div className="relative">
                   <Select
                     value={selectedCurrency}
-                    onValueChange={(value) => setSelectedCurrency(value as CurrencyCode)}
+                    onValueChange={(value) => setCurrency(value as CurrencyCode)}
                   >
                     <SelectTrigger
                       className="w-24 pl-8 pr-4 py-2 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white"

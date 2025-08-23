@@ -41,6 +41,8 @@ export default function FlightBooking() {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
+  
+
   // Load flight and passenger data from localStorage
   useEffect(() => {
     const flightData = localStorage.getItem("selectedFlight");
@@ -518,7 +520,7 @@ export default function FlightBooking() {
               <div className=" mx-auto">
                 <StripePaymentForm
                   amount={Math.round(depositAmount * 100)} // Convert to cents
-                  currency="usd"
+                  currency={currency}
                   customerEmail={passengerData?.contactDetails?.email}
                   customerName={`${passengerData?.passengers?.[0]?.firstName} ${passengerData?.passengers?.[0]?.lastName}`}
                   paymentType={
