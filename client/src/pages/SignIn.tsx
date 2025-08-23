@@ -74,7 +74,7 @@ export default function SignIn() {
         await signup(email, password);
         toast({
           title: "Account created",
-          description: "Welcome to Splickets!",
+          description: "Welcome to FlightPay!",
         });
       } else {
         await signin(email, password);
@@ -137,7 +137,7 @@ export default function SignIn() {
               </svg>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Splickets</h1>
+          <h1 className="text-3xl font-bold text-gray-900">FlightPay</h1>
           <p className="text-gray-600 mt-2">
             Flexible flight payments made simple
           </p>
@@ -157,7 +157,7 @@ export default function SignIn() {
                 ? "Enter your email to receive reset instructions"
                 : isSignUp
                   ? "Create your account to access your bookings"
-                  : "Sign in to your Splickets account"}
+                  : "Sign in to your FlightPay account"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -320,7 +320,7 @@ export default function SignIn() {
               className="p-0 h-auto"
               data-testid="link-home"
             >
-              ← Back to Splickets
+              ← Back to FlightPay
             </Button>
           </Link>
         </div>
