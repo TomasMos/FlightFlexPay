@@ -157,21 +157,18 @@ export function FlightSearchForm({
               
               {/* Currency Dropdown */}
               <div className="flex items-center space-x-2">
-                <Label className="text-sm font-medium text-splickets-slate-700">
-                  Currency
-                </Label>
-                <div className="relative">
+                <div className="relative  w-24">
                   <Select
                     value={selectedCurrency}
                     onValueChange={(value) => setCurrency(value as CurrencyCode)}
                   >
                     <SelectTrigger
-                      className="w-24 pl-8 pr-4 py-2 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white"
+                      className=" pl-4 pr-4 py-2 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white"
                       data-testid="select-currency"
                     >
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="min-w-[var(--radix-select-trigger-width)] w-auto">
                       {SUPPORTED_CURRENCIES.map((currency) => (
                         <SelectItem key={currency.code} value={currency.code}>
                           {currency.code}
@@ -179,7 +176,6 @@ export function FlightSearchForm({
                       ))}
                     </SelectContent>
                   </Select>
-                  <DollarSign className="absolute left-2 top-2.5 h-3 w-3 text-splickets-slate-600 pointer-events-none" />
                 </div>
               </div>
             </div>
