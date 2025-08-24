@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, TicketsPlane } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -74,7 +74,7 @@ export default function SignIn() {
         await signup(email, password);
         toast({
           title: "Account created",
-          description: "Welcome to FlightPay!",
+          description: "Welcome to Splickets!",
         });
       } else {
         await signin(email, password);
@@ -125,19 +125,18 @@ export default function SignIn() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* FlightPay Branding */}
+        {/* Splickets Branding */}
         <div className="text-center mb-8">
+          
           <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                className="w-7 h-7 text-white fill-current"
-              >
-                <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
-              </svg>
+            
+            <div className="flex items-center space-x-2 cursor-pointer" data-testid="navbar-logo">
+              <div className="w-12 h-12 bg-splickets-primary rounded-lg flex items-center justify-center">
+                <TicketsPlane className="w-6 h-6 text-white" />
+              </div>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">FlightPay</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Splickets</h1>
           <p className="text-gray-600 mt-2">
             Flexible flight payments made simple
           </p>
@@ -157,7 +156,7 @@ export default function SignIn() {
                 ? "Enter your email to receive reset instructions"
                 : isSignUp
                   ? "Create your account to access your bookings"
-                  : "Sign in to your FlightPay account"}
+                  : "Sign in to your Splickets account"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -167,10 +166,8 @@ export default function SignIn() {
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start space-x-2">
                 <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-amber-800">
-                  <p className="font-medium">Account Required</p>
                   <p>
-                    You need to complete a flight booking first to create your
-                    account.
+                    Book a flight, then to create your account.
                   </p>
                 </div>
               </div>
@@ -320,7 +317,7 @@ export default function SignIn() {
               className="p-0 h-auto"
               data-testid="link-home"
             >
-              ← Back to FlightPay
+              ← Back to Splickets
             </Button>
           </Link>
         </div>

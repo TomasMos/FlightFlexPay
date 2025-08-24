@@ -33,7 +33,6 @@ import {
 } from "@/utils/formatters";
 import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/navbar";
-import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
 // Passenger form schema
@@ -333,7 +332,6 @@ export default function PassengerDetails() {
   if (!flight) {
     return (
       <div className="min-h-screen bg-splickets-slate-50 flex items-center justify-center">
-        <Header />
         <div className="text-center">
           <h2 className="text-2xl font-bold text-splickets-slate-900 mb-2">
             Loading flight details...
@@ -376,8 +374,6 @@ export default function PassengerDetails() {
   return (
     <div className="min-h-screen bg-splickets-slate-50">
       <Navbar />
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Section - Passenger and Contact Forms */}

@@ -105,7 +105,7 @@ export function FlightCard({
                   className="text-2xl text-center font-bold text-splickets-slate-900  mb-1"
                   data-testid={`text-price-${flight.id}`}
                 >
-                  {currencySymbol}{pricePerTraveller.toFixed(0)}
+                  {currencySymbol} {pricePerTraveller.toFixed(0)}
                 </div>
                 <div className="text-sm text-center text-splickets-slate-500">
                   per person
@@ -117,7 +117,7 @@ export function FlightCard({
                     className="text-2xl text-center font-bold  text-splickets-slate-900  mb-1"
                     data-testid={`text-price-${flight.id}`}
                   >
-                    {currencySymbol}{parseFloat(flight.price.total).toFixed(0)}
+                    {currencySymbol} {parseFloat(flight.price.total).toFixed(0)}
                   </div>
                   <div className="text-sm text-splickets-slate-500">
                     in total
@@ -140,8 +140,8 @@ export function FlightCard({
                   </span>
                 </div>
                 <div className="text-sm text-splickets-slate-600">
-                  Pay {currencySymbol}{flight.paymentPlan.depositAmount.toFixed(0)} today, from
-                  {currencySymbol}{flight.paymentPlan.installmentAmount.toFixed(0)} per week
+                  Pay {currencySymbol} {flight.paymentPlan.depositAmount.toFixed(0)} today, from
+                  {currencySymbol} {flight.paymentPlan.installmentAmount.toFixed(0)} per week
                 </div>
               </div>
             ) : (

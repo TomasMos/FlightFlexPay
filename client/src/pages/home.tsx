@@ -5,7 +5,6 @@ import {
   EnhancedFlightWithPaymentPlan,
 } from "@shared/schema";
 import { Navbar } from "@/components/navbar";
-import { Header } from "@/components/header";
 import { FlightSearchForm } from "@/components/flight-search-form";
 import { FlightResults } from "@/components/flight-results";
 import { TrustSection } from "@/components/trust-section";
@@ -51,8 +50,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-splickets-slate-50" data-testid="page-home">
       <Navbar />
-      <Header />
-
       <FlightSearchForm onSearch={handleSearch} isLoading={isLoading} />
 
       {searchParams && (

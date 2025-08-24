@@ -267,7 +267,6 @@ export default function FlightBooking() {
   if (bookingConfirmed) {
     return (
       <div className="min-h-screen bg-splickets-slate-50 flex flex-col gap-8">
-        <Header />
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-blue-600" />
@@ -294,8 +293,6 @@ export default function FlightBooking() {
   return (
     <div className="min-h-screen bg-splickets-slate-50">
       <Navbar />
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div>
           {/* Flight Summary Header */}

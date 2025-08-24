@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navbar } from '@/components/navbar';
-import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { BookingsTab } from '@/components/profile/BookingsTab';
 import { BillingTab } from '@/components/profile/BillingTab';
@@ -23,7 +22,6 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      <Header />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <h1 className="text-3xl font-bold mb-8" data-testid="text-profile-title">Your Profile</h1>
         
