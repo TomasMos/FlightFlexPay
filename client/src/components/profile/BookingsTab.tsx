@@ -55,23 +55,23 @@ export function BookingsTab() {
     enabled: !!currentUser?.email,
   });
 
+  console.log(`isLoading`, isLoading)
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const upcomingBookings = (bookings as Booking[]).filter((booking: Booking) => {
-    const flightData = booking.flight.flightData;
-    const departureDate = new Date(flightData.itineraries[0].segments[0].departure.at);
+    const departureDate = new Date(booking.flight.departureDate);
     return departureDate >= today;
   });
 
   const pastBookings = (bookings as Booking[]).filter((booking: Booking) => {
-    const flightData = booking.flight.flightData;
-    const departureDate = new Date(flightData.itineraries[0].segments[0].departure.at);
+    const departureDate = new Date(booking.flight.departureDate);
     return departureDate < today;
   });
 
   const BookingCard = ({ booking }: { booking: Booking }) => {
-    const flightData = booking.flight.flightData;
+    const flightData = booking.flight.flightOffer;
     const firstItinerary = flightData.itineraries[0];
     const firstSegment = firstItinerary.segments[0];
     const lastSegment = firstItinerary.segments[firstItinerary.segments.length - 1];

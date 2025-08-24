@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +38,19 @@ export function AccountTab() {
     phoneNumber: '',
     diallingCode: '+1',
   });
+
+  const { data: userArray = [], isLoading } = useQuery({
+    queryKey: ['/api/user/details', currentUser?.email],
+    queryFn: async () => {
+      const response = await fetch(`/api/user/details?email=${encodeURIComponent(currentUser?.email || '')}`);
+      if (!response.ok) throw new Error('Failed to fetch user details');
+      return response.json();
+    },
+    enabled: !!currentUser?.email,
+  });
+
+  const user = userArray[0];
+  console.log(user)
 
   const handleLogout = async () => {
     try {
@@ -96,6 +110,17 @@ export function AccountTab() {
 
   if (!currentUser) return null;
 
+  if (isLoading) {
+    return <div>Loading user details...</div>;
+  }
+
+  // You should also handle the case where no user is found
+  if (!user || Object.keys(user).length === 0) {
+    return <div>No user data found.</div>;
+  }
+
+  // 2. Render the actual HTML with the fetched data
+  
   return (
     <div className="space-y-6">
       {/* Profile Header */}
@@ -113,30 +138,12 @@ export function AccountTab() {
             </Avatar>
             <div className="flex-1">
               <h2 className="text-2xl font-bold" data-testid="text-user-name">
-                {currentUser.displayName || 'Splickets User'}
+                {user.firstName || 'Splickets User'}
               </h2>
               <p className="text-gray-600" data-testid="text-user-email">
-                {currentUser.email}
+                {user.email}
               </p>
-              <div className="flex gap-2 mt-2">
-                {hasPassword && (
-                  <Badge variant="outline" data-testid="badge-auth-password">
-                    <Shield className="w-3 h-3 mr-1" />
-                    Email & Password
-                  </Badge>
-                )}
-                {hasGoogle && (
-                  <Badge variant="outline" data-testid="badge-auth-google">
-                    <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                      <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Google
-                  </Badge>
-                )}
-              </div>
+              
             </div>
           </div>
         </CardContent>
@@ -160,7 +167,7 @@ export function AccountTab() {
               <Label htmlFor="firstName">First Name</Label>
               <Input
                 id="firstName"
-                value={currentUser.displayName?.split(' ')[0] || ''}
+                value={user.firstName}
                 disabled={!isEditing}
                 data-testid="input-first-name"
               />
@@ -169,7 +176,7 @@ export function AccountTab() {
               <Label htmlFor="lastName">Last Name</Label>
               <Input
                 id="lastName"
-                value={currentUser.displayName?.split(' ').slice(1).join(' ') || ''}
+                value={user.lastName}
                 disabled={!isEditing}
                 data-testid="input-last-name"
               />
@@ -182,11 +189,11 @@ export function AccountTab() {
             <div className="flex items-center gap-2">
               <Input
                 id="email"
-                value={currentUser.email || ''}
+                value={user.email || ''}
                 disabled
                 data-testid="input-email"
               />
-              <Badge 
+              {/* <Badge 
                 variant={currentUser.emailVerified ? "default" : "secondary"}
                 data-testid="badge-email-verified"
               >
@@ -195,8 +202,8 @@ export function AccountTab() {
                 ) : (
                   "Not Verified"
                 )}
-              </Badge>
-              {!currentUser.emailVerified && (
+              </Badge> */}
+              {/* {!currentUser.emailVerified && (
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -206,7 +213,7 @@ export function AccountTab() {
                   <Send className="w-4 h-4 mr-2" />
                   Verify
                 </Button>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -244,7 +251,7 @@ export function AccountTab() {
               <SelectContent>
                 {SUPPORTED_CURRENCIES.map((curr) => (
                   <SelectItem key={curr.code} value={curr.code}>
-                    {curr.symbol} {curr.code} - {curr.name}
+                    {curr.name} ({curr.code})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -255,7 +262,7 @@ export function AccountTab() {
           <div>
             <Label htmlFor="phone">Phone Number</Label>
             <div className="flex gap-2">
-              <Select defaultValue="+1" disabled={!isEditing}>
+              <Select defaultValue={user.diallingCode} disabled={!isEditing}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
@@ -271,6 +278,7 @@ export function AccountTab() {
                 placeholder="Enter phone number"
                 disabled={!isEditing}
                 data-testid="input-phone"
+                value={user.phoneNumber}
               />
             </div>
           </div>

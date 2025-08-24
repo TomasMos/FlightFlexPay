@@ -20,7 +20,7 @@ export function BookingDetailsModal({ booking, isOpen, onClose }: BookingDetails
 
   if (!isOpen) return null;
 
-  const flightData = booking.flight.flightData;
+  const flightData = booking.flight.flightOffer;
 
   const toggleItinerary = (index: number) => {
     setExpandedItinerary(prev => ({

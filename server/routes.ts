@@ -147,46 +147,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get booking details
-  app.get("/api/bookings/:id", async (req, res) => {
-    try {
-      const bookingId = parseInt(req.params.id);
+  // // Get booking details
+  // app.get("/api/bookings/:id", async (req, res) => {
 
-      const booking = await db
-        .select()
-        .from(bookings)
-        .where(eq(bookings.id, bookingId))
-        .limit(1);
-      if (!booking.length) {
-        return res.status(404).json({ message: "Booking not found" });
-      }
+  //   console.log(`here`, req.body)
+  //   try {
+  //     const bookingId = parseInt(req.params.id);
 
-      const flight = await db
-        .select()
-        .from(flights)
-        .where(eq(flights.id, booking[0].flightId))
-        .limit(1);
-      const paymentPlan = await db
-        .select()
-        .from(paymentPlans)
-        .where(eq(paymentPlans.id, booking[0].paymentPlanId))
-        .limit(1);
-      const installmentList = await db
-        .select()
-        .from(installments)
-        .where(eq(installments.paymentPlanId, booking[0].paymentPlanId));
+  //     const booking = await db
+  //       .select()
+  //       .from(bookings)
+  //       .where(eq(bookings.id, bookingId))
+  //       .limit(1);
+  //     if (!booking.length) {
+  //       return res.status(404).json({ message: "Booking not found" });
+  //     }
 
-      res.json({
-        ...booking[0],
-        flight: flight[0] || null,
-        paymentPlan: paymentPlan[0] || null,
-        installments: installmentList,
-      });
-    } catch (error) {
-      console.error("Get booking error:", error);
-      res.status(500).json({ message: "Failed to get booking" });
-    }
-  });
+  //     const flight = await db
+  //       .select()
+  //       .from(flights)
+  //       .where(eq(flights.id, booking[0].flightId))
+  //       .limit(1);
+  //     const paymentPlan = await db
+  //       .select()
+  //       .from(paymentPlans)
+  //       .where(eq(paymentPlans.id, booking[0].paymentPlanId))
+  //       .limit(1);
+  //     const installmentList = await db
+  //       .select()
+  //       .from(installments)
+  //       .where(eq(installments.paymentPlanId, booking[0].paymentPlanId));
+
+  //     res.json({
+  //       ...booking[0],
+  //       flight: flight[0] || null,
+  //       paymentPlan: paymentPlan[0] || null,
+  //       installments: installmentList,
+  //     });
+  //   } catch (error) {
+  //     console.error("Get booking error:", error);
+  //     res.status(500).json({ message: "Failed to get booking" });
+  //   }
+  // });
 
   // Save passenger details as leads
   app.post("/api/leads", async (req, res) => {
@@ -232,8 +234,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         passengerData: { contactDetails, passengers },
       });
 
-       await emailService.addLeadToList(leadData.email, leadData.firstName, leadData.lastName);
-      
+      await emailService.addLeadToList(
+        leadData.email,
+        leadData.firstName,
+        leadData.lastName,
+      );
 
       res.json({ leadId: lead.id, success: true });
     } catch (error) {
@@ -251,12 +256,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentPlan,
         paymentIntentId,
         leadId,
-        searchId
+        searchId,
       } = req.body;
 
       let userId: number;
 
-      console.log(flightData)
+      console.log(flightData);
 
       // Check if user exists or create new user from lead data
       const lead = await db
@@ -277,7 +282,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (existingUser.length > 0) {
         // Use existing user
         userId = existingUser[0].id;
-        await db.update(users).set({ preferredCurrency: flightData.price.currency }).where(eq(users.id, userId));
+        await db
+          .update(users)
+          .set({ preferredCurrency: flightData.price.currency })
+          .where(eq(users.id, userId));
       } else {
         // Create new user from lead data and first passenger
         const firstPassenger = passengerData.passengers[0];
@@ -294,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               ? new Date(firstPassenger.dateOfBirth).toISOString().split("T")[0]
               : null,
             passportCountry: firstPassenger.passportCountry,
-            preferredCurrency: flightData.price.currency
+            preferredCurrency: flightData.price.currency,
           })
           .returning();
 
@@ -307,7 +315,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .where(eq(leads.id, leadId));
       }
 
-      await db.update(flightSearches).set({userId: userId}).where(eq(flightSearches.id, searchId))
+      await db
+        .update(flightSearches)
+        .set({ userId: userId })
+        .where(eq(flightSearches.id, searchId));
 
       const [flight] = await db
         .insert(flights)
@@ -382,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           passengers: passengerData.passengers,
           status: "paid",
           totalPrice: paymentPlan.totalAmount.toString(),
-          currency: flightData.price.currency
+          currency: flightData.price.currency,
         })
         .returning();
 
@@ -393,20 +404,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .from(users)
           .where(eq(users.id, userId))
           .limit(1);
-        
+
         if (user.length > 0) {
           const firstItinerary = flightData.itineraries[0];
-          const lastItinerary = flightData.itineraries[flightData.itineraries.length - 1];
-          
+          const lastItinerary =
+            flightData.itineraries[flightData.itineraries.length - 1];
+
           await emailService.sendBookingConfirmation(user[0].email, {
             customerName: `${user[0].firstName} ${user[0].lastName}`,
             flightDetails: {
               origin: flightData.origin,
               destination: flightData.destination,
               departureDate: firstItinerary.segments[0].departure.at,
-              returnDate: flightData.itineraries.length > 1 
-                ? lastItinerary.segments[0].departure.at 
-                : undefined,
+              returnDate:
+                flightData.itineraries.length > 1
+                  ? lastItinerary.segments[0].departure.at
+                  : undefined,
               flightNumber: firstItinerary.segments[0].number,
               passengers: passengerData.passengers.length,
             },
@@ -417,17 +430,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
               installmentCount: paymentPlan.installmentCount,
               frequency: paymentPlan.installmentType,
             },
-            bookingReference: `FP${booking.id.toString().padStart(6, '0')}`,
+            bookingReference: `FP${booking.id.toString().padStart(6, "0")}`,
           });
         }
       } catch (error) {
-        console.error('Failed to send booking confirmation email:', error);
+        console.error("Failed to send booking confirmation email:", error);
       }
 
       try {
-        await emailService.moveLeadToCustomers(passengerData.contactDetails.email);
+        await emailService.moveLeadToCustomers(
+          passengerData.contactDetails.email,
+        );
       } catch {
-        console.error('Failed to move contact into customer list')
+        console.error("Failed to move contact into customer list");
       }
 
       res.json({
@@ -679,8 +694,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customerName: `${user.firstName} ${user.lastName}`,
         dueAmount: parseFloat(installment.amount),
         dueDate: installment.dueDate,
-        bookingReference: `FP${booking[0].booking.id.toString().padStart(6, '0')}`,
-        paymentUrl: `${process.env.BASE_URL || 'http://localhost:5000'}/payment/${booking[0].booking.id}`,
+        bookingReference: `FP${booking[0].booking.id.toString().padStart(6, "0")}`,
+        paymentUrl: `${process.env.BASE_URL || "http://localhost:5000"}/payment/${booking[0].booking.id}`,
       });
 
       res.json({ success, sent: success });
@@ -692,8 +707,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Test email endpoint (development only)
   app.post("/api/test-email", async (req, res) => {
-    if (process.env.NODE_ENV !== 'development') {
-      return res.status(403).json({ error: "Test endpoint only available in development" });
+    if (process.env.NODE_ENV !== "development") {
+      return res
+        .status(403)
+        .json({ error: "Test endpoint only available in development" });
     }
 
     try {
@@ -701,10 +718,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let success = false;
       switch (type) {
-        case 'welcome':
+        case "welcome":
           success = await emailService.sendWelcomeEmail(email, "Test User");
           break;
-        case 'booking':
+        case "booking":
           success = await emailService.sendBookingConfirmation(email, {
             customerName: "Test User",
             flightDetails: {
@@ -724,11 +741,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             bookingReference: "FP000001",
           });
           break;
-        case 'reminder':
+        case "reminder":
           success = await emailService.sendPaymentReminder(email, {
             customerName: "Test User",
             dueAmount: 100,
-            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split("T")[0],
             bookingReference: "FP000001",
             paymentUrl: "http://localhost:5000/payment/1",
           });
@@ -748,7 +767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/verify-user", async (req, res) => {
     try {
       const { email } = req.body;
-      
+
       if (!email) {
         return res.status(400).json({ error: "Email is required" });
       }
@@ -771,21 +790,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/user/currency", async (req, res) => {
     try {
       const { email } = req.query;
-      
+
       if (!email) {
         return res.status(400).json({ error: "Email is required" });
       }
-      
+
       const user = await db
         .select({ preferredCurrency: users.preferredCurrency })
         .from(users)
         .where(eq(users.email, email as string))
         .limit(1);
-        
+
       if (user.length === 0) {
         return res.status(404).json({ error: "User not found" });
       }
-      
+
       res.json({ preferredCurrency: user[0].preferredCurrency });
     } catch (error) {
       console.error("Error fetching user currency:", error);
@@ -797,7 +816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/bookings/user", async (req, res) => {
     try {
       const { email } = req.query;
-      
+
       if (!email) {
         return res.status(400).json({ error: "Email is required" });
       }
@@ -808,7 +827,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(users)
         .where(eq(users.email, email as string))
         .limit(1);
-        
+
       if (user.length === 0) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -827,11 +846,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .orderBy(desc(bookings.createdAt));
 
       // Format the response
-      const formattedBookings = userBookings.map(({ booking, flight, paymentPlan }) => ({
-        ...booking,
-        flight,
-        paymentPlan
-      }));
+      const formattedBookings = userBookings.map(
+        ({ booking, flight, paymentPlan }) => ({
+          ...booking,
+          flight,
+          paymentPlan,
+        }),
+      );
 
       res.json(formattedBookings);
     } catch (error) {
@@ -844,7 +865,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/billing/payment-plans", async (req, res) => {
     try {
       const { email } = req.query;
-      
+
       if (!email) {
         return res.status(400).json({ error: "Email is required" });
       }
@@ -855,7 +876,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(users)
         .where(eq(users.email, email as string))
         .limit(1);
-        
+
       if (user.length === 0) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -880,8 +901,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .where(eq(installments.paymentPlanId, paymentPlan.id))
             .orderBy(installments.dueDate);
 
-          const paidInstallments = planInstallments.filter(i => i.status === 'paid').length;
-          const hasOverdue = planInstallments.some(i => i.status === 'overdue');
+          const paidInstallments = planInstallments.filter(
+            (i) => i.status === "paid",
+          ).length;
+          const hasOverdue = planInstallments.some(
+            (i) => i.status === "overdue",
+          );
 
           return {
             ...paymentPlan,
@@ -891,9 +916,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             totalInstallments: planInstallments.length,
             hasOverdue,
             route: "SYD-LON", // TODO: Get actual route from flight data
-            isRoundTrip: true // TODO: Determine from flight data
+            isRoundTrip: true, // TODO: Determine from flight data
           };
-        })
+        }),
       );
 
       res.json(plansWithInstallments);
@@ -903,11 +928,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user details with email
+  app.get("/api/user/details", async (req, res) => {
+    try {
+      const { email } = req.query;
+
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      // Get user ID
+      const userDB = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email as string))
+        .limit(1);
+      
+      if (userDB.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json(userDB);
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      res.status(500).json({ error: "Failed to fetch user details" });
+    }
+  });
+
   // Get user payment methods (Stripe)
   app.get("/api/billing/payment-methods", async (req, res) => {
     try {
       const { email } = req.query;
-      
+
       if (!email) {
         return res.status(400).json({ error: "Email is required" });
       }
@@ -925,7 +977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/billing/payment-history", async (req, res) => {
     try {
       const { email } = req.query;
-      
+
       if (!email) {
         return res.status(400).json({ error: "Email is required" });
       }
