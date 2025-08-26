@@ -132,7 +132,7 @@ export default function SignIn() {
             
             <div className="flex items-center space-x-2 cursor-pointer" data-testid="navbar-logo">
               <div className="w-12 h-12 bg-splickets-primary rounded-lg flex items-center justify-center">
-                <TicketsPlane className="w-6 h-6 text-white" />
+                <TicketsPlane className="w-8 h-8 text-white" />
               </div>
             </div>
           </div>
@@ -163,11 +163,11 @@ export default function SignIn() {
             {/* Important Notice */}
 
             {isSignUp && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start space-x-2">
-                <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-amber-800">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center space-x-2">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                <div className="text-sm text-amber-800 items-center">
                   <p>
-                    Book a flight, then to create your account.
+                    Book a flight, then create your account.
                   </p>
                 </div>
               </div>

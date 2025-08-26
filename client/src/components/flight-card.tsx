@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield } from "lucide-react";
+import { Shield, AlertCircle } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { Carrier } from "@/components/carrier";
 import { formatTime, formatDuration, toTitleCase } from "@/utils/formatters";
 import { useCurrency } from "@/contexts/CurrencyContext";
-
 
 export function FlightCard({
   flight,
@@ -34,12 +33,13 @@ export function FlightCard({
             {/* Map over all itineraries */}
             {flight.itineraries.map((itinerary, index) => {
               const firstSegment = itinerary.segments[0];
-              const lastSegment = itinerary.segments[itinerary.segments.length - 1];
+              const lastSegment =
+                itinerary.segments[itinerary.segments.length - 1];
 
               return (
-                <div 
-                  key={index} 
-                  className={`flex items-center justify-center flex-grow ${index > 0 ? 'border-t pt-4' : ''}`}
+                <div
+                  key={index}
+                  className={`flex items-center justify-center flex-grow ${index > 0 ? "border-t pt-4" : ""}`}
                 >
                   <div className="text-left w-[100px] ">
                     <div
@@ -105,7 +105,7 @@ export function FlightCard({
                   className="text-2xl text-center font-bold text-splickets-slate-900  mb-1"
                   data-testid={`text-price-${flight.id}`}
                 >
-                  {currencySymbol} {pricePerTraveller.toFixed(0)}
+                  {currencySymbol}{pricePerTraveller.toFixed(0)}
                 </div>
                 <div className="text-sm text-center text-splickets-slate-500">
                   per person
@@ -117,7 +117,7 @@ export function FlightCard({
                     className="text-2xl text-center font-bold  text-splickets-slate-900  mb-1"
                     data-testid={`text-price-${flight.id}`}
                   >
-                    {currencySymbol} {parseFloat(flight.price.total).toFixed(0)}
+                    {currencySymbol}{parseFloat(flight.price.total).toFixed(0)}
                   </div>
                   <div className="text-sm text-splickets-slate-500">
                     in total
@@ -140,15 +140,20 @@ export function FlightCard({
                   </span>
                 </div>
                 <div className="text-sm text-splickets-slate-600">
-                  Pay {currencySymbol} {flight.paymentPlan.depositAmount.toFixed(0)} today, from
-                  {currencySymbol} {flight.paymentPlan.installmentAmount.toFixed(0)} per week
+                  Pay {currencySymbol}
+                  {flight.paymentPlan.depositAmount.toFixed(0)} today, from{" "}
+                  {currencySymbol}
+                  {flight.paymentPlan.installmentAmount.toFixed(0)} per week
                 </div>
               </div>
             ) : (
-              <div className="text-sm text-center text-splickets-slate-500">
-                No payment plans available <br />
-                (departure is within 14 days)
-              </div>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center space-x-2">
+        <div className="text-sm text-splickets-primary">
+          <p>
+            Payment plans are available for flights more than 3 weeks away.
+          </p>
+        </div>
+      </div>
             )}
           </div>
         </div>

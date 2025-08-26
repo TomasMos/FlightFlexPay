@@ -52,7 +52,7 @@ export function Navbar() {
           <Link href="/">
             <div className="flex items-center space-x-2 cursor-pointer" data-testid="navbar-logo">
               <div className="w-10 h-10 bg-splickets-primary rounded-lg flex items-center justify-center">
-                <TicketsPlane className="w-6 h-6 text-white" />
+                <TicketsPlane className="w-8 h-8 text-white stroke-2" />
               </div>
               <span className="text-xl font-bold text-gray-900">Splickets</span>
             </div>

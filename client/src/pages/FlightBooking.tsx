@@ -41,13 +41,11 @@ export default function FlightBooking() {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
-  
-
   // Load flight and passenger data from localStorage
   useEffect(() => {
     const flightData = localStorage.getItem("selectedFlight");
     const passengerInfo = localStorage.getItem("passengerData");
-    
+
     if (flightData) {
       setFlight(JSON.parse(flightData));
     }
@@ -72,6 +70,11 @@ export default function FlightBooking() {
     );
   }
 
+  const ppEligible = flight?.paymentPlanEligible;
+    if (!ppEligible && selectedDeposit < 100) {
+      setSelectedDeposit(100)
+    }
+
   // Payment calculations
   const flightTotal = parseFloat(flight.price.total);
   const depositAmount = (flightTotal * selectedDeposit) / 100;
@@ -82,7 +85,7 @@ export default function FlightBooking() {
     flight.itineraries[0].segments[0].departure.at,
   );
   const twoWeeksBeforeDeparture = new Date(departureDate);
-  twoWeeksBeforeDeparture.setDate(departureDate.getDate() - 14);
+  twoWeeksBeforeDeparture.setDate(departureDate.getDate() - 19);
 
   const today = new Date();
   const weeksUntilPayoff = Math.max(
@@ -169,11 +172,6 @@ export default function FlightBooking() {
     };
   };
 
-  const flightSummary = getFlightSummary();
-  const flightFare = parseFloat(flight.price.base);
-  const flightTaxes =
-    parseFloat(flight.price.total) - parseFloat(flight.price.base);
-
   const depositOptions = [
     { value: 20, label: "20%" },
     { value: 30, label: "30%" },
@@ -181,21 +179,18 @@ export default function FlightBooking() {
     { value: 50, label: "50%" },
   ];
 
-  const handleBooking = () => {
-    setShowPaymentForm(true);
-  };
-
   const handlePaymentSuccess = async (paymentResult: any) => {
     setPaymentCompleted(true);
 
     try {
       const leadId = localStorage.getItem("leadId");
       if (!leadId) {
-        throw new Error("Lead ID not found. Please go back and re-enter passenger details.");
+        throw new Error(
+          "Lead ID not found. Please go back and re-enter passenger details.",
+        );
       }
 
       const searchId = localStorage.getItem("searchId");
-      console.log(`searchId`,searchId)
 
       // Complete booking in database
       const response = await fetch("/api/bookings/complete", {
@@ -212,18 +207,20 @@ export default function FlightBooking() {
             installmentType: selectedInstallment,
             installmentCount,
             installmentAmount,
-            installmentDates: installmentDates.map((date) => date.toISOString()),
+            installmentDates: installmentDates.map((date) =>
+              date.toISOString(),
+            ),
             totalAmount: flightTotal,
             remainingAmount,
           },
           paymentIntentId: paymentResult.paymentIntentId,
           leadId: parseInt(leadId),
-          searchId: searchId
+          searchId: searchId,
         }),
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || "Failed to complete booking");
       }
@@ -253,7 +250,9 @@ export default function FlightBooking() {
       setBookingConfirmed(true);
     } catch (error) {
       console.error("Error completing booking:", error);
-      alert(`Failed to complete booking: ${error instanceof Error ? error.message : "Unknown error"}`);
+      alert(
+        `Failed to complete booking: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
       setPaymentCompleted(false);
     }
   };
@@ -299,219 +298,224 @@ export default function FlightBooking() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Section - Payment Plan Calculator */}
+
             <div className="lg:col-span-2 space-y-6">
-              {/* Deposit Amount Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle data-testid="title-deposit-amount">
-                    Deposit Amount
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-4 gap-3">
-                    {depositOptions.map((option) => (
-                      <Button
-                        key={option.value}
-                        variant={
-                          selectedDeposit === option.value
-                            ? "default"
-                            : "outline"
-                        }
-                        className={cn(
-                          "h-12 text-base font-semibold",
-                          selectedDeposit === option.value
-                            ? "bg-primary text-white "
-                            : "border-splickets-slate-300 text-splickets-slate-700 hover:bg-splickets-hover hover:text-splickets-slate-700",
-                        )}
-                        onClick={() => setSelectedDeposit(option.value)}
-                        data-testid={`button-deposit-${option.value}`}
+              {ppEligible ? (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle data-testid="title-deposit-amount">
+                        Payment Plan
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-6">
+                      <div>
+                        <h2 className="text-xl font-semibold text-splickets-slate-900 mb-4">
+                          Choose a Deposit Amount
+                        </h2>
+                        <div className="grid grid-cols-4 gap-3">
+                          {depositOptions.map((option) => (
+                            <Button
+                              key={option.value}
+                              variant={
+                                selectedDeposit === option.value
+                                  ? "default"
+                                  : "outline"
+                              }
+                              className={cn(
+                                "h-12 text-base font-semibold",
+                                selectedDeposit === option.value
+                                  ? "bg-primary text-white "
+                                  : "border-splickets-slate-300 text-splickets-slate-700 hover:bg-splickets-hover hover:text-splickets-slate-700",
+                              )}
+                              onClick={() => setSelectedDeposit(option.value)}
+                              data-testid={`button-deposit-${option.value}`}
+                            >
+                              {option.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-splickets-slate-900 mb-4">
+                          Choose an Installment Plan
+                        </h2>
+                        <div className="grid grid-cols-2 gap-4 ">
+                          <div
+                            className={cn(
+                              "relative border-2 rounded-lg p-4 cursor-pointer transition-colors",
+                              selectedInstallment === "weekly"
+                                ? "border-primary bg-blue-50"
+                                : "border-splickets-slate-200 hover:border-splickets-slate-300",
+                            )}
+                            onClick={() => setSelectedInstallment("weekly")}
+                            data-testid="button-weekly-installments"
+                          >
+                            {selectedInstallment === "weekly" && (
+                              <div className="absolute top-3 right-3">
+                                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                                  <Check className="w-3 h-3 text-white" />
+                                </div>
+                              </div>
+                            )}
+                            <div className="text-center">
+                              <div className="text-sm font-medium text-splickets-slate-600 mb-1">
+                                Weekly
+                              </div>
+                              <div
+                                className={cn(
+                                  "text-xl font-bold ",
+                                  selectedInstallment === "weekly"
+                                    ? "text-primary"
+                                    : "text-splickets-slate-700",
+                                )}
+                              >
+                                {formatCurrency(weeklyAmount)}
+                              </div>
+                              <div className="text-xs text-splickets-slate-500">
+                                x {weeklyInstallments}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div
+                            className={cn(
+                              "relative border-2 rounded-lg p-4 cursor-pointer transition-colors",
+                              selectedInstallment === "bi-weekly"
+                                ? "border-primary bg-blue-50"
+                                : "border-splickets-slate-200 hover:border-splickets-slate-300",
+                            )}
+                            onClick={() => setSelectedInstallment("bi-weekly")}
+                            data-testid="button-biweekly-installments"
+                          >
+                            {selectedInstallment === "bi-weekly" && (
+                              <div className="absolute top-3 right-3">
+                                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                                  <Check className="w-3 h-3 text-white" />
+                                </div>
+                              </div>
+                            )}
+                            <div className="text-center">
+                              <div className="text-sm font-medium text-splickets-slate-600 mb-1">
+                                Bi-weekly
+                              </div>
+                              <div
+                                className={cn(
+                                  "text-xl font-bold ",
+                                  selectedInstallment === "bi-weekly"
+                                    ? "text-primary"
+                                    : "text-splickets-slate-700",
+                                )}
+                              >
+                                {formatCurrency(biWeeklyAmount)}
+                              </div>
+                              <div className="text-xs text-splickets-slate-500">
+                                x {biWeeklyInstallments}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        className=" text-sm text-splickets-slate-600"
+                        data-testid="text-installment-schedule"
                       >
-                        {option.label}
-                      </Button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Installments Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle data-testid="title-installments">
-                    Installments
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4 ">
-                    <div
-                      className={cn(
-                        "relative border-2 rounded-lg p-4 cursor-pointer transition-colors",
-                        selectedInstallment === "weekly"
-                          ? "border-primary bg-blue-50"
-                          : "border-splickets-slate-200 hover:border-splickets-slate-300",
-                      )}
-                      onClick={() => setSelectedInstallment("weekly")}
-                      data-testid="button-weekly-installments"
-                    >
-                      {selectedInstallment === "weekly" && (
-                        <div className="absolute top-3 right-3">
-                          <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        </div>
-                      )}
-                      <div className="text-center">
-                        <div className="text-sm font-medium text-splickets-slate-600 mb-1">
-                          Weekly
-                        </div>
-                        <div
-                          className={cn(
-                            "text-xl font-bold ",
-                            selectedInstallment === "weekly"
-                              ? "text-primary"
-                              : "text-splickets-slate-700",
-                          )}
-                        >
-                          {formatCurrency(weeklyAmount)}
-                        </div>
-                        <div className="text-xs text-splickets-slate-500">
-                          x {weeklyInstallments}
-                        </div>
+                        {installmentCount} installments, starting{" "}
+                        {formatDate(String(firstInstallmentDate))} and ending{" "}
+                        {formatDate(String(lastInstallmentDate))}
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
 
-                    <div
-                      className={cn(
-                        "relative border-2 rounded-lg p-4 cursor-pointer transition-colors",
-                        selectedInstallment === "bi-weekly"
-                          ? "border-primary bg-blue-50"
-                          : "border-splickets-slate-200 hover:border-splickets-slate-300",
-                      )}
-                      onClick={() => setSelectedInstallment("bi-weekly")}
-                      data-testid="button-biweekly-installments"
-                    >
-                      {selectedInstallment === "bi-weekly" && (
-                        <div className="absolute top-3 right-3">
-                          <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        </div>
-                      )}
-                      <div className="text-center">
-                        <div className="text-sm font-medium text-splickets-slate-600 mb-1">
-                          Bi-weekly
-                        </div>
-                        <div
-                          className={cn(
-                            "text-xl font-bold ",
-                            selectedInstallment === "bi-weekly"
-                              ? "text-primary"
-                              : "text-splickets-slate-700",
-                          )}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle data-testid="title-billing-plan">
+                        Billing Plan
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between items-center ">
+                        <span
+                          className="font-medium text-splickets-slate-900"
+                          data-testid="text-total-due"
                         >
-                          {formatCurrency(biWeeklyAmount)}
-                        </div>
-                        <div className="text-xs text-splickets-slate-500">
-                          x {biWeeklyInstallments}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className=" text-sm text-splickets-slate-600"
-                    data-testid="text-installment-schedule"
-                  >
-                    {installmentCount} installments, starting{" "}
-                    {formatDate(String(firstInstallmentDate))} and ending{" "}
-                    {formatDate(String(lastInstallmentDate))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Billing Plan Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle data-testid="title-billing-plan">
-                    Billing Plan
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center ">
-                    <span
-                      className="font-medium text-splickets-slate-900"
-                      data-testid="text-total-due"
-                    >
-                      Total
-                    </span>
-                    <span
-                      className="font-semibold text-splickets-slate-900 mr-6 "
-                      data-testid="text-total-amount"
-                    >
-                      {formatCurrency(flightTotal)}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center ">
-                    <span
-                      className="text-splickets-slate-700"
-                      data-testid="text-deposit-due"
-                    >
-                      Deposit ({selectedDeposit}% - due today)
-                    </span>
-                    <span
-                      className="font-semibold text-splickets-slate-900  mr-6"
-                      data-testid="text-deposit-amount"
-                    >
-                      {formatCurrency(depositAmount)}
-                    </span>
-                  </div>
-
-                  <Collapsible
-                    open={installmentDetailsOpen}
-                    onOpenChange={setInstallmentDetailsOpen}
-                  >
-                    <CollapsibleTrigger
-                      className="flex justify-between items-center w-full hover:bg-splickets-slate-50 rounded "
-                      data-testid="button-toggle-installments"
-                    >
-                      <span className="text-splickets-slate-700">
-                        Installments ({installmentCount})
-                      </span>
-                      <div className="flex items-center gap-2 ">
-                        <span className="font-semibold text-splickets-slate-900">
-                          {formatCurrency(remainingAmount)}
+                          Total
                         </span>
-                        {installmentDetailsOpen ? (
-                          <ChevronUp className="h-4 w-4 text-splickets-slate-500" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-splickets-slate-500" />
-                        )}
-                      </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-2 pt-2">
-                      {installmentDates.map((date, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center py-1 text-sm border-l-2 border-splickets-slate-200 pl-4"
+                        <span
+                          className="font-semibold text-splickets-slate-900 mr-6 "
+                          data-testid="text-total-amount"
                         >
-                          <span
-                            className="text-splickets-slate-600"
-                            data-testid={`text-installment-date-${index + 1}`}
-                          >
-                            {formatDate(String(date))}
+                          {formatCurrency(flightTotal)}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center ">
+                        <span
+                          className="text-splickets-slate-700"
+                          data-testid="text-deposit-due"
+                        >
+                          Deposit ({selectedDeposit}% - due today)
+                        </span>
+                        <span
+                          className="font-semibold text-splickets-slate-900  mr-6"
+                          data-testid="text-deposit-amount"
+                        >
+                          {formatCurrency(depositAmount)}
+                        </span>
+                      </div>
+
+                      <Collapsible
+                        open={installmentDetailsOpen}
+                        onOpenChange={setInstallmentDetailsOpen}
+                      >
+                        <CollapsibleTrigger
+                          className="flex justify-between items-center w-full hover:bg-splickets-slate-50 rounded "
+                          data-testid="button-toggle-installments"
+                        >
+                          <span className="text-splickets-slate-700">
+                            Installments ({installmentCount})
                           </span>
-                          <span
-                            className="text-splickets-slate-900"
-                            data-testid={`text-installment-amount-${index + 1}`}
-                          >
-                            {formatCurrency(installmentAmount)}
-                          </span>
-                        </div>
-                      ))}
-                    </CollapsibleContent>
-                  </Collapsible>
-                </CardContent>
-              </Card>
+                          <div className="flex items-center gap-2 ">
+                            <span className="font-semibold text-splickets-slate-900">
+                              {formatCurrency(remainingAmount)}
+                            </span>
+                            {installmentDetailsOpen ? (
+                              <ChevronUp className="h-4 w-4 text-splickets-slate-500" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-splickets-slate-500" />
+                            )}
+                          </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2 pt-2">
+                          {installmentDates.map((date, index) => (
+                            <div
+                              key={index}
+                              className="flex justify-between items-center py-1 text-sm border-l-2 border-splickets-slate-200 pl-4"
+                            >
+                              <span
+                                className="text-splickets-slate-600"
+                                data-testid={`text-installment-date-${index + 1}`}
+                              >
+                                {formatDate(String(date))}
+                              </span>
+                              <span
+                                className="text-splickets-slate-900"
+                                data-testid={`text-installment-amount-${index + 1}`}
+                              >
+                                {formatCurrency(installmentAmount)}
+                              </span>
+                            </div>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+           <>
+           
+           </>
+              )}
 
               {/* StripePaymentForm */}
               <div className=" mx-auto">

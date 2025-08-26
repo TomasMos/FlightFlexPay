@@ -17,8 +17,6 @@ interface AmadeusToken {
   expires_at: number;
 }
 
-
-
 interface AmadeusFlightOffer {
   id: string;
   source: string;
@@ -187,7 +185,9 @@ export class AmadeusService {
     }
   }
 
-  async searchFlights(searchParams: FlightSearchRequest): Promise<EnhancedFlight[]> {
+  async searchFlights(
+    searchParams: FlightSearchRequest,
+  ): Promise<EnhancedFlight[]> {
     // If no API credentials, return empty array with informative error
     if (!this.config.clientId || !this.config.clientSecret) {
       throw new Error(
@@ -203,7 +203,7 @@ export class AmadeusService {
         destinationLocationCode: searchParams.destination,
         departureDate: searchParams.departureDate,
         adults: searchParams.passengers.toString(),
-        // max: "1", // Increased for better results
+        max: "25", // Increased for better results
         currencyCode: searchParams.currency || "USD",
       });
 
@@ -232,7 +232,6 @@ export class AmadeusService {
         searchParams,
       );
 
-      
       // // console.log(`Amadeus.ts - 236 - RAW:`, JSON.stringify(data, null, 2));
       // console.log(
       //   `Amadeus.ts - 238 - Transformed:`,
@@ -246,7 +245,9 @@ export class AmadeusService {
   }
 
   // Add this new method inside the AmadeusService class
-  private async fetchLocationsByCodes(iataCodes: Set<string>): Promise<Record<string, { airportName: string; cityName: string }>> {
+  private async fetchLocationsByCodes(
+    iataCodes: Set<string>,
+  ): Promise<Record<string, { airportName: string; cityName: string }>> {
     if (iataCodes.size === 0) {
       return {};
     }
@@ -261,11 +262,13 @@ export class AmadeusService {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (!response.ok) {
-          console.error(`Error fetching location for ${code}: ${response.statusText}`);
+          console.error(
+            `Error fetching location for ${code}: ${response.statusText}`,
+          );
           return null;
         }
 
@@ -276,7 +279,8 @@ export class AmadeusService {
           return {
             code,
             airportName: locationData.name || code,
-            cityName: locationData.address?.cityName || locationData.name || code,
+            cityName:
+              locationData.address?.cityName || locationData.name || code,
           };
         }
         return null;
@@ -287,7 +291,10 @@ export class AmadeusService {
     });
 
     const locationResults = await Promise.all(locationPromises);
-    const locationMap: Record<string, { airportName: string; cityName: string }> = {};
+    const locationMap: Record<
+      string,
+      { airportName: string; cityName: string }
+    > = {};
 
     locationResults.forEach((result) => {
       if (result) {
@@ -329,19 +336,23 @@ export class AmadeusService {
             // Use the locationMap to find the airport and city names
             const departureLocation = locationMap[segment.departure.iataCode];
             const arrivalLocation = locationMap[segment.arrival.iataCode];
-            const segmentFareDetails = offer.travelerPricings[0].fareDetailsBySegment.find(
-              fd => fd.segmentId === segment.id
-            );
+            const segmentFareDetails =
+              offer.travelerPricings[0].fareDetailsBySegment.find(
+                (fd) => fd.segmentId === segment.id,
+              );
 
             return {
               departure: {
                 ...segment.departure,
-                airportName: departureLocation?.airportName || segment.departure.iataCode,
-                cityName: departureLocation?.cityName || segment.departure.iataCode,
+                airportName:
+                  departureLocation?.airportName || segment.departure.iataCode,
+                cityName:
+                  departureLocation?.cityName || segment.departure.iataCode,
               },
               arrival: {
                 ...segment.arrival,
-                airportName: arrivalLocation?.airportName || segment.arrival.iataCode,
+                airportName:
+                  arrivalLocation?.airportName || segment.arrival.iataCode,
                 cityName: arrivalLocation?.cityName || segment.arrival.iataCode,
               },
               carrierCode: segment.carrierCode,
@@ -365,7 +376,8 @@ export class AmadeusService {
       // Calculate computed display fields as before
       const firstItinerary = itineraries[0];
       const firstSegment = firstItinerary?.segments[0];
-      const lastSegment = firstItinerary?.segments[firstItinerary.segments.length - 1];
+      const lastSegment =
+        firstItinerary?.segments[firstItinerary.segments.length - 1];
 
       const airlineSet = new Set<string>();
       itineraries.forEach((itinerary) => {
@@ -386,8 +398,10 @@ export class AmadeusService {
         itineraries,
         airlines: airlines,
         pricingOptions: {
-          includedCheckedBagsOnly: offer.pricingOptions?.includedCheckedBagsOnly || false,
-          refundableFare: (offer.pricingOptions as any)?.refundableFare || false,
+          includedCheckedBagsOnly:
+            offer.pricingOptions?.includedCheckedBagsOnly || false,
+          refundableFare:
+            (offer.pricingOptions as any)?.refundableFare || false,
           noPenaltyFare: (offer.pricingOptions as any)?.noPenaltyFare || false,
         },
         price: {
