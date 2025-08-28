@@ -147,49 +147,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // // Get booking details
-  // app.get("/api/bookings/:id", async (req, res) => {
-
-  //   console.log(`here`, req.body)
-  //   try {
-  //     const bookingId = parseInt(req.params.id);
-
-  //     const booking = await db
-  //       .select()
-  //       .from(bookings)
-  //       .where(eq(bookings.id, bookingId))
-  //       .limit(1);
-  //     if (!booking.length) {
-  //       return res.status(404).json({ message: "Booking not found" });
-  //     }
-
-  //     const flight = await db
-  //       .select()
-  //       .from(flights)
-  //       .where(eq(flights.id, booking[0].flightId))
-  //       .limit(1);
-  //     const paymentPlan = await db
-  //       .select()
-  //       .from(paymentPlans)
-  //       .where(eq(paymentPlans.id, booking[0].paymentPlanId))
-  //       .limit(1);
-  //     const installmentList = await db
-  //       .select()
-  //       .from(installments)
-  //       .where(eq(installments.paymentPlanId, booking[0].paymentPlanId));
-
-  //     res.json({
-  //       ...booking[0],
-  //       flight: flight[0] || null,
-  //       paymentPlan: paymentPlan[0] || null,
-  //       installments: installmentList,
-  //     });
-  //   } catch (error) {
-  //     console.error("Get booking error:", error);
-  //     res.status(500).json({ message: "Failed to get booking" });
-  //   }
-  // });
-
   // Save passenger details as leads
   app.post("/api/leads", async (req, res) => {
     try {
@@ -473,6 +430,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     currency: z.string().default("usd"),
     interval: z.enum(["week", "month"]),
     interval_count: z.number().min(1).max(12),
+    start_date: z.preprocess(
+      (val) => (typeof val === "string" || val instanceof Date ? new Date(val) : undefined),
+      z.date()
+    ),
+    installment_count: z.number(),
     payment_method_id: z.string().optional(), // Payment method from successful payment
     metadata: z.record(z.string()).optional(),
   });
@@ -514,14 +476,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionData.installment_amount, // amount in dollars
         subscriptionData.currency,
         subscriptionData.interval,
+        subscriptionData.interval_count
       );
 
       // 3. Create subscription schedule starting in 1 week
       const schedule = await StripeService.createInstallmentSchedule(
         customer.id,
         price.id,
-        subscriptionData.interval,
-        subscriptionData.interval_count,
+        subscriptionData.installment_count,
+        subscriptionData.start_date,
         subscriptionData.payment_method_id, // This is the key addition!
         {
           ...subscriptionData.metadata,

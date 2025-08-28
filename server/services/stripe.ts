@@ -39,6 +39,7 @@ export interface SubscriptionData {
 }
 
 export class StripeService {
+  
   // Create payment intent for one-time payments (deposits or full payments)
   static async createPaymentIntent(
     data: PaymentIntentData,
@@ -183,21 +184,31 @@ export class StripeService {
     return await stripe.subscriptions.retrieve(subscriptionId);
   }
 
+
+  // ACTUAL REQUEST
   static async createInstallmentPrice(
     amount: number, // amount in dollars (not cents)
     currency: string,
     interval: 'week' | 'month',
+    interval_count: number,
     productId?: string
   ) {
     const product = productId
       ? { product: productId }
       : { product_data: { name: "Flight Installment" } };
 
+    console.log(`product`, product)
+    console.log(`amount`, amount)
+    console.log(`currency`, currency)
+    console.log(`interval`, interval)
+    console.log(`interval_count`, interval_count)
     try {
       const price = await stripe.prices.create({
         unit_amount: Math.round(amount * 100), // Convert dollars to cents
         currency,
-        recurring: { interval },
+        recurring: { 
+          interval, 
+        interval_count},
         ...product,
       });
 
@@ -211,12 +222,11 @@ export class StripeService {
   static async createInstallmentSchedule(
     customerId: string,
     priceId: string,
-    interval: 'week' | 'month',
     iterations: number,
+    startDate: Date,
     paymentMethodId?: string, // Payment method to use for the schedule
     metadata?: Record<string, string>
   ) {
-    const startDate = Math.floor(Date.now() / 1000) + 7 * 24 * 3600; // 1 week later
 
     try {
       // If payment method is provided, attach it to the customer and set as default
@@ -227,7 +237,7 @@ export class StripeService {
 
       const schedule = await stripe.subscriptionSchedules.create({
         customer: customerId,
-        start_date: startDate,
+        start_date: Math.floor(startDate.getTime() / 1000),
         end_behavior: 'cancel',
         phases: [
           {

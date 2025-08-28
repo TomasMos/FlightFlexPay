@@ -137,6 +137,8 @@ interface StripePaymentFormProps {
     amount: number;
     interval: 'week' | 'month';
     interval_count: number;
+    start_date: Date;
+    installment_count: number;
     bookingId?: string;
   };
 }
@@ -201,6 +203,7 @@ export default function StripePaymentForm({
     createPaymentIntent();
   }, [amount, currency, customerEmail, customerName, paymentType, metadata, hasInstallments]);
 
+        
   const handlePaymentSuccess = async (paymentIntent: any) => {
     setPaymentCompleted(true);
 
@@ -208,6 +211,7 @@ export default function StripePaymentForm({
     if (hasInstallments && installmentData) {
       try {
         setIsSettingUpInstallments(true);
+
 
         const response = await fetch("/api/payments/create-subscription", {
           method: "POST",
@@ -221,6 +225,8 @@ export default function StripePaymentForm({
             currency,
             interval: installmentData.interval,
             interval_count: installmentData.interval_count,
+            start_date: installmentData.start_date,
+            installment_count: installmentData.installment_count,
             payment_method_id: paymentIntent.payment_method, // Pass the payment method from the successful payment
             metadata: {
               ...metadata,
