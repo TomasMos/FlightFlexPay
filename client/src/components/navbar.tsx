@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [, setLocation] = useLocation();
+  const [Location, setLocation] = useLocation();
   const { currentUser, logout } = useAuth();
   const { toast } = useToast();
 
@@ -32,6 +32,14 @@ export function Navbar() {
     }
   };
 
+  const navLinks = [
+    { href: "/", label: "Search", testId: "nav-link-home" },
+    { href: "/about", label: "About", testId: "nav-link-about" },
+    { href: "/how-it-works", label: "How it Works", testId: "nav-link-how-it-works" },
+    { href: "/referral-program", label: "Referrals", testId: "nav-link-referral" },
+    { href: "/testimonials", label: "Testimonials", testId: "nav-link-testimonials" },
+  ];
+
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.classList.add("overflow-hidden");
@@ -46,6 +54,7 @@ export function Navbar() {
 
   return (
       <nav className="bg-white shadow-sm border-b border-gray-200 md:sticky md:top-0 z-40">
+        
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -59,32 +68,18 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link href="/">
-              <Button variant="ghost" data-testid="nav-link-home">
-                Search
-              </Button>
-            </Link>
-            <Link href="/about">
-              <Button variant="ghost" data-testid="nav-link-about">
-                About
-              </Button>
-            </Link>
-            <Link href="/how-it-works">
-              <Button variant="ghost" data-testid="nav-link-how-it-works">
-                How it Works
-              </Button>
-            </Link>
-            <Link href="/referral-program">
-              <Button variant="ghost" data-testid="nav-link-referral">
-                Referrals
-              </Button>
-            </Link>
-            <Link href="/testimonials">
-              <Button variant="ghost" data-testid="nav-link-testimonials">
-                Testimonials
-              </Button>
-            </Link>
+            <div className="hidden md:flex items-center space-x-6">
+              {navLinks.map(link => (
+                <Link href={link.href} key={link.href}>
+                  <Button
+                    variant="ghost"
+                    data-testid={link.testId}
+                    className={Location === link.href ? "text-splickets-accent" : ""}
+                  >
+                    {link.label}
+                  </Button>
+                </Link>
+              ))}
             
             
     
@@ -189,7 +184,7 @@ export function Navbar() {
                   </div>
                 ) : (
                   <Link href="/signin">
-                    <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-signin">
+                    <Button onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-signin">
                       Sign In
                     </Button>
                   </Link>

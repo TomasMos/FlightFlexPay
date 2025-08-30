@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { SUPPORTED_CURRENCIES, determineUserCurrency, saveCurrencyToStorage, type CurrencyCode } from "@/utils/currency";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import plane from '../assets/plane.jpg'
 
 interface FlightSearchFormProps {
   onSearch: (searchParams: FlightSearchRequest & { currency: CurrencyCode }) => void;
@@ -102,25 +103,30 @@ export function FlightSearchForm({
   const today = new Date().toISOString().split("T")[0];
 
   return (
-    <section className="bg-white border-b border-splickets-slate-200">
-      <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 ">
-        <div className="text-center mb-8">
-          <h1
-            className="text-5xl md:text-6xl font-bold text-splickets-slate-900 mb-8"
-            data-testid="title-main"
+    <section className="bg-cover bg-no-repeat bg-center border-b border-splickets-slate-200 min-h-dvh flex flex-col gap-20 py-20 lg:py-0"
+      style={{ backgroundImage: `url(${plane})` }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow flex flex-col justify-center gap-20">
+          <div
+            className="rounded-2xl backdrop-blur-md bg-white/30 p-8 shadow-lg"
+            data-testid="glass-container"
           >
-            Book Your Flight, Pay Over Time
-          </h1>
-          <p
-            className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed"
-            data-testid="text-subtitle"
-          >
-            Search and book flights with flexible payment plans. Pay just 20%
-            upfront and spread the rest over easy installments.
-          </p>
-        </div>
-
-        <div className="bg-splickets-slate-50 rounded-2xl p-6 shadow-sm border border-splickets-slate-200">
+            <div className="text-center mb-8">
+              <h1
+                className="text-5xl md:text-6xl font-bold text-splickets-slate-900 mb-8"
+                data-testid="title-main"
+              >
+                Book Now, Pay Later
+              </h1>
+              <p
+                className="text-xl md:text-2xl text-gray-900 mb-8 leading-relaxed"
+                data-testid="text-subtitle"
+              >
+                Lock in early prices with a 20% deposit and spread the rest over flexible installments
+              </p>
+            </div>
+          </div>
+  
+          <div className=" bg-splickets-slate-50 rounded-2xl p-10 shadow-sm border border-splickets-slate-200 ">
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4"

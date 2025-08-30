@@ -19,11 +19,11 @@ export function FlightCard({
 
   return (
     <div
-      className="bg-white rounded-xl shadow-md border border-splickets-slate-200 hover:shadow-md transition-shadow p-6 cursor-pointer"
+      className="bg-white rounded-xl hover:shadow-xl transition-all duration-300 shadow-md border border-splickets-slate-200 hover:shadow-md transition-shadow p-6 cursor-pointer hover:scale-[1.01]"
       data-testid={`card-flight-${flight.id}`}
       onClick={() => onSelect(flight)}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch  ">
         {/* Flight Details */}
         <div className="lg:col-span-2  h-full flex flex-col">
           {/*Airline & Flight Information  */}

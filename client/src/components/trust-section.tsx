@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useSwipeable } from "react-swipeable";
 import { 
   Shield, 
   Calendar, 
@@ -16,6 +16,44 @@ import {
   Headphones,
   ArrowRight
 } from "lucide-react";
+import TestimonialCarousel from '@/components/testimonials-carousal';
+
+import paris from '../assets/paris.avif'
+import tokyo from '../assets/tokyo.avif'
+import london from '../assets/london.avif'
+import capeTown from '../assets/capeTown.avif'
+import sydney from '../assets/sydney.avif'
+import newYork from '../assets/newYork.avif'
+
+const testimonials = [
+  {
+    id: 1,
+    name: "Marzanne Dijkstra",
+    location: "London, England",
+    route: "LHR → CPT",
+    savings: "£320",
+    rating: 5,
+    quote: "Splickets is easy, reliable, and saves money - it's a no brainer!",
+  },
+  {
+    id: 2,
+    name: "Alex des Tombe",
+    location: "Durban, South Africa",
+    route: "DBN → CPT",
+    savings: "R875",
+    rating: 5,
+    quote: "I didn’t think installment payments for flights were possible. Huge help!",
+  },
+  {
+    id: 3,
+    name: "Sarah Williams",
+    location: "New York, USA",
+    route: "NYC → BJS",
+    savings: "$560",
+    rating: 5,
+    quote: "Super smooth process. I’ll be using this again for my next holiday.",
+  },
+];
 
 const whyChooseReasons = [
   {
@@ -48,88 +86,59 @@ const whyChooseReasons = [
   }
 ];
 
-const testimonials = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    location: "London, UK",
-    route: "London → Sydney",
-    quote: "Splickets made my dream trip to Australia possible! The flexible payment plan meant I could book early and secure great prices.",
-    savings: "£450",
-    rating: 5
-  },
-  {
-    id: 2,
-    name: "Michael Chen",
-    location: "Toronto, Canada",
-    route: "Toronto → Tokyo",
-    quote: "I was amazed by how simple the booking process was. Paying 30% upfront and spreading the rest over 3 months made it so manageable.",
-    savings: "£280",
-    rating: 5
-  },
-  {
-    id: 3,
-    name: "Emma Rodriguez",
-    location: "Madrid, Spain",
-    route: "Madrid → New York",
-    quote: "The customer service was exceptional. When my travel dates changed, they helped me adjust my payment plan without any hassle.",
-    savings: "€320",
-    rating: 5
-  }
-];
-
 const destinations = [
   {
     name: "Paris, France",
-    image: "🗼",
+    image: paris,
     description: "City of Love and Lights"
   },
   {
     name: "Tokyo, Japan",
-    image: "🏯", 
+    image: tokyo, 
     description: "Modern meets Traditional"
   },
   {
     name: "New York, USA",
-    image: "🗽",
+    image: newYork,
     description: "The City That Never Sleeps"
   },
   {
     name: "Sydney, Australia", 
-    image: "🏙️",
+    image: sydney,
     description: "Harbor City Beauty"
   },
   {
     name: "London, England",
-    image: "🏰",
+    image: london,
     description: "Royal History and Culture"
   },
   {
-    name: "Dubai, UAE",
-    image: "🏜️",
-    description: "Luxury in the Desert"
+    name: "Cape Town, South Africa",
+    image: capeTown,
+    description: "Timeout's 2025 Best City"
   }
 ];
 
 export function TrustSection() {
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [currentDestination, setCurrentDestination] = useState(0);
+  const [current, setCurrent] = useState(0);
 
-  const nextTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-  };
+  const prev = () =>
+    setCurrent((current - 1 + destinations.length) % destinations.length);
+  const next = () => setCurrent((current + 1) % destinations.length);
 
-  const prevTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
+  useEffect(() => {
+    destinations.forEach(dest => {
+      const img = new Image();
+      img.src = dest.image; // preload each background image
+    });
+  }, []);
 
-  const nextDestination = () => {
-    setCurrentDestination((prev) => (prev + 1) % destinations.length);
-  };
-
-  const prevDestination = () => {
-    setCurrentDestination((prev) => (prev - 1 + destinations.length) % destinations.length);
-  };
+  const handlers = useSwipeable({
+    onSwipedLeft: next,
+    onSwipedRight: prev,
+    preventScrollOnSwipe: true,
+    trackMouse: true, // allows drag with mouse too
+  });
 
   return (
     <>
@@ -182,12 +191,12 @@ export function TrustSection() {
               </div>
               <span className="font-medium">PCI Compliant</span>
             </div>
-            <div className="flex items-center gap-3 text-gray-600" data-testid="badge-iata">
+            {/* <div className="flex items-center gap-3 text-gray-600" data-testid="badge-iata">
               <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center">
                 <Building className="h-5 w-5 text-purple-600" />
               </div>
               <span className="font-medium">IATA Certified</span>
-            </div>
+            </div> */}
             <div className="flex items-center gap-3 text-gray-600" data-testid="badge-support">
               <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center">
                 <Headphones className="h-5 w-5 text-orange-600" />
@@ -198,94 +207,13 @@ export function TrustSection() {
         </div>
       </section>
 
-      {/* Customer Testimonials */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              What Our Customers Say
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Real feedback from travelers who've used Splickets to make their dream trips possible
-            </p>
-          </div>
+      <TestimonialCarousel testimonials={testimonials} />
 
-          {/* Testimonial Carousel */}
-          <div className="relative max-w-4xl mx-auto">
-            <Card className="bg-white shadow-2xl border-0" data-testid={`testimonial-card-${testimonials[currentTestimonial].id}`}>
-              <CardContent className="p-12">
-                <div className="text-center">
-                  <div className="flex justify-center items-center mb-6">
-                    {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
-                      <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  
-                  <blockquote className="text-xl text-gray-700 mb-8 italic leading-relaxed">
-                    "{testimonials[currentTestimonial].quote}"
-                  </blockquote>
-                  
-                  <div className="space-y-3">
-                    <div className="font-bold text-xl text-gray-900">
-                      {testimonials[currentTestimonial].name}
-                    </div>
-                    <div className="text-gray-600 text-lg">
-                      {testimonials[currentTestimonial].location}
-                    </div>
-                    <div className="flex justify-center items-center gap-4">
-                      <Badge variant="outline" className="text-blue-600 border-blue-600 px-4 py-2">
-                        {testimonials[currentTestimonial].route}
-                      </Badge>
-                      <Badge variant="outline" className="text-green-600 border-green-600 px-4 py-2">
-                        Saved {testimonials[currentTestimonial].savings}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Carousel Navigation */}
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white shadow-xl border-2 w-12 h-12"
-              onClick={prevTestimonial}
-              data-testid="button-prev-testimonial"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white shadow-xl border-2 w-12 h-12"
-              onClick={nextTestimonial}
-              data-testid="button-next-testimonial"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </Button>
-
-            {/* Carousel Indicators */}
-            <div className="flex justify-center mt-8 space-x-3">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-4 h-4 rounded-full transition-all duration-300 ${
-                    index === currentTestimonial ? 'bg-blue-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                  onClick={() => setCurrentTestimonial(index)}
-                  data-testid={`button-testimonial-indicator-${index}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Dream Destinations Carousel */}
       <section className="py-20 bg-gradient-to-br from-purple-50 to-pink-50">
         <div className="container mx-auto px-4">
+          {/* Heading */}
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Dream Destinations Await
@@ -296,76 +224,72 @@ export function TrustSection() {
           </div>
 
           {/* Destination Carousel */}
-          <div className="relative max-w-4xl mx-auto">
+          <div
+            {...handlers} // 👈 swipe handlers applied here
+            className="relative max-w-5xl  mx-auto touch-pan-y"
+          >
             <Card className="bg-white shadow-2xl border-0 overflow-hidden">
               <CardContent className="p-0">
-                <div className="relative h-80 bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <div className="text-8xl mb-4">
-                      {destinations[currentDestination].image}
-                    </div>
-                    <h3 className="text-3xl font-bold mb-2">
-                      {destinations[currentDestination].name}
+                {/* Top section with background image */}
+                <div
+                  className="relative h-[700px] flex items-center justify-center bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${destinations[current].image})`,
+                  }}
+                >
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-black/20" />
+
+                  {/* Text content */}
+                  <div className="relative text-center text-white px-6">
+                    <h3 className="text-3xl font-bold mb-2 drop-shadow-md">
+                      {destinations[current].name}
                     </h3>
-                    <p className="text-xl text-blue-100">
-                      {destinations[currentDestination].description}
+                    <p className="text-xl text-blue-100 drop-shadow-md">
+                      {destinations[current].description}
                     </p>
                   </div>
                 </div>
+
+                {/* Bottom section */}
                 <div className="p-8 text-center">
                   <p className="text-gray-600 mb-6">
-                    Book your flight to {destinations[currentDestination].name} today and pay over time
+                    Book your flight to {destinations[current].name} today and pay over time
                   </p>
-                  <Button size="lg" data-testid="button-book-destination">
-                    Book Flight to {destinations[currentDestination].name.split(',')[0]}
+                  <Button   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+ size="lg" data-testid="button-book-destination"   className="w-72 justify-between">
+                    Book Flight to {destinations[current].name.split(",")[0]}
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Destination Navigation */}
+
+            {/* Navigation Buttons */}
             <Button
               variant="outline"
               size="icon"
               className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white shadow-xl border-2 w-12 h-12"
-              onClick={prevDestination}
+              onClick={prev}
               data-testid="button-prev-destination"
             >
               <ChevronLeft className="w-6 h-6" />
             </Button>
-            
+
             <Button
               variant="outline"
               size="icon"
               className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white shadow-xl border-2 w-12 h-12"
-              onClick={nextDestination}
+              onClick={next}
               data-testid="button-next-destination"
             >
               <ChevronRight className="w-6 h-6" />
             </Button>
           </div>
-
-          {/* Destination Grid */}
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-12 max-w-4xl mx-auto">
-            {destinations.map((dest, index) => (
-              <button
-                key={index}
-                className={`p-4 rounded-lg text-center transition-all duration-300 ${
-                  index === currentDestination 
-                    ? 'bg-white shadow-lg scale-105 border-2 border-blue-600' 
-                    : 'bg-white/70 hover:bg-white hover:shadow-md'
-                }`}
-                onClick={() => setCurrentDestination(index)}
-                data-testid={`destination-${index}`}
-              >
-                <div className="text-2xl mb-1">{dest.image}</div>
-                <div className="text-xs font-medium text-gray-700">{dest.name.split(',')[0]}</div>
-              </button>
-            ))}
-          </div>
         </div>
       </section>
+
     </>
   );
 }
