@@ -70,6 +70,11 @@ export function Navbar() {
                 Testimonials
               </Button>
             </Link>
+            <Link href="/about">
+              <Button variant="ghost" data-testid="nav-link-about">
+                About
+              </Button>
+            </Link>
     
 
             {/* Auth section */}
@@ -169,6 +174,16 @@ export function Navbar() {
                     data-testid="mobile-nav-testimonials"
                   >
                     Testimonials
+                  </Button>
+                </Link>
+                <Link href="/about">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    data-testid="mobile-nav-about"
+                  >
+                    About
                   </Button>
                 </Link>
 

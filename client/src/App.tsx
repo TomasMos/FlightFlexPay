@@ -12,6 +12,7 @@ import EmailTestPage from "@/pages/EmailTest";
 import SignIn from "@/pages/SignIn";
 import Profile from "@/pages/Profile";
 import Testimonials from "@/pages/Testimonials";
+import About from "@/pages/About";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/signin" component={SignIn}/>
       <Route path="/profile" component={Profile}/>
       <Route path="/testimonials" component={Testimonials}/>
+      <Route path="/about" component={About}/>
       <Route path="/email-test" component={EmailTestPage}/>
       <Route component={NotFound} />
     </Switch>
