@@ -232,7 +232,7 @@ export class AmadeusService {
         searchParams,
       );
 
-      // // console.log(`Amadeus.ts - 236 - RAW:`, JSON.stringify(data, null, 2));
+      // console.log(`Amadeus.ts - 236 - RAW:`, JSON.stringify(data, null, 2));
       // console.log(
       //   `Amadeus.ts - 238 - Transformed:`,
       //   JSON.stringify(transformedData, null, 2),
@@ -388,6 +388,52 @@ export class AmadeusService {
 
       const airlines = Array.from(airlineSet);
 
+      const iataZA = [
+        "BFN", // Bloemfontein – Bram Fischer International
+        "CPT", // Cape Town International
+        "DUR", // Durban – King Shaka International
+        "ELS", // East London Airport
+        "GRJ", // George Airport
+        "HDS", // Hoedspruit Airport
+        "JNB", // Johannesburg – O. R. Tambo International
+        "HLA", // Lanseria International (Johannesburg/Pretoria area)
+        "KIM", // Kimberley Airport
+        "MQP", // Nelspruit – Kruger Mpumalanga International
+        "PLZ", // Gqeberha (Port Elizabeth) – Chief Dawid Stuurman International
+        "PTG", // Polokwane International
+        "RCB", // Richards Bay Airport
+        "UTN", // Upington Airport
+        "MBD", // Mafikeng – Mmabatho International
+        "SZK", // Skukuza Airport
+        "LAY", // Ladysmith Airport
+        "MGH", // Margate Airport
+        "FCB", // Ficksburg Airport
+        "GIY", // Giyani Airport
+        "HLW", // Hluhluwe Airport
+        "KOF", // Komatipoort Airport
+        "LCD", // Louis Trichardt Airport
+        "LLE", // Malelane Airport
+        "MEZ", // Musina Airport
+        "NCS", // Newcastle Airport
+        "LPZ", // Phalaborwa Airport
+        "PBZ", // Plettenberg Bay Airport
+        "PZB", // Pietermaritzburg Airport
+        "UTT", // Mthatha Airport
+        "ZAA", // Timbavati Private Nature Reserve Airport
+      ];
+
+      let priceBase = Number(offer.price.base);
+      let priceTotal = Number(offer.price.total);
+
+      if (
+        iataZA.includes(firstSegment?.departure.iataCode ?? "") &&
+        iataZA.includes(lastSegment?.arrival.iataCode ?? "")
+      ) {
+        // Domestic ZA flight → apply discount
+        priceBase *= 0.6;
+        priceTotal *= 0.6;
+      }
+
       return {
         id: offer.id,
         origin: firstSegment?.departure.cityName || searchParams.origin,
@@ -406,8 +452,8 @@ export class AmadeusService {
         },
         price: {
           currency: offer.price.currency,
-          total: offer.price.total,
-          base: offer.price.base,
+          total: priceTotal.toFixed(2),
+          base: priceBase.toFixed(2),
         },
       };
     });

@@ -108,6 +108,8 @@ export const parseDurationToMinutes = (duration: string): number => {
 
 export const formattedPrice = (amount: number): string => {
   return amount.toLocaleString('en-US', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})};
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+};

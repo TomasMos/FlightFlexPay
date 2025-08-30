@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, AlertCircle } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { Carrier } from "@/components/carrier";
-import { formatTime, formatDuration, toTitleCase } from "@/utils/formatters";
+import { formatTime, formatDuration, formattedPrice } from "@/utils/formatters";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
 export function FlightCard({
@@ -105,7 +105,7 @@ export function FlightCard({
                   className="text-2xl text-center font-bold text-splickets-slate-900  mb-1"
                   data-testid={`text-price-${flight.id}`}
                 >
-                  {currencySymbol}{pricePerTraveller.toFixed(0)}
+                  {currencySymbol}{formattedPrice(Number(pricePerTraveller))}
                 </div>
                 <div className="text-sm text-center text-splickets-slate-500">
                   per person
@@ -117,7 +117,7 @@ export function FlightCard({
                     className="text-2xl text-center font-bold  text-splickets-slate-900  mb-1"
                     data-testid={`text-price-${flight.id}`}
                   >
-                    {currencySymbol}{parseFloat(flight.price.total).toFixed(0)}
+                    {currencySymbol}{formattedPrice(Number(flight.price.total))}
                   </div>
                   <div className="text-sm text-splickets-slate-500">
                     in total
