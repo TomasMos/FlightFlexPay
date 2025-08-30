@@ -40,24 +40,16 @@ export function Footer() {
             <h4 className="font-bold mb-4 text-lg">Company</h4>
             <ul className="space-y-3 text-sm text-orange-100">
               <li>
-                <Link href="/about">
-                  <a className="hover:text-white transition-colors" data-testid="link-about">About Us</a>
-                </Link>
+                <Link href="/about" className="hover:text-white transition-colors" data-testid="link-about">About Us</Link>
               </li>
               <li>
-                <Link href="/how-it-works">
-                  <a className="hover:text-white transition-colors" data-testid="link-how-works">How It Works</a>
-                </Link>
+                <Link href="/how-it-works" className="hover:text-white transition-colors" data-testid="link-how-works">How It Works</Link>
               </li>
               <li>
-                <Link href="/testimonials">
-                  <a className="hover:text-white transition-colors" data-testid="link-testimonials">Testimonials</a>
-                </Link>
+                <Link href="/testimonials" className="hover:text-white transition-colors" data-testid="link-testimonials">Testimonials</Link>
               </li>
               <li>
-                <Link href="/referral-program">
-                  <a className="hover:text-white transition-colors" data-testid="link-referrals">Referral Program</a>
-                </Link>
+                <Link href="/referral-program" className="hover:text-white transition-colors" data-testid="link-referrals">Referral Program</Link>
               </li>
             </ul>
           </div>
@@ -67,24 +59,16 @@ export function Footer() {
             <h4 className="font-bold mb-4 text-lg">Support</h4>
             <ul className="space-y-3 text-sm text-orange-100">
               <li>
-                <Link href="/contact">
-                  <a className="hover:text-white transition-colors" data-testid="link-contact">Contact Us</a>
-                </Link>
+                <Link href="/contact" className="hover:text-white transition-colors" data-testid="link-contact">Contact Us</Link>
               </li>
               <li>
-                <Link href="/how-it-works">
-                  <a className="hover:text-white transition-colors" data-testid="link-help">Help Center</a>
-                </Link>
+                <Link href="/how-it-works" className="hover:text-white transition-colors" data-testid="link-help">Help Center</Link>
               </li>
               <li>
-                <Link href="/how-it-works">
-                  <a className="hover:text-white transition-colors" data-testid="link-payment-plans">Payment Plans</a>
-                </Link>
+                <Link href="/how-it-works" className="hover:text-white transition-colors" data-testid="link-payment-plans">Payment Plans</Link>
               </li>
               <li>
-                <Link href="/profile">
-                  <a className="hover:text-white transition-colors" data-testid="link-my-bookings">My Bookings</a>
-                </Link>
+                <Link href="/profile" className="hover:text-white transition-colors" data-testid="link-my-bookings">My Bookings</Link>
               </li>
             </ul>
           </div>
