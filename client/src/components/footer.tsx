@@ -1,67 +1,125 @@
-import { Plane } from "lucide-react";
+import { Plane, TicketsPlane } from "lucide-react";
 import { SiX, SiFacebook, SiInstagram } from "react-icons/si";
+import { Link } from "wouter";
 
 export function Footer() {
   return (
-    <footer className="bg-splickets-slate-900 text-white" data-testid="footer">
+    <footer className="bg-gradient-to-br from-orange-500 to-orange-600 text-white" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div data-testid="footer-brand">
-            <div className="flex items-center space-x-2 mb-4">
-              <Plane className="text-splickets-secondary text-xl h-5 w-5" />
-              <span className="font-bold text-lg">Splickets</span>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+          {/* Brand Section */}
+          <div className="md:col-span-2" data-testid="footer-brand">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                <TicketsPlane className="text-orange-500 h-8 w-8 stroke-2" />
+              </div>
+              <div>
+                <span className="font-bold text-2xl">Splickets</span>
+                <p className="text-orange-100 text-sm">Fly now, pay later</p>
+              </div>
             </div>
-            <p className="text-slate-300 text-sm mb-4">
-              Making travel accessible with flexible payment plans. Book now, pay later.
+            <p className="text-orange-100 text-sm mb-6 leading-relaxed">
+              Making travel accessible with flexible payment plans. Lock in today's prices, 
+              pay over time with no credit checks or hidden fees.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-slate-400 hover:text-white" data-testid="link-twitter">
-                <SiX className="h-5 w-5" />
+              <a href="#" className="text-orange-200 hover:text-white transition-colors" data-testid="link-twitter">
+                <SiX className="h-6 w-6" />
               </a>
-              <a href="#" className="text-slate-400 hover:text-white" data-testid="link-facebook">
-                <SiFacebook className="h-5 w-5" />
+              <a href="#" className="text-orange-200 hover:text-white transition-colors" data-testid="link-facebook">
+                <SiFacebook className="h-6 w-6" />
               </a>
-              <a href="#" className="text-slate-400 hover:text-white" data-testid="link-instagram">
-                <SiInstagram className="h-5 w-5" />
+              <a href="#" className="text-orange-200 hover:text-white transition-colors" data-testid="link-instagram">
+                <SiInstagram className="h-6 w-6" />
               </a>
             </div>
           </div>
 
+          {/* Company Links */}
           <div data-testid="footer-company">
-            <h4 className="font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm text-slate-300">
-              <li><a href="#" className="hover:text-white" data-testid="link-about">About Us</a></li>
-              <li><a href="#" className="hover:text-white" data-testid="link-how-works">How It Works</a></li>
-              <li><a href="#" className="hover:text-white" data-testid="link-careers">Careers</a></li>
-              <li><a href="#" className="hover:text-white" data-testid="link-press">Press</a></li>
+            <h4 className="font-bold mb-4 text-lg">Company</h4>
+            <ul className="space-y-3 text-sm text-orange-100">
+              <li>
+                <Link href="/about">
+                  <a className="hover:text-white transition-colors" data-testid="link-about">About Us</a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/how-it-works">
+                  <a className="hover:text-white transition-colors" data-testid="link-how-works">How It Works</a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/testimonials">
+                  <a className="hover:text-white transition-colors" data-testid="link-testimonials">Testimonials</a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/referral-program">
+                  <a className="hover:text-white transition-colors" data-testid="link-referrals">Referral Program</a>
+                </Link>
+              </li>
             </ul>
           </div>
 
+          {/* Support Links */}
           <div data-testid="footer-support">
-            <h4 className="font-semibold mb-4">Support</h4>
-            <ul className="space-y-2 text-sm text-slate-300">
-              <li><a href="#" className="hover:text-white" data-testid="link-help">Help Center</a></li>
-              <li><a href="#" className="hover:text-white" data-testid="link-contact">Contact Us</a></li>
-              <li><a href="#" className="hover:text-white" data-testid="link-payment-plans">Payment Plans</a></li>
-              <li><a href="#" className="hover:text-white" data-testid="link-booking-help">Booking Help</a></li>
+            <h4 className="font-bold mb-4 text-lg">Support</h4>
+            <ul className="space-y-3 text-sm text-orange-100">
+              <li>
+                <Link href="/contact">
+                  <a className="hover:text-white transition-colors" data-testid="link-contact">Contact Us</a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/how-it-works">
+                  <a className="hover:text-white transition-colors" data-testid="link-help">Help Center</a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/how-it-works">
+                  <a className="hover:text-white transition-colors" data-testid="link-payment-plans">Payment Plans</a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/profile">
+                  <a className="hover:text-white transition-colors" data-testid="link-my-bookings">My Bookings</a>
+                </Link>
+              </li>
             </ul>
           </div>
 
+          {/* Legal Links */}
           <div data-testid="footer-legal">
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm text-slate-300">
-              <li><a href="#" className="hover:text-white" data-testid="link-terms">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-white" data-testid="link-privacy">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white" data-testid="link-cookies">Cookie Policy</a></li>
-              <li><a href="#" className="hover:text-white" data-testid="link-disclaimer">Disclaimer</a></li>
+            <h4 className="font-bold mb-4 text-lg">Legal</h4>
+            <ul className="space-y-3 text-sm text-orange-100">
+              <li><a href="#" className="hover:text-white transition-colors" data-testid="link-terms">Terms of Service</a></li>
+              <li><a href="#" className="hover:text-white transition-colors" data-testid="link-privacy">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-white transition-colors" data-testid="link-cookies">Cookie Policy</a></li>
+              <li><a href="#" className="hover:text-white transition-colors" data-testid="link-disclaimer">Disclaimer</a></li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-slate-700 mt-8 pt-8 text-center" data-testid="footer-copyright">
-          <p className="text-slate-400 text-sm">
-            &copy; 2024 Splickets. All rights reserved. | Powered by Amadeus API
-          </p>
+        {/* Bottom Section */}
+        <div className="border-t border-orange-400 mt-10 pt-8" data-testid="footer-copyright">
+          <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+            <div className="mb-4 md:mb-0">
+              <p className="text-orange-100 text-sm">
+                &copy; 2024 <strong>Splickets</strong>. All rights reserved.
+              </p>
+              <p className="text-orange-200 text-xs mt-1">
+                Powered by Amadeus API | Secure payments by Stripe
+              </p>
+            </div>
+            <div className="flex items-center space-x-4 text-orange-200 text-xs">
+              <span>🇬🇧 United Kingdom</span>
+              <span>🇦🇺 Australia</span>
+              <span>🇿🇦 South Africa</span>
+              <span>🇨🇦 Canada</span>
+              <span>🇳🇿 New Zealand</span>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

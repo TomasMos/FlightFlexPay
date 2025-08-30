@@ -19,7 +19,6 @@ import {
   Target
 } from 'lucide-react';
 import { Navbar } from '@/components/navbar';
-import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 
 const steps = [
@@ -111,9 +110,7 @@ const faqs = [
 export default function ReferralProgram() {
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
-      <Header />
-      
+      <Navbar />      
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
         <div className="container mx-auto px-4">

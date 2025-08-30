@@ -15,6 +15,7 @@ import Testimonials from "@/pages/Testimonials";
 import About from "@/pages/About";
 import HowItWorks from "@/pages/HowItWorks";
 import ReferralProgram from "@/pages/ReferralProgram";
+import Contact from "@/pages/Contact";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/about" component={About}/>
       <Route path="/how-it-works" component={HowItWorks}/>
       <Route path="/referral-program" component={ReferralProgram}/>
+      <Route path="/contact" component={Contact}/>
       <Route path="/email-test" component={EmailTestPage}/>
       <Route component={NotFound} />
     </Switch>
