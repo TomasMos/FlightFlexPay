@@ -4,7 +4,7 @@ import { Link } from "wouter";
 
 export function Footer() {
   return (
-          <footer className="lg:fixed bottom-0 left-0 w-full bg-gradient-to-br from-orange-500 to-orange-600 text-white z-[-1]" data-testid="footer">
+          <footer className="lg:fixed bottom-0 left-0 w-full bg-gradient-to-b from-primary to-accent text-white z-[-1]" data-testid="footer">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 text-center lg:text-left">
           {/* Brand Section */}
@@ -40,16 +40,16 @@ export function Footer() {
             <h4 className="font-bold mb-4 text-lg">Company</h4>
             <ul className="space-y-3 text-sm text-orange-100">
               <li>
-                <Link href="/about" className="hover:text-white transition-colors" data-testid="link-about">About Us</Link>
+                <Link href="/about" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-about">About Us</Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="hover:text-white transition-colors" data-testid="link-how-works">How It Works</Link>
+                <Link href="/how-it-works" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-how-works">How It Works</Link>
               </li>
               <li>
-                <Link href="/testimonials" className="hover:text-white transition-colors" data-testid="link-testimonials">Testimonials</Link>
+                <Link href="/testimonials" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-testimonials">Testimonials</Link>
               </li>
               <li>
-                <Link href="/referral-program" className="hover:text-white transition-colors" data-testid="link-referrals">Referral Program</Link>
+                <Link href="/referral-program" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-referrals">Referral Program</Link>
               </li>
             </ul>
           </div>
@@ -59,16 +59,16 @@ export function Footer() {
             <h4 className="font-bold mb-4 text-lg">Support</h4>
             <ul className="space-y-3 text-sm text-orange-100">
               <li>
-                <Link href="/contact" className="hover:text-white transition-colors" data-testid="link-contact">Contact Us</Link>
+                <Link href="/contact" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-contact">Contact Us</Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="hover:text-white transition-colors" data-testid="link-help">Help Center</Link>
+                <Link href="/how-it-works" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-help">Help Center</Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="hover:text-white transition-colors" data-testid="link-payment-plans">Payment Plans</Link>
+                <Link href="/how-it-works" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-payment-plans">Payment Plans</Link>
               </li>
               <li>
-                <Link href="/profile" className="hover:text-white transition-colors" data-testid="link-my-bookings">My Bookings</Link>
+                <Link href="/profile" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-my-bookings">My Bookings</Link>
               </li>
             </ul>
           </div>

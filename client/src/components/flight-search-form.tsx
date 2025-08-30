@@ -103,16 +103,16 @@ export function FlightSearchForm({
 
   return (
     <section className="bg-white border-b border-splickets-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 ">
         <div className="text-center mb-8">
           <h1
-            className="text-3xl md:text-4xl font-bold text-splickets-slate-900 mb-4"
+            className="text-5xl md:text-6xl font-bold text-splickets-slate-900 mb-8"
             data-testid="title-main"
           >
             Book Your Flight, Pay Over Time
           </h1>
           <p
-            className="text-lg text-splickets-slate-600 max-w-2xl mx-auto"
+            className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed"
             data-testid="text-subtitle"
           >
             Search and book flights with flexible payment plans. Pay just 20%

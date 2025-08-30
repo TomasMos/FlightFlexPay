@@ -8,7 +8,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <Navbar />
 
       {/* main content, with bottom padding to avoid footer overlap */}
-      <main className="lg:pb-[378px]"> 
+      <main className="lg:mb-[378px] realtive z-[10]"> 
         {children}
       </main>
 

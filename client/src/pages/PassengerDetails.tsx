@@ -218,6 +218,7 @@ export default function PassengerDetails() {
 
   // Load flight data from localStorage or API
   useEffect(() => {
+    window.scrollTo(0, 0)
 
     const searchIdLS = localStorage.getItem("searchId")
     if (searchIdLS) {
@@ -640,7 +641,7 @@ export default function PassengerDetails() {
                   );
                 })}
               </div>
-              <div className="lg:sticky top-8">
+              <div className="">
                 <Card>
                   <CardHeader>
                     <CardTitle data-testid="title-price-details">
