@@ -62,12 +62,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-6">
             <Link href="/">
               <Button variant="ghost" data-testid="nav-link-home">
-                Home
-              </Button>
-            </Link>
-            <Link href="/testimonials">
-              <Button variant="ghost" data-testid="nav-link-testimonials">
-                Testimonials
+                Search
               </Button>
             </Link>
             <Link href="/about">
@@ -85,6 +80,13 @@ export function Navbar() {
                 Referrals
               </Button>
             </Link>
+            <Link href="/testimonials">
+              <Button variant="ghost" data-testid="nav-link-testimonials">
+                Testimonials
+              </Button>
+            </Link>
+            
+            
     
 
             {/* Auth section */}
@@ -158,123 +160,78 @@ export function Navbar() {
           {isMobileMenuOpen && (
             <motion.div
               key="mobile-menu"
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "100%", opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="fixed inset-x-0 top-16 bottom-0 z-50 overflow-y-auto border-t border-gray-200 bg-splickets-slate-50 md:hidden"
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-y-0 right-0 top-16 z-50 w-full overflow-y-auto border-l border-gray-200 bg-white md:w-1/2"
               data-testid="mobile-menu"
             >
-              <div className="flex flex-col space-y-2 px-10 text-right">
-                <Link href="/">
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    data-testid="mobile-nav-home"
-                  >
-                    Home
-                  </Button>
+              <div className="flex flex-col border-b border-gray-200 px-6 py-4 text-right md:hidden">
+                {currentUser ? (
+                  <div className="flex items-center justify-end space-x-3">
+                    <div className="flex flex-col items-end">
+                      {currentUser.displayName && (
+                        <p className="text-sm font-medium">{currentUser.displayName}</p>
+                      )}
+                      <p className="max-w-[200px] truncate text-xs text-gray-500">
+                        {currentUser.email}
+                      </p>
+                    </div>
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={currentUser.photoURL || ''} alt={currentUser.displayName || 'User'} />
+                      <AvatarFallback>
+                        {currentUser.displayName
+                          ? currentUser.displayName.split(' ').map((n) => n[0]).join('').toUpperCase()
+                          : getInitials(currentUser.email || '')}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                ) : (
+                  <Link href="/signin">
+                    <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-signin">
+                      Sign In
+                    </Button>
+                  </Link>
+                )}
+              </div>
+
+              <div className="flex flex-col space-y-2 py-4 text-right">
+                <Link href="/" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-home">
+                  <span className="text-xl font-medium text-gray-700">Search</span>
                 </Link>
-                <Link href="/testimonials">
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    data-testid="mobile-nav-testimonials"
-                  >
-                    Testimonials
-                  </Button>
+                <Link href="/about" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-about">
+                  <span className="text-xl font-medium text-gray-700">About</span>
                 </Link>
-                <Link href="/about">
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    data-testid="mobile-nav-about"
-                  >
-                    About
-                  </Button>
+                <Link href="/how-it-works" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-how-it-works">
+                  <span className="text-xl font-medium text-gray-700">How it Works</span>
                 </Link>
-                <Link href="/how-it-works">
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    data-testid="mobile-nav-how-it-works"
-                  >
-                    How it Works
-                  </Button>
+                <Link href="/referral-program" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-referral">
+                  <span className="text-xl font-medium text-gray-700">Referrals</span>
                 </Link>
-                <Link href="/referral-program">
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    data-testid="mobile-nav-referral"
-                  >
-                    Referrals
-                  </Button>
+                <Link href="/testimonials" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-testimonials">
+                  <span className="text-xl font-medium text-gray-700">Testimonials</span>
                 </Link>
 
-                {/* Auth section */}
-                {currentUser ? (
+                {currentUser && (
                   <>
-                    <div className="border-t border-gray-200 pt-2 mt-2">
-                      <div className="flex items-center space-x-3 px-3 py-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={currentUser.photoURL || ''} alt={currentUser.displayName || 'User'} />
-                          <AvatarFallback>
-                            {currentUser.displayName 
-                              ? currentUser.displayName.split(' ').map(n => n[0]).join('').toUpperCase()
-                              : getInitials(currentUser.email || '')
-                            }
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col">
-                          {currentUser.displayName && (
-                            <p className="text-sm font-medium">{currentUser.displayName}</p>
-                          )}
-                          <p className="text-xs text-gray-500 truncate max-w-[200px]">
-                            {currentUser.email}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <Link href="/profile">
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        data-testid="mobile-nav-profile"
-                      >
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
-                      </Button>
+                    <Link href="/profile" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-profile">
+                      <span className="text-xl font-medium text-gray-700">Profile</span>
+                      <User className="ml-2 h-5 w-5 text-gray-700" />
                     </Link>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start"
+                    <Button
+                      variant="ghost"
+                      className="flex w-full items-center justify-end py-4 pr-6 pl-10 text-right"
                       onClick={() => {
                         setIsMobileMenuOpen(false);
                         handleSignOut();
                       }}
                       data-testid="mobile-nav-signout"
                     >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
+                      <span className="text-xl font-medium text-gray-700">Sign Out</span>
+                      <LogOut className="ml-2 h-5 w-5 text-gray-700" />
                     </Button>
                   </>
-                ) : (
-                  <Link href="/signin">
-                    <Button 
-                      className="w-100"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      data-testid="mobile-nav-signin"
-                    >
-                      Sign In
-                    </Button>
-                  </Link>
                 )}
               </div>
             </motion.div>
