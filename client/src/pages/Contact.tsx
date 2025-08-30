@@ -16,8 +16,6 @@ import {
   Globe,
   HeadphonesIcon
 } from 'lucide-react';
-import { Navbar } from '@/components/navbar';
-import { Footer } from '@/components/footer';
 
 const contactMethods = [
   {
@@ -87,7 +85,6 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
       
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -329,8 +326,6 @@ export default function Contact() {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }

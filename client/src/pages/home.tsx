@@ -4,11 +4,9 @@ import {
   FlightSearchRequest,
   EnhancedFlightWithPaymentPlan,
 } from "@shared/schema";
-import { Navbar } from "@/components/navbar";
 import { FlightSearchForm } from "@/components/flight-search-form";
 import { FlightResults } from "@/components/flight-results";
 import { TrustSection } from "@/components/trust-section";
-import { Footer } from "@/components/footer";
 
 // New: Define the type for the API response
 interface FlightSearchResponse {
@@ -49,7 +47,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-splickets-slate-50" data-testid="page-home">
-      <Navbar />
       <FlightSearchForm onSearch={handleSearch} isLoading={isLoading} />
 
       {searchParams && (
@@ -62,7 +59,6 @@ export default function Home() {
       )}
 
       <TrustSection />
-      <Footer />
     </div>
   );
 }

@@ -4,13 +4,13 @@ import { Link } from "wouter";
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-br from-orange-500 to-orange-600 text-white" data-testid="footer">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+          <footer className="lg:fixed bottom-0 left-0 w-full bg-gradient-to-br from-orange-500 to-orange-600 text-white z-[-1]" data-testid="footer">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 text-center lg:text-left">
           {/* Brand Section */}
           <div className="md:col-span-2" data-testid="footer-brand">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+            <div className="flex items-center justify-center md:justify-start space-x-3 mb-6">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center ">
                 <TicketsPlane className="text-orange-500 h-8 w-8 stroke-2" />
               </div>
               <div>
@@ -22,7 +22,7 @@ export function Footer() {
               Making travel accessible with flexible payment plans. Lock in today's prices, 
               pay over time with no credit checks or hidden fees.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 justify-center md:justify-start ">
               <a href="#" className="text-orange-200 hover:text-white transition-colors" data-testid="link-twitter">
                 <SiX className="h-6 w-6" />
               </a>
@@ -36,7 +36,7 @@ export function Footer() {
           </div>
 
           {/* Company Links */}
-          <div data-testid="footer-company">
+          <div data-testid="footer-company" >
             <h4 className="font-bold mb-4 text-lg">Company</h4>
             <ul className="space-y-3 text-sm text-orange-100">
               <li>

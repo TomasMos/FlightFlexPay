@@ -17,6 +17,9 @@ import HowItWorks from "@/pages/HowItWorks";
 import ReferralProgram from "@/pages/ReferralProgram";
 import Contact from "@/pages/Contact";
 import NotFound from "@/pages/not-found";
+import { Layout } from '@/pages/Layout';
+
+
 
 function Router() {
   return (
@@ -44,7 +47,9 @@ function App() {
         <CurrencyProvider>
           <TooltipProvider>
             <Toaster />
-            <Router />
+            <Layout>
+              <Router />
+            </Layout>
           </TooltipProvider>
         </CurrencyProvider>
       </AuthProvider>

@@ -20,9 +20,6 @@ import {
   formattedPrice,
   stopoverDuration,
 } from "@/utils/formatters";
-import { Navbar } from "@/components/navbar";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
 export default function FlightBooking() {
@@ -266,8 +263,6 @@ export default function FlightBooking() {
   if (bookingConfirmed) {
     return (
       <div className="min-h-screen bg-splickets-slate-50 flex flex-col">
-        <Navbar />
-
         {/* Middle content takes all available space */}
         <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto px-4  py-12 sm:py-16">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -287,8 +282,6 @@ export default function FlightBooking() {
             Return to Home
           </Button>
         </div>
-
-        <Footer />
       </div>
 
     );
@@ -296,7 +289,6 @@ export default function FlightBooking() {
 
   return (
     <div className="min-h-screen bg-splickets-slate-50">
-      <Navbar />
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div>
           {/* Flight Summary Header */}
@@ -650,7 +642,6 @@ export default function FlightBooking() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

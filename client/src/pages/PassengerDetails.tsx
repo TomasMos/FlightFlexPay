@@ -32,8 +32,6 @@ import {
   stopoverDuration,
 } from "@/utils/formatters";
 import { motion, AnimatePresence } from "framer-motion";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
 
 // Passenger form schema
 const passengerSchema = z.object({
@@ -340,7 +338,6 @@ export default function PassengerDetails() {
             Please wait while we load your flight information.
           </p>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -373,7 +370,6 @@ export default function PassengerDetails() {
 
   return (
     <div className="min-h-screen bg-splickets-slate-50">
-      <Navbar />
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Section - Passenger and Contact Forms */}
@@ -591,7 +587,6 @@ export default function PassengerDetails() {
                   Flight Summary
                 </h1>
                 {flight.itineraries.map((itinerary, itineraryIndex) => {
-                  const isOutbound = itineraryIndex === 0;
                   const firstSegment = itinerary.segments[0];
                   const lastSegment =
                     itinerary.segments[itinerary.segments.length - 1];
@@ -770,7 +765,6 @@ export default function PassengerDetails() {
           </div>
         </div>
       </div>
-      <Footer />
 
     </div>
   );
