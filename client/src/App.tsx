@@ -11,6 +11,7 @@ import FlightBooking from "@/pages/FlightBooking";
 import EmailTestPage from "@/pages/EmailTest";
 import SignIn from "@/pages/SignIn";
 import Profile from "@/pages/Profile";
+import Testimonials from "@/pages/Testimonials";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/flight-search/book" component={FlightBooking}/>
       <Route path="/signin" component={SignIn}/>
       <Route path="/profile" component={Profile}/>
+      <Route path="/testimonials" component={Testimonials}/>
       <Route path="/email-test" component={EmailTestPage}/>
       <Route component={NotFound} />
     </Switch>
