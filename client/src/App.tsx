@@ -13,6 +13,8 @@ import SignIn from "@/pages/SignIn";
 import Profile from "@/pages/Profile";
 import Testimonials from "@/pages/Testimonials";
 import About from "@/pages/About";
+import HowItWorks from "@/pages/HowItWorks";
+import ReferralProgram from "@/pages/ReferralProgram";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,6 +27,8 @@ function Router() {
       <Route path="/profile" component={Profile}/>
       <Route path="/testimonials" component={Testimonials}/>
       <Route path="/about" component={About}/>
+      <Route path="/how-it-works" component={HowItWorks}/>
+      <Route path="/referral-program" component={ReferralProgram}/>
       <Route path="/email-test" component={EmailTestPage}/>
       <Route component={NotFound} />
     </Switch>

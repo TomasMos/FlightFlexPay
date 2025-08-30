@@ -75,6 +75,16 @@ export function Navbar() {
                 About
               </Button>
             </Link>
+            <Link href="/how-it-works">
+              <Button variant="ghost" data-testid="nav-link-how-it-works">
+                How it Works
+              </Button>
+            </Link>
+            <Link href="/referral-program">
+              <Button variant="ghost" data-testid="nav-link-referral">
+                Referrals
+              </Button>
+            </Link>
     
 
             {/* Auth section */}
@@ -184,6 +194,26 @@ export function Navbar() {
                     data-testid="mobile-nav-about"
                   >
                     About
+                  </Button>
+                </Link>
+                <Link href="/how-it-works">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    data-testid="mobile-nav-how-it-works"
+                  >
+                    How it Works
+                  </Button>
+                </Link>
+                <Link href="/referral-program">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    data-testid="mobile-nav-referral"
+                  >
+                    Referrals
                   </Button>
                 </Link>
 

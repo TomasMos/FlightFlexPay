@@ -80,9 +80,7 @@ const milestones = [
 export default function About() {
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
-      <Header />
-      
+      <Navbar />      
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4">

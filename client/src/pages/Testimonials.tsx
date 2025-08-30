@@ -120,9 +120,7 @@ export default function Testimonials() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
-      <Header />
-      
+      <Navbar />      
       {/* Hero Section with Testimonial Carousel */}
       <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="container mx-auto px-4">
