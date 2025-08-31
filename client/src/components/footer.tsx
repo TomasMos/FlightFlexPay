@@ -15,7 +15,7 @@ export function Footer() {
               </div>
               <div>
                 <span className="font-bold text-2xl">Splickets</span>
-                <p className="text-orange-100 text-sm">Fly now, pay later</p>
+                <p className="text-orange-100 text-sm">Book Now, Pay Later</p>
               </div>
             </div>
             <p className="text-orange-100 text-sm mb-6 leading-relaxed">
@@ -46,7 +46,7 @@ export function Footer() {
                 <Link href="/how-it-works" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-how-works">How It Works</Link>
               </li>
               <li>
-                <Link href="/testimonials" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-testimonials">Testimonials</Link>
+                <Link href="/about" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-testimonials">Testimonials</Link>
               </li>
               <li>
                 <Link href="/referral-program" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-referrals">Referral Program</Link>
@@ -90,7 +90,7 @@ export function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
             <div className="mb-4 md:mb-0">
               <p className="text-orange-100 text-sm">
-                &copy; 2024 <strong>Splickets</strong>. All rights reserved.
+                &copy; 2025 <strong>Splickets</strong>. All rights reserved.
               </p>
               <p className="text-orange-200 text-xs mt-1">
                 Powered by Amadeus API | Secure payments by Stripe

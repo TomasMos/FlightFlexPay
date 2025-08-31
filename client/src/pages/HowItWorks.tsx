@@ -7,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Link } from 'wouter';
 import {
   Search,
   CreditCard,
@@ -31,8 +32,8 @@ const steps = [
     icon: Search,
     title: "Search for Flights",
     description:
-      "Find your perfect flight using our search engine. Compare prices from major airlines and choose the option that works best for you.",
-    color: "bg-blue-500",
+      "Search for flights using Splickets. Compare prices from major airlines and choose the option that works best for you.",
+    color: "bg-primary",
   },
   {
     number: "02",
@@ -55,8 +56,8 @@ const steps = [
     icon: Plane,
     title: "Enjoy Your Trip",
     description:
-      "Your flight is confirmed and paid for! Receive your tickets and travel documents, then enjoy your well-deserved vacation.",
-    color: "bg-orange-500",
+      "We'll transfer your tickets after payment, so you can enjoy your vacation. Splickets will still keep you updated about important flight changes.",
+    color: "bg-accent",
   },
 ];
 
@@ -89,13 +90,13 @@ const credibilityStats = [
   {
     icon: Users,
     number: "50,000+",
-    label: "Happy Travelers",
-    color: "text-blue-600",
+    label: "Locations",
+    color: "text-primary",
   },
   {
     icon: DollarSign,
-    number: "£12M+",
-    label: "Total Bookings",
+    number: "$300",
+    label: "Average Savings",
     color: "text-green-600",
   },
   {
@@ -106,8 +107,8 @@ const credibilityStats = [
   },
   {
     icon: Award,
-    number: "98%",
-    label: "Satisfaction Rate",
+    number: "24/7",
+    label: "Support",
     color: "text-purple-600",
   },
 ];
@@ -119,9 +120,14 @@ const faqs = [
       "You pay a deposit of 20-50% when booking your flight, then spread the remaining balance over weekly or bi-weekly installments. All payments must be completed 2 weeks before your departure date. There are no interest charges or hidden fees.",
   },
   {
+    question: "What happens if I default on my payments?",
+    answer:
+      "We'll do our best to cancel the flight with the airline, any funds recovered will be returned to you (less the cancellation fee of both the airline and Splickets).",
+  },
+  {
     question: "When do I receive my flight tickets?",
     answer:
-      "Your flight is confirmed immediately after your deposit payment. You'll receive your e-tickets and booking confirmation within 24 hours. Your flight is guaranteed even while you're still making installment payments.",
+      "Your flight is confirmed immediately after your deposit payment. You'll receive your airline e-tickets after your installment plkan is complete, typically 2 weeks before takeoff. Your flight is guaranteed even while you're still making installment payments.",
   },
   {
     question: "What happens if I miss a payment?",
@@ -258,7 +264,7 @@ export default function HowItWorks() {
                   data-testid={`benefit-${index}`}
                 >
                   <div className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-full flex items-center justify-center">
-                    <benefit.icon className="w-8 h-8 text-blue-600" />
+                    <benefit.icon className="w-8 h-8 text-primary" />
                   </div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">
                     {benefit.title}
@@ -278,7 +284,7 @@ export default function HowItWorks() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Trusted by Thousands
+              Trusted by Travellers
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Join the growing community of smart travelers who book with
@@ -322,7 +328,7 @@ export default function HowItWorks() {
               </div>
 
               <div>
-                <Zap className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                <Zap className="w-12 h-12 text-primary mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   Instant Confirmation
                 </h3>
@@ -386,9 +392,11 @@ export default function HowItWorks() {
           {/* CTA */}
           <div className="text-center mt-12">
             <p className="text-gray-600 mb-6">Ready to start your journey?</p>
-            <Button size="lg" data-testid="button-start-searching">
+            <Link href="/" onClick={() => window.scrollTo(0, 0)}>
+            <Button size="lg" data-testid="button-start-searching" >
               Start Searching Flights
             </Button>
+            </Link>
           </div>
         </div>
       </section>

@@ -28,9 +28,9 @@ const steps = [
   {
     number: "01",
     icon: Share,
-    title: "Share Your Link",
+    title: "Share Your Code",
     description:
-      "Get your unique referral link from your Splickets profile and share it with friends and family who love to travel.",
+      "Get access to your code by booking a flight, then share it with friends and family who love to travel.",
     color: "bg-blue-500",
   },
   {
@@ -38,7 +38,7 @@ const steps = [
     icon: UserPlus,
     title: "Friend Books Flight",
     description:
-      "When someone uses your link to make their first booking with Splickets, they'll save money and you'll earn rewards.",
+      "When someone uses your code to make their first booking with Splickets, they'll save money and you'll earn rewards.",
     color: "bg-green-500",
   },
   {
@@ -95,9 +95,9 @@ const faqs = [
       "You'll receive your $25 credit immediately after your friend completes their first booking and payment with Splickets. The credit will appear in your account within 24 hours.",
   },
   {
-    question: "How do I share my referral link?",
+    question: "How do I share my referral code?",
     answer:
-      "You can find your unique referral link in your Splickets profile under the 'Referrals' section. Share it via email, text, social media, or any way you prefer!",
+      "You can find your unique referral code in your Splickets profile under the 'Referrals' section. Share it via email, text, social media, or any way you prefer!",
   },
   {
     question: "Can my friend use the referral credit with a payment plan?",
@@ -112,7 +112,7 @@ const faqs = [
   {
     question: "How can I track my referrals and earnings?",
     answer:
-      "Your Splickets profile includes a referral dashboard where you can see how many people have used your link, successful bookings, and your total earnings.",
+      "Your Splickets profile includes a referral dashboard where you can see how many people have used your code, successful bookings, and your total earnings.",
   },
   {
     question: "Do referral credits expire?",
@@ -122,7 +122,7 @@ const faqs = [
   {
     question: "Can I refer someone who lives in a different country?",
     answer:
-      "Yes! As long as Splickets operates in their country, your referral link will work. We currently serve customers in the UK, Australia, South Africa, Canada, and New Zealand.",
+      "Yes! As long as Splickets operates in their country, your referral code will work. We currently serve customers in the UK, Australia, South Africa, Canada, and New Zealand.",
   },
 ];
 
@@ -133,9 +133,9 @@ export default function ReferralProgram() {
       <section className="py-20 bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-block bg-green-100 rounded-full p-4 mb-6">
+            {/* <div className="inline-block bg-green-100 rounded-full p-4 mb-6">
               <Gift className="w-16 h-16 text-green-600" />
-            </div>
+            </div> */}
 
             <h1
               className="text-5xl md:text-6xl font-bold text-gray-900 mb-6"
@@ -276,17 +276,17 @@ export default function ReferralProgram() {
           <div className="mt-16 bg-gray-50 rounded-2xl p-8">
             <div className="text-center mb-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Your Referral Link Will Look Like This:
+                Your Referral Code Will Look Like This:
               </h3>
               <p className="text-gray-600">
-                Share this unique link to start earning rewards
+                Share this unique code to start earning rewards
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border-2 border-dashed border-gray-300 max-w-2xl mx-auto">
+            <div className="bg-white rounded-lg p-4 border-2 border-dashed border-gray-300 max-w-md mx-auto">
               <div className="flex items-center justify-between">
-                <code className="text-blue-600 text-sm md:text-base font-mono">
-                  https://splickets.com/ref/YOURNAME123
+                <code className="text-blue-600 text-sm md:text-base font-mono text-center ">
+                  YOURNAME123
                 </code>
                 <Button
                   variant="outline"
@@ -314,11 +314,11 @@ export default function ReferralProgram() {
 
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">
               Share Splickets with your friends and start earning credits for
-              your next adventure. The more you share, the more you save!
+              your next adventure. The more you share, the more you earn!
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-              <Link href="/">
+              <Link href="/" onClick={() => window.scrollTo(0, 0)}>
                 <Button
                   size="lg"
                   className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3"
@@ -330,18 +330,11 @@ export default function ReferralProgram() {
                 </Button>
               </Link>
 
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3"
-                data-testid="button-learn-more-referral"
-              >
-                Learn More About Referrals
-              </Button>
+              
             </div>
 
             <p className="text-sm text-blue-200">
-              Sign up for an account to get your unique referral link
+              Book your first flight to get your unique referral code
             </p>
           </div>
         </div>
@@ -384,26 +377,7 @@ export default function ReferralProgram() {
             </Accordion>
           </div>
 
-          {/* Final CTA */}
-          <div className="text-center mt-12">
-            <p className="text-gray-600 mb-6">
-              Still have questions about our referral program?
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                variant="outline"
-                size="lg"
-                data-testid="button-contact-support-referral"
-              >
-                Contact Support
-              </Button>
-              <Link href="/">
-                <Button size="lg" data-testid="button-start-referring">
-                  Start Referring Friends
-                </Button>
-              </Link>
-            </div>
-          </div>
+          
         </div>
       </section>
     </div>

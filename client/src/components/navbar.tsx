@@ -37,7 +37,7 @@ export function Navbar() {
     { href: "/about", label: "About", testId: "nav-link-about" },
     { href: "/how-it-works", label: "How it Works", testId: "nav-link-how-it-works" },
     { href: "/referral-program", label: "Referrals", testId: "nav-link-referral" },
-    { href: "/testimonials", label: "Testimonials", testId: "nav-link-testimonials" },
+    // { href: "/testimonials", label: "Testimonials", testId: "nav-link-testimonials" },
   ];
 
   useEffect(() => {
@@ -190,28 +190,19 @@ export function Navbar() {
                   </Link>
                 )}
               </div>
-
+              
               <div className="flex flex-col space-y-2 py-4 text-right">
-                <Link href="/" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-home">
-                  <span className="text-xl font-medium text-gray-700">Search</span>
+              {navLinks.map(link => (
+                <Link href={link.href} key={link.href} className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid={`mobile-nav-${link.label}`}>
+                  
+                  <span className={Location === link.href ? "text-xl font-medium text-splickets-accent" : "text-xl font-medium text-gray-700"}>{link.label}</span>
                 </Link>
-                <Link href="/about" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-about">
-                  <span className="text-xl font-medium text-gray-700">About</span>
-                </Link>
-                <Link href="/how-it-works" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-how-it-works">
-                  <span className="text-xl font-medium text-gray-700">How it Works</span>
-                </Link>
-                <Link href="/referral-program" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-referral">
-                  <span className="text-xl font-medium text-gray-700">Referrals</span>
-                </Link>
-                <Link href="/testimonials" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-testimonials">
-                  <span className="text-xl font-medium text-gray-700">Testimonials</span>
-                </Link>
+              ))}
 
                 {currentUser && (
                   <>
                     <Link href="/profile" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-profile">
-                      <span className="text-xl font-medium text-gray-700">Profile</span>
+                      <span className={Location === '/profile' ? "text-xl font-medium text-splickets-accent" : "text-xl font-medium text-gray-700"}>Profile</span>
                       <User className="ml-2 h-5 w-5 text-gray-700" />
                     </Link>
                     <Button

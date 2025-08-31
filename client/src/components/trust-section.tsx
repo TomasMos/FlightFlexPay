@@ -211,7 +211,7 @@ export function TrustSection() {
 
 
       {/* Dream Destinations Carousel */}
-      <section className="py-20 bg-gradient-to-br from-purple-50 to-pink-50">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           {/* Heading */}
           <div className="text-center mb-16">
@@ -238,10 +238,10 @@ export function TrustSection() {
                   }}
                 >
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-black/20" />
+                  <div className="absolute inset-0 " />
 
                   {/* Text content */}
-                  <div className="relative text-center text-white px-6">
+                  <div className="relative text-center text-white px-6 backdrop-blur-md rounded-3xl p-4">
                     <h3 className="text-3xl font-bold mb-2 drop-shadow-md">
                       {destinations[current].name}
                     </h3>

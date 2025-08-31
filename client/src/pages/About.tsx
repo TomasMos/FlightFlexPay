@@ -17,15 +17,26 @@ import {
   Shield
 } from 'lucide-react';
 
+import tom from '../assets/Tom.jpg'
+import bright from '../assets/bright.jpg'
+import paris from '../assets/paris.avif'
+import canada from '../assets/canada.avif'
+import newZealand from '../assets/newZealand.avif'
+import germany from '../assets/germany.avif'
+import london from '../assets/london.avif'
+import capeTown from '../assets/capeTown.avif'
+import sydney from '../assets/sydney.avif'
+import newYork from '../assets/newYork.avif'
+
 const countries = [
-  { name: "United Kingdom", flag: "🇬🇧", status: "Live" },
-  { name: "Australia", flag: "🇦🇺", status: "Live" },
-  { name: "South Africa", flag: "🇿🇦", status: "Live" },
-  { name: "Canada", flag: "🇨🇦", status: "Live" },
-  { name: "New Zealand", flag: "🇳🇿", status: "Live" },
-  { name: "United States", flag: "🇺🇸", status: "Coming Soon" },
-  { name: "Germany", flag: "🇩🇪", status: "Coming Soon" },
-  { name: "France", flag: "🇫🇷", status: "Coming Soon" }
+  { name: "United Kingdom", flag: london, status: "Live" },
+  { name: "Australia", flag: sydney, status: "Live" },
+  { name: "South Africa", flag: capeTown, status: "Live" },
+  { name: "Canada", flag: canada, status: "Live" },
+  { name: "New Zealand", flag: newZealand, status: "Live" },
+  { name: "United States", flag: newYork, status: "Coming Soon" },
+  { name: "Germany", flag: germany, status: "Coming Soon" },
+  { name: "France", flag: paris, status: "Coming Soon" }
 ];
 
 const values = [
@@ -95,11 +106,11 @@ export default function About() {
               </Badge>
               <Badge variant="outline" className="text-lg px-4 py-2">
                 <Users className="w-5 h-5 mr-2" />
-                50,000+ Happy Travelers
+                50,000+ Destinations
               </Badge>
               <Badge variant="outline" className="text-lg px-4 py-2">
                 <Heart className="w-5 h-5 mr-2" />
-                £12M+ in Bookings
+                $300 Average Savings
               </Badge>
             </div>
           </div>
@@ -122,30 +133,23 @@ export default function About() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
               <div>
                 <h3 className="text-2xl font-semibold text-gray-900 mb-6">
-                  It Started with a Problem
-                </h3>
+                Hello Traveller                </h3>
                 <div className="space-y-4 text-gray-600 leading-relaxed">
-                  <p>
-                    Like many travelers, our founders faced a common dilemma: finding amazing flight deals 
-                    but not having the full amount upfront. Traditional travel booking required paying 
-                    thousands immediately, while credit cards meant accumulating debt with high interest rates.
+                  
+                  <p> I started Splickets to make travel more affordable and accessible. My hope is that by providing flexible payment options, Splickets can help people live a richer life through travel. As a South African, I experienced firsthand how disproportionately expensive international flights can be. 
                   </p>
+                  <p>That’s why I created Splickets. We don’t believe in debt or credit. Instead, we offer a simple lay-by system that allows you to pay for your flights in manageable installments. This way, your dream destination is always within reach, and you can focus on the adventure, not the payment.
+
+ </p>
                   <p>
-                    We realized there had to be a better way. What if you could secure today's prices 
-                    but pay gradually, without the stress of debt or credit checks?
+                    Tom - that's me, in Corfu with my fiancé. 
                   </p>
-                  <p>
-                    That's how Splickets was born - from a personal need that we discovered millions 
-                    of other travelers shared.
-                  </p>
+                  
                 </div>
               </div>
               <div className="relative">
-                <div className="aspect-square bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl flex items-center justify-center">
-                  <div className="text-center">
-                    <Plane className="w-24 h-24 text-blue-600 mx-auto mb-4" />
-                    <p className="text-blue-800 font-medium">The spark of an idea</p>
-                  </div>
+                <div className="aspect-square bg-cover bg-no-repeat bg-center rounded-2xl flex items-center justify-center" style={{ backgroundImage: `url(${tom})` }}>
+                  
                 </div>
               </div>
             </div>
@@ -186,7 +190,7 @@ export default function About() {
             </div>
 
             {/* Timeline */}
-            <div className="mb-16">
+            {/* <div className="mb-16">
               <div className="text-center mb-12">
                 <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                   Our Journey
@@ -215,7 +219,7 @@ export default function About() {
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>
@@ -238,21 +242,33 @@ export default function About() {
               <h3 className="text-2xl font-semibold text-gray-900 mb-8 text-center">
                 Where We Are Today
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {countries.map((country, index) => (
-                  <Card key={index} className={`text-center p-4 ${country.status === 'Live' ? 'border-green-200 bg-green-50' : 'border-gray-200'}`} data-testid={`country-card-${index}`}>
-                    <CardContent className="pt-4">
-                      <div className="text-3xl mb-2">{country.flag}</div>
-                      <div className="text-sm font-medium text-gray-900 mb-1">
-                        {country.name}
-                      </div>
-                      <Badge 
-                        variant={country.status === 'Live' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {country.status}
-                      </Badge>
-                    </CardContent>
+                  <Card
+                    key={index}
+                    className={`relative h-40 text-center rounded-lg overflow-hidden group`}
+                    data-testid={`country-card-${index}`}
+                    style={{
+                      backgroundImage: `url(${country.flag})`, // Use a flag image URL
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  >
+                    {/* Transparent overlay for text legibility */}
+                    <div className="absolute inset-0 bg-black bg-opacity-10 group-hover:bg-opacity-40 transition-all duration-300"></div>
+
+                    {/* Status Ribbon */}
+                    <div
+                      className={`absolute top-0 left-0 w-full text-center text-xs font-semibold py-1
+                        ${country.status === 'Live' ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'}`}
+                    >
+                      {country.status === 'Live' ? 'Live' : 'Coming Soon'}
+                    </div>
+
+                    {/* Content */}
+                    <div className="absolute inset-0 flex flex-col justify-end p-2 text-white">
+                      <div className="text-base font-semibold">{country.name}</div>
+                    </div>
                   </Card>
                 ))}
               </div>
@@ -307,11 +323,8 @@ export default function About() {
               </div>
               
               <div className="relative">
-                <div className="aspect-square bg-gradient-to-br from-purple-100 to-blue-200 rounded-2xl flex items-center justify-center">
-                  <div className="text-center">
-                    <Rocket className="w-24 h-24 text-purple-600 mx-auto mb-4" />
-                    <p className="text-purple-800 font-medium">The future is bright</p>
-                  </div>
+                <div className="aspect-square bg-cover bg-no-repeat bg-center rounded-2xl flex items-center justify-center" style={{ backgroundImage: `url(${bright})` }}>
+                  
                 </div>
               </div>
             </div>
@@ -320,7 +333,7 @@ export default function About() {
       </section>
 
       {/* Join Our Team */}
-      <section className="py-16 bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
+      <section className="py-16 bg-primary text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="mb-8">

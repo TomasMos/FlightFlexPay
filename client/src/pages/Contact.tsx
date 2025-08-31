@@ -1,44 +1,56 @@
-import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Clock, 
-  MessageCircle, 
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Link } from "wouter";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  MessageCircle,
   Send,
   CheckCircle,
   Users,
   Globe,
-  HeadphonesIcon
-} from 'lucide-react';
+  HeadphonesIcon,
+  MessageCircleQuestion,
+  HandCoins,
+  ArrowRight,
+} from "lucide-react";
 
 const contactMethods = [
   {
     icon: Mail,
     title: "Email Support",
     description: "Get help via email - we typically respond within 24 hours",
-    contact: "support@splickets.com",
-    available: "24/7"
+    contact: "support@splickets.app",
+    available: "24/7",
+    link: 'mailto:support@splickets.app'
   },
   {
     icon: MessageCircle,
     title: "Live Chat",
     description: "Chat with our support team for immediate assistance",
     contact: "Available in app",
-    available: "Mon-Fri, 9AM-6PM GMT"
+    available: "Mon-Fri, 9AM-6PM GMT",
+    link: 'https://wa.me/447442782596'
   },
-  {
-    icon: Phone,
-    title: "Phone Support",
-    description: "Speak directly with a member of our support team",
-    contact: "+44 20 7123 4567",
-    available: "Mon-Fri, 9AM-6PM GMT"
-  }
+  // {
+  //   icon: Phone,
+  //   title: "Phone Support",
+  //   description: "Speak directly with a member of our support team",
+  //   contact: "+44 20 7123 4567",
+  //   available: "Mon-Fri, 9AM-6PM GMT",
+  // },
 ];
 
 const offices = [
@@ -46,29 +58,29 @@ const offices = [
     country: "United Kingdom",
     city: "London",
     address: "123 Travel Street, London, UK SW1A 1AA",
-    timezone: "GMT"
+    timezone: "GMT",
   },
   {
-    country: "Australia", 
+    country: "Australia",
     city: "Sydney",
     address: "456 Harbor Avenue, Sydney, NSW 2000",
-    timezone: "AEST"
+    timezone: "AEST",
   },
   {
     country: "Canada",
-    city: "Toronto", 
+    city: "Toronto",
     address: "789 Maple Road, Toronto, ON M5H 2N1",
-    timezone: "EST"
-  }
+    timezone: "EST",
+  },
 ];
 
 export default function Contact() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    category: '',
-    message: ''
+    name: "",
+    email: "",
+    subject: "",
+    category: "",
+    message: "",
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -80,23 +92,26 @@ export default function Contact() {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6" data-testid="text-contact-title">
+            <h1
+              className="text-5xl md:text-6xl font-bold text-gray-900 mb-6"
+              data-testid="text-contact-title"
+            >
               Contact Splickets
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
-              We're here to help make your travel dreams come true. Get in touch with our friendly support team.
+              We're here to help make your travel dreams come true. Get in touch
+              with our friendly support team.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            {/* <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <div className="flex items-center text-lg text-gray-600">
                 <Globe className="w-5 h-5 mr-2 text-blue-600" />
                 Available in 5 Countries
@@ -105,35 +120,41 @@ export default function Contact() {
                 <Users className="w-5 h-5 mr-2 text-green-600" />
                 50,000+ Happy Customers
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>
 
       {/* Contact Methods */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
+      <section className="py-16 flex flex-col">
+        <div className="container mx-auto px-4 ">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Get in Touch
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Choose the method that works best for you. Our support team is ready to help with any questions.
+              Choose the method that works best for you. Our support team is
+              ready to help with any questions.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
             {contactMethods.map((method, index) => (
-              <Card key={index} className="text-center p-6 border-2 hover:shadow-lg transition-shadow" data-testid={`contact-method-${index}`}>
-                <CardContent className="pt-6">
-                  <div className="w-16 h-16 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center">
+              <a href={method.link} target="_blank" className="block cursor-pointer">
+              <Card
+                key={index}
+                className="text-center p-6 border-2 hover:shadow-lg transition-shadow"
+                data-testid={`contact-method-${index}`}
+              >
+                <CardContent className="pt-6" href={method.link}>
+                  <div className="w-16 h-16 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center" >
                     <method.icon className="w-8 h-8 text-blue-600" />
                   </div>
-                  
+
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">
                     {method.title}
                   </h3>
-                  
+
                   <p className="text-gray-600 mb-4 leading-relaxed">
                     {method.description}
                   </p>
@@ -149,17 +170,53 @@ export default function Contact() {
                   </div>
                 </CardContent>
               </Card>
+                </a>
+
             ))}
           </div>
         </div>
       </section>
 
+      {/* Quick Answers */}
+      <section className="py-16  flex flex-col flex-grow bg-primary text-center text-white">
+        <h3 className="text-2xl font-bold ">
+          <HeadphonesIcon className="w-5 h-5 inline mr-2" />
+          Need Quick Answers?
+        </h3>
+        <p className=" mb-4 ">
+          Check out our FAQ pages for instant answers to common questions.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center text-black">
+          <Link href="/how-it-works" onClick={() => window.scrollTo(0, 0)}>
+            <Button
+              data-testid="button-referral-faq"
+              size="lg"
+              className="bg-white text-primary hover:bg-blue-50 font-semibold px-8 py-3 "
+            >
+              <MessageCircleQuestion className="w-5 h-5 mr-2" />
+              How It Works <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </Link>
+          <Link href="/referral-program" onClick={() => window.scrollTo(0, 0)}>
+            <Button
+              data-testid="button-referral-faq"
+              size="lg"
+              className="bg-white text-primary hover:bg-blue-50 font-semibold px-8 py-3 "
+            >
+              <HandCoins className="w-5 h-5 mr-2" />
+              Referral Program FAQ
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </Link>
+        </div>
+      </section>
+
       {/* Contact Form and Office Locations */}
-      <section className="py-16 bg-gray-50">
+      {/* <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             
-            {/* Contact Form */}
+            
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
                 Send us a Message
@@ -269,7 +326,7 @@ export default function Contact() {
               </Card>
             </div>
 
-            {/* Office Locations */}
+            
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
                 Our Offices
@@ -304,7 +361,6 @@ export default function Contact() {
                 ))}
               </div>
 
-              {/* FAQ Link */}
               <div className="mt-8 p-6 bg-blue-50 rounded-lg">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   <HeadphonesIcon className="w-5 h-5 inline mr-2" />
@@ -325,7 +381,7 @@ export default function Contact() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

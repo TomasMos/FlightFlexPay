@@ -105,12 +105,12 @@ export function FlightSearchForm({
   return (
     <section className="bg-cover bg-no-repeat bg-center border-b border-splickets-slate-200 min-h-dvh flex flex-col gap-20 py-20 lg:py-0"
       style={{ backgroundImage: `url(${plane})` }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow flex flex-col justify-center gap-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow flex flex-col justify-center gap-20 ">
           <div
-            className="rounded-2xl backdrop-blur-md bg-white/30 p-8 shadow-lg"
+            className="rounded-2xl backdrop-blur-md bg-white/30 p-20 shadow-lg"
             data-testid="glass-container"
           >
-            <div className="text-center mb-8">
+            <div className="text-center">
               <h1
                 className="text-5xl md:text-6xl font-bold text-splickets-slate-900 mb-8"
                 data-testid="title-main"
@@ -118,7 +118,7 @@ export function FlightSearchForm({
                 Book Now, Pay Later
               </h1>
               <p
-                className="text-xl md:text-2xl text-gray-900 mb-8 leading-relaxed"
+                className="text-xl md:text-2xl text-gray-900 leading-relaxed"
                 data-testid="text-subtitle"
               >
                 Lock in early prices with a 20% deposit and spread the rest over flexible installments
