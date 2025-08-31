@@ -387,7 +387,7 @@ export default function About() {
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               <p className="text-sm text-blue-200">
-                Or send us your CV at careers@splickets.com
+                Or send us your CV at careers@splickets.app
               </p>
             </div>
           </div>

@@ -1,23 +1,23 @@
 import Stripe from "stripe";
 
 // ---------------- Production --------------
-// if (!process.env.STRIPE_SECRET_KEY) {
-//   throw new Error("STRIPE_SECRET_KEY environment variable is required");
-// }
-
-// export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-//   apiVersion: "2025-07-30.basil",
-// });
-// -----------------------------------------
-
-// ---------------- TEST --------------
-if (!process.env.STRIPE_SECRET_KEY_TEST) {
+if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY environment variable is required");
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY_TEST, {
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-07-30.basil",
 });
+// -----------------------------------------
+
+// ---------------- TEST --------------
+// if (!process.env.STRIPE_SECRET_KEY_TEST) {
+//   throw new Error("STRIPE_SECRET_KEY environment variable is required");
+// }
+
+// export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY_TEST, {
+//   apiVersion: "2025-07-30.basil",
+// });
 // -----------------------------------------
 
 export interface PaymentIntentData {
@@ -197,11 +197,6 @@ export class StripeService {
       ? { product: productId }
       : { product_data: { name: "Flight Installment" } };
 
-    console.log(`product`, product)
-    console.log(`amount`, amount)
-    console.log(`currency`, currency)
-    console.log(`interval`, interval)
-    console.log(`interval_count`, interval_count)
     try {
       const price = await stripe.prices.create({
         unit_amount: Math.round(amount * 100), // Convert dollars to cents

@@ -92,7 +92,7 @@ export function SupportTab() {
                 <Button 
                   variant="outline" 
                   className="w-full border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
-                  onClick={() => window.open('mailto:support@splickets.com', '_blank')}
+                  onClick={() => window.open('mailto:support@splickets.app', '_blank')}
                   data-testid="button-send-email"
                 >
                   Send Email

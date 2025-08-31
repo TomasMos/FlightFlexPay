@@ -36,14 +36,14 @@ const contactMethods = [
     available: "24/7",
     link: 'mailto:support@splickets.app'
   },
-  {
-    icon: MessageCircle,
-    title: "Live Chat",
-    description: "Chat with our support team for immediate assistance",
-    contact: "Available in app",
-    available: "Mon-Fri, 9AM-6PM GMT",
-    link: 'https://wa.me/447442782596'
-  },
+  // {
+  //   icon: MessageCircle,
+  //   title: "Live Chat",
+  //   description: "Chat with our support team for immediate assistance",
+  //   contact: "Available in app",
+  //   available: "Mon-Fri, 9AM-6PM GMT",
+  //   link: 'https://wa.me/447442782596'
+  // },
   // {
   //   icon: Phone,
   //   title: "Phone Support",
@@ -138,7 +138,7 @@ export default function Contact() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-8 mb-16">
             {contactMethods.map((method, index) => (
               <a href={method.link} target="_blank" className="block cursor-pointer">
               <Card

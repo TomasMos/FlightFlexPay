@@ -38,6 +38,7 @@ interface BookingConfirmationData {
     installmentAmount?: number;
     installmentCount?: number;
     frequency?: string;
+    currency: string
   };
   bookingReference: string;
 }
@@ -82,7 +83,7 @@ export class EmailService {
     try {
       const msg: any = {
         to: params.to,
-        from: params.from || process.env.FROM_EMAIL || "noreply@splickets.com",
+        from: params.from || process.env.FROM_EMAIL || "no-reply@splickets.app",
         subject: params.subject,
       };
 
@@ -141,20 +142,20 @@ export class EmailService {
         <div style="background: #f8fafc; padding: 20px; margin: 20px 0; border-radius: 8px;">
           <h3 style="color: #374151; margin-top: 0;">Flight Details</h3>
           <p><strong>Route:</strong> ${data.flightDetails.origin} → ${data.flightDetails.destination}</p>
-          <p><strong>Departure:</strong> ${new Date(data.flightDetails.departureDate)}</p>
-          ${data.flightDetails.returnDate ? `<p><strong>Return:</strong> ${new Date(data.flightDetails.returnDate)}</p>` : ""}
-          <p><strong>Passengers:</strong> ${data.flightDetails.passengers}</p>
+          <p><strong>Departure:</strong> ${new Date(data.flightDetails.departureDate).toLocaleString()}</p>
+          ${data.flightDetails.returnDate ? `<p><strong>Return:</strong> ${new Date(data.flightDetails.returnDate).toLocaleString()}</p>` : ""}
+          <p><strong>Passengers:</strong>  ${data.flightDetails.passengers}</p>
           <p><strong>Booking Reference:</strong> ${data.bookingReference}</p>
         </div>
         
         <div style="background: #ecfdf5; padding: 20px; margin: 20px 0; border-radius: 8px;">
           <h3 style="color: #065f46; margin-top: 0;">Payment Plan</h3>
-          <p><strong>Total Amount:</strong> $${data.paymentPlan.totalAmount.toFixed(2)}</p>
-          <p><strong>Deposit Paid:</strong> $${data.paymentPlan.depositAmount.toFixed(2)}</p>
+          <p><strong>Total Amount:</strong> ${data.paymentPlan.currency} ${data.paymentPlan.totalAmount.toFixed(2)}</p>
+          <p><strong>Deposit Paid:</strong> ${data.paymentPlan.currency} ${data.paymentPlan.depositAmount.toFixed(2)}</p>
           ${
             data.paymentPlan.installmentAmount
               ? `
-            <p><strong>Installments:</strong> ${data.paymentPlan.installmentCount} payments of $${data.paymentPlan.installmentAmount.toFixed(2)} ${data.paymentPlan.frequency}</p>
+            <p><strong>Installments:</strong> ${data.paymentPlan.installmentCount} payments of ${data.paymentPlan.currency} ${data.paymentPlan.installmentAmount.toFixed(2)} ${data.paymentPlan.frequency}</p>
           `
               : ""
           }
@@ -165,7 +166,7 @@ export class EmailService {
         <div style="background: #f0f9ff; padding: 20px; margin: 30px 0; border-radius: 8px; text-align: center;">
           <h3 style="color: #1e40af; margin-top: 0;">Complete Your Account Setup</h3>
           <p style="margin: 10px 0;">Create your Splickets account to manage your bookings and payment schedule:</p>
-          <a href="${'https://ed801cdd-18e8-4f91-90d2-632b822ebf55-00-3kn0zrdci336.spock.replit.dev/signin?signup=true' }" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 10px;">Create Account</a>
+          <a href="${'https://splickets.app/signin?signup=true' }" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 10px;">Create Account</a>
         </div>
         
         <p style="color: #6b7280; font-size: 14px; margin-top: 40px;">
@@ -202,7 +203,7 @@ Thank you for choosing Splickets!
 
     return this.sendEmail({
       to: email,
-      from: "tmoschides@gmail.com",
+      from: "no-reply@splickets.app",
       subject,
       text,
       html,
@@ -261,7 +262,7 @@ Thank you for choosing Splickets!
 
     return this.sendEmail({
       to: email,
-      from: "tmoschides@gmail.com",
+      from: "no-reply@splickets.app",
       subject,
       text,
       html,
@@ -320,7 +321,7 @@ The Splickets Team
 
     return this.sendEmail({
       to: email,
-      from: "tmoschides@gmail.com",
+      from: "no-reply@splickets.app",
       subject,
       text,
       html,
@@ -345,7 +346,6 @@ The Splickets Team
 
     try {
       const [response, body] = await client.request(request);
-      console.log("Added lead:", body);
     } catch (err: unknown) {
       if (err && typeof err === "object" && "response" in err) {
         const e = err as { response?: { body?: unknown } };
