@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CreditCard, CheckCircle } from "lucide-react";
 
 // Initialize Stripe Test
-const stripePromise = loadStripe("pk_test_51Rt7ymAUy8x2iu0HB3xDTUlgU7zGr0QukGNjkcrQHbK1HmQtgKQziPH0DqQzQ2SxFVTbxRhhYqUXu43UqB2qn3fc00l5IihEVR");
+const stripePromise = loadStripe("pk_live_51MgwsMAmEcsh1VOd2iSLbvZ7335oyK2OxjO1QrPM5lab8tU87jldpeUbHbhmTZuqSmJirLt02o3bLUfOokze4ENJ00NWRTsZuh");
 
 interface PaymentFormProps {
   onSuccess: (paymentIntent: any) => void;
