@@ -32,6 +32,9 @@ import {
   stopoverDuration,
 } from "@/utils/formatters";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import { trackContactSubmit } from "@/lib/metaPixel";
 
 // Passenger form schema
 const passengerSchema = z.object({
@@ -279,6 +282,9 @@ export default function PassengerDetails() {
     if (allFormsValid) {
       const allPassengerData = passengerForms.map((form) => form.getValues());
       const contactData = contactForm.getValues();
+
+      // Track contact details submission in Meta Pixel
+      trackContactSubmit(flight?.id || '', allPassengerData.length);
 
       try {
         // Save to database as lead

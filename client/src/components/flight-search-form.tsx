@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { SUPPORTED_CURRENCIES, determineUserCurrency, saveCurrencyToStorage, type CurrencyCode } from "@/utils/currency";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { trackFlightSearch } from "@/lib/metaPixel";
 import plane from '../assets/plane.jpg'
 
 interface FlightSearchFormProps {
@@ -84,6 +85,9 @@ export function FlightSearchForm({
       destination: destinationIata,
       currency: selectedCurrency,
     };
+    
+    // Track flight search in Meta Pixel
+    trackFlightSearch(originIata || data.origin, destinationIata || data.destination, data.passengers);
     
     // Save currency to localStorage
     saveCurrencyToStorage(selectedCurrency);

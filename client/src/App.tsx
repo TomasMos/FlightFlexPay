@@ -20,6 +20,7 @@ import NotFound from "@/pages/not-found";
 import { Layout } from '@/pages/Layout';
 import { useEffect } from "react";
 import { initGA } from "./lib/analytics";
+import { initMetaPixel } from "./lib/metaPixel";
 import { useAnalytics } from "./hooks/use-analytics";
 
 
@@ -47,14 +48,17 @@ function Router() {
 }
 
 function App() {
-  // Initialize Google Analytics when app loads
+  // Initialize Google Analytics and Meta Pixel when app loads
   useEffect(() => {
-    // Verify required environment variable is present
+    // Initialize Google Analytics
     if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
       console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
     } else {
       initGA();
     }
+    
+    // Initialize Meta Pixel
+    initMetaPixel();
   }, []);
 
   return (

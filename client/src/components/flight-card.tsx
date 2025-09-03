@@ -5,6 +5,7 @@ import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { Carrier } from "@/components/carrier";
 import { formatTime, formatDuration, formattedPrice } from "@/utils/formatters";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { trackFlightView } from "@/lib/metaPixel";
 
 export function FlightCard({
   flight,
@@ -21,7 +22,12 @@ export function FlightCard({
     <div
       className="bg-white rounded-xl hover:shadow-xl transition-all duration-300 shadow-md border border-splickets-slate-200 hover:shadow-md transition-shadow p-6 cursor-pointer hover:scale-[1.01]"
       data-testid={`card-flight-${flight.id}`}
-      onClick={() => onSelect(flight)}
+      onClick={() => {
+        // Track flight view in Meta Pixel
+        const route = `${flight.itineraries[0]?.segments[0]?.departure?.iataCode || ''} → ${flight.itineraries[0]?.segments[flight.itineraries[0]?.segments.length - 1]?.arrival?.iataCode || ''}`;
+        trackFlightView(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
+        onSelect(flight);
+      }}
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch  ">
         {/* Flight Details */}

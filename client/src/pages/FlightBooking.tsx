@@ -21,6 +21,7 @@ import {
   stopoverDuration,
 } from "@/utils/formatters";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { trackPurchase } from "@/lib/metaPixel";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
@@ -244,6 +245,12 @@ export default function FlightBooking() {
       };
 
       localStorage.setItem("bookingData", JSON.stringify(bookingData));
+      
+      // Track purchase in Meta Pixel
+      const totalValue = parseFloat(flight.price.total);
+      const passengerCount = passengerData?.passengers?.length || 1;
+      trackPurchase(flight.id, totalValue, flight.price.currency, passengerCount);
+      
       setBookingConfirmed(true);
     } catch (error) {
       console.error("Error completing booking:", error);

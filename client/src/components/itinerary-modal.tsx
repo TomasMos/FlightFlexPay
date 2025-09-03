@@ -23,6 +23,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Carrier } from "@/components/carrier";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { trackFlightSelect } from "@/lib/metaPixel";
 
 interface ItineraryModalProps {
   flight: EnhancedFlightWithPaymentPlan;
@@ -467,6 +468,10 @@ export function ItineraryModal({
               className="bg-blue-600 hover:bg-blue-700 text-white px-8"
               data-testid="button-select-flight"
               onClick={() => {
+                // Track flight selection in Meta Pixel
+                const route = `${flight.itineraries[0]?.segments[0]?.departure?.iataCode || ''} → ${flight.itineraries[0]?.segments[flight.itineraries[0]?.segments.length - 1]?.arrival?.iataCode || ''}`;
+                trackFlightSelect(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
+                
                 // Store flight data in localStorage for the passenger details page
                 localStorage.setItem("selectedFlight", JSON.stringify(flight));
                 // Navigate to passenger details page
