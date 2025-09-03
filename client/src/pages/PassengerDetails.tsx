@@ -19,7 +19,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Calendar, ChevronUp } from "lucide-react";
+import { Calendar, ChevronUp, Loader2 } from "lucide-react";
 import type { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { countries, diallingCodes } from "@/utils/Lists";
 import {
@@ -76,6 +76,7 @@ export default function PassengerDetails() {
   const [searchId, setSearchId] = useState(0);
   const [priceDetailsOpen, setPriceDetailsOpen] = useState(false);
   const [userCountry, setUserCountry] = useState("ZA"); // Default to South Africa
+  const [isLoading, setIsLoading] = useState(false);
 
   // Create forms for each passenger (hooks must be called at top level)
   const passengerForm1 = useForm<PassengerForm>({
@@ -270,23 +271,25 @@ export default function PassengerDetails() {
   }, [params?.flightId, passengerCount]); // Add passengerCount as a dependency
 
   const handleContinue = async () => {
-    // Trigger validation on all forms
-    const passengerValidations = await Promise.all(
-      passengerForms.map((form) => form.trigger()),
-    );
-    const contactValid = await contactForm.trigger();
+    setIsLoading(true);
+    
+    try {
+      // Trigger validation on all forms
+      const passengerValidations = await Promise.all(
+        passengerForms.map((form) => form.trigger()),
+      );
+      const contactValid = await contactForm.trigger();
 
-    const allFormsValid =
-      passengerValidations.every((isValid) => isValid) && contactValid;
+      const allFormsValid =
+        passengerValidations.every((isValid) => isValid) && contactValid;
 
-    if (allFormsValid) {
-      const allPassengerData = passengerForms.map((form) => form.getValues());
-      const contactData = contactForm.getValues();
+      if (allFormsValid) {
+        const allPassengerData = passengerForms.map((form) => form.getValues());
+        const contactData = contactForm.getValues();
 
-      // Track contact details submission in Meta Pixel
-      trackContactSubmit(flight?.id || '', allPassengerData.length);
+        // Track contact details submission in Meta Pixel
+        trackContactSubmit(flight?.id || '', allPassengerData.length);
 
-      try {
         // Save to database as lead
         const response = await fetch("/api/leads", {
           method: "POST",
@@ -321,10 +324,12 @@ export default function PassengerDetails() {
         localStorage.setItem("leadId", result.leadId.toString());
 
         setLocation("/flight-search/book");
-      } catch (error) {
-        console.error("Error saving passenger details:", error);
-        alert("Failed to save passenger details. Please try again.");
       }
+    } catch (error) {
+      console.error("Error saving passenger details:", error);
+      alert("Failed to save passenger details. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -761,11 +766,19 @@ export default function PassengerDetails() {
               <div className="mt-8 flex justify-center">
                 <Button
                   onClick={handleContinue}
+                  disabled={isLoading}
                   size="lg"
                   className="px-12 py-3 text-lg"
                   data-testid="button-continue"
                 >
-                  Continue
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Continue"
+                  )}
                 </Button>
               </div>
             </div>
