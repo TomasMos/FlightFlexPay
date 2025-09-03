@@ -57,7 +57,7 @@ function App() {
       initGA();
     }
     
-    // Initialize Meta Pixel
+    // Initialize Meta Pixel (production only)
     initMetaPixel();
   }, []);
 

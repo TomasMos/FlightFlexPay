@@ -8,6 +8,12 @@ declare global {
 
 // Initialize Meta Pixel
 export const initMetaPixel = () => {
+  // Only initialize in production environment
+  if (import.meta.env.MODE !== 'production') {
+    console.log('Meta Pixel disabled in development mode');
+    return;
+  }
+
   const pixelId = '1431128794853992';
 
   // Prevent duplicate initialization
