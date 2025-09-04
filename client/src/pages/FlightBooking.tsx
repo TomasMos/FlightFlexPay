@@ -82,10 +82,25 @@ export default function FlightBooking() {
   const departureDate = new Date(
     flight.itineraries[0].segments[0].departure.at,
   );
-  const twoWeeksBeforeDeparture = new Date(departureDate);
-  twoWeeksBeforeDeparture.setDate(departureDate.getDate() - 19);
+ 
 
   const today = new Date();
+
+  const sevenMonthsFromToday = new Date(today);
+  sevenMonthsFromToday.setMonth(today.getMonth() + 7);
+
+  let twoWeeksBeforeDeparture;
+
+  if (departureDate > sevenMonthsFromToday) {
+    // Case 1: Departure is more than 7 months away
+    twoWeeksBeforeDeparture = new Date(today);
+    twoWeeksBeforeDeparture.setMonth(today.getMonth() + 6); // 6 months from today
+  } else {
+    // Case 2: Departure is within 7 months
+    twoWeeksBeforeDeparture = new Date(departureDate);
+    twoWeeksBeforeDeparture.setDate(departureDate.getDate() - 19); // 19 days before departure
+  }
+  
   const weeksUntilPayoff = Math.max(
     1,
     Math.ceil(
