@@ -22,6 +22,7 @@ import {
 } from "@/utils/formatters";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackPurchase } from "@/lib/metaPixel";
+import { trackPurchaseConversion } from "@/lib/analytics";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
@@ -265,6 +266,9 @@ export default function FlightBooking() {
       const totalValue = parseFloat(flight.price.total);
       const passengerCount = passengerData?.passengers?.length || 1;
       trackPurchase(flight.id, totalValue, flight.price.currency, passengerCount);
+      
+      // Track Google Ads conversion
+      trackPurchaseConversion(totalValue, flight.price.currency);
       
       setBookingConfirmed(true);
     } catch (error) {
