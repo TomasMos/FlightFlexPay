@@ -24,7 +24,7 @@ import { useLocation } from "wouter";
 import { Carrier } from "@/components/carrier";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackFlightSelect } from "@/lib/metaPixel";
-import { trackFlightSelectConversion } from "@/lib/analytics";
+import { trackFlightSelectGTM } from "@/lib/analytics";
 
 interface ItineraryModalProps {
   flight: EnhancedFlightWithPaymentPlan;
@@ -473,8 +473,8 @@ export function ItineraryModal({
                 const route = `${flight.itineraries[0]?.segments[0]?.departure?.iataCode || ''} → ${flight.itineraries[0]?.segments[flight.itineraries[0]?.segments.length - 1]?.arrival?.iataCode || ''}`;
                 trackFlightSelect(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
                 
-                // Track Google Ads conversion
-                trackFlightSelectConversion();
+                // Track Google Tag Manager event
+                trackFlightSelectGTM(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
                 
                 // Store flight data in localStorage for the passenger details page
                 localStorage.setItem("selectedFlight", JSON.stringify(flight));

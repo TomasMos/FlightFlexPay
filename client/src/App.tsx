@@ -19,7 +19,7 @@ import Contact from "@/pages/Contact";
 import NotFound from "@/pages/not-found";
 import { Layout } from '@/pages/Layout';
 import { useEffect } from "react";
-import { initTracking } from "./lib/analytics";
+import { initGTM } from "./lib/analytics";
 import { initMetaPixel } from "./lib/metaPixel";
 import { useAnalytics } from "./hooks/use-analytics";
 
@@ -50,8 +50,8 @@ function Router() {
 function App() {
   // Initialize Google Analytics and Meta Pixel when app loads
   useEffect(() => {
-    // Initialize unified tracking (Google Analytics + Google Ads)
-    initTracking();
+    // Initialize Google Tag Manager
+    initGTM();
     
     // Initialize Meta Pixel (production only)
     initMetaPixel();

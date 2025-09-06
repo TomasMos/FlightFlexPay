@@ -1,119 +1,83 @@
-// Define the gtag function globally
+// Define dataLayer globally for GTM
 declare global {
   interface Window {
     dataLayer: any[];
-    gtag: (...args: any[]) => void;
   }
 }
 
-// Initialize unified tracking (Google Analytics + Google Ads)
-export const initTracking = () => {
+// Initialize GTM dataLayer
+export const initGTM = () => {
   // Only initialize in production environment
   if (import.meta.env.MODE !== 'production') {
-    console.log('Google Analytics and Google Ads tracking disabled in development mode');
+    console.log('Google Tag Manager tracking disabled in development mode');
     return;
   }
 
-  const gaId = import.meta.env.VITE_GA_MEASUREMENT_ID;
-  const googleAdsId = import.meta.env.VITE_GOOGLE_ADS_ID;
-
-  if (!gaId && !googleAdsId) {
-    console.warn('No tracking IDs configured');
-    return;
-  }
-
-  // Use Google Ads ID for gtag script if available, otherwise GA ID
-  const scriptId = googleAdsId || gaId;
-
-  // Add unified gtag script to the head
-  const script1 = document.createElement('script');
-  script1.async = true;
-  script1.src = `https://www.googletagmanager.com/gtag/js?id=${scriptId}`;
-  document.head.appendChild(script1);
-
-  // Initialize gtag with both GA and Google Ads
-  const script2 = document.createElement('script');
-  script2.textContent = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    ${gaId ? `gtag('config', '${gaId}');` : ''}
-    ${googleAdsId ? `gtag('config', '${googleAdsId}');` : ''}
-  `;
-  document.head.appendChild(script2);
-};
-
-// Legacy function for backward compatibility
-export const initGA = () => {
-  initTracking();
-};
-
-// Track page views - useful for single-page applications
-export const trackPageView = (url: string) => {
-  if (typeof window === 'undefined' || !window.gtag) return;
-  if (import.meta.env.MODE !== 'production') return;
+  // Initialize dataLayer if it doesn't exist
+  window.dataLayer = window.dataLayer || [];
   
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
-  if (!measurementId) return;
-  
-  window.gtag('config', measurementId, {
-    page_path: url
+  // Push initial GTM data
+  window.dataLayer.push({
+    'gtm.start': new Date().getTime(),
+    event: 'gtm.js'
   });
 };
 
-// Track events
-export const trackEvent = (
-  action: string, 
-  category?: string, 
-  label?: string, 
-  value?: number
-) => {
-  if (typeof window === 'undefined' || !window.gtag) return;
+// GTM dataLayer event tracking functions
+const pushDataLayerEvent = (event: string, eventData?: any) => {
+  if (typeof window === 'undefined' || !window.dataLayer) return;
   if (import.meta.env.MODE !== 'production') return;
   
-  window.gtag('event', action, {
-    event_category: category,
-    event_label: label,
-    value: value,
+  window.dataLayer.push({
+    event,
+    ...eventData
   });
 };
 
-// Google Ads Conversion Tracking
-export const trackConversion = (
-  conversionLabel: string,
-  value?: number,
-  currency?: string
-) => {
-  if (typeof window === 'undefined' || !window.gtag) return;
-  if (import.meta.env.MODE !== 'production') return;
-  
-  const googleAdsId = import.meta.env.VITE_GOOGLE_ADS_ID;
-  if (!googleAdsId) return;
-  
-  window.gtag('event', 'conversion', {
-    'send_to': `${googleAdsId}/${conversionLabel}`,
-    'value': value || 1.0,
-    'currency': currency || 'GBP'
+// Specific GTM tracking functions for each user action
+export const trackFlightSearchGTM = (origin: string, destination: string, passengers: number) => {
+  pushDataLayerEvent('flight_search', {
+    origin,
+    destination,
+    passengers,
+    timestamp: new Date().toISOString()
   });
 };
 
-// Specific conversion tracking functions
-export const trackFlightSearchConversion = () => {
-  trackConversion('E8FpCLu4xJQbEK-ujKhB', 1.0, 'GBP');
+export const trackFlightInspectGTM = (flightId: string, route: string, price: number, currency: string) => {
+  pushDataLayerEvent('flight_inspect', {
+    flight_id: flightId,
+    route,
+    price,
+    currency,
+    timestamp: new Date().toISOString()
+  });
 };
 
-export const trackFlightInspectConversion = () => {
-  trackConversion('E8FpCLu4xJQbEK-ujKhB', 1.0, 'GBP');
+export const trackFlightSelectGTM = (flightId: string, route: string, price: number, currency: string) => {
+  pushDataLayerEvent('flight_select', {
+    flight_id: flightId,
+    route,
+    price,
+    currency,
+    timestamp: new Date().toISOString()
+  });
 };
 
-export const trackFlightSelectConversion = () => {
-  trackConversion('E8FpCLu4xJQbEK-ujKhB', 1.0, 'GBP');
+export const trackContactSubmitGTM = (flightId: string, passengerCount: number) => {
+  pushDataLayerEvent('contact_submit', {
+    flight_id: flightId,
+    passenger_count: passengerCount,
+    timestamp: new Date().toISOString()
+  });
 };
 
-export const trackContactSubmitConversion = () => {
-  trackConversion('E8FpCLu4xJQbEK-ujKhB', 1.0, 'GBP');
-};
-
-export const trackPurchaseConversion = (value: number, currency: string) => {
-  trackConversion('E8FpCLu4xJQbEK-ujKhB', value, currency);
+export const trackPurchaseGTM = (flightId: string, totalValue: number, currency: string, passengerCount: number) => {
+  pushDataLayerEvent('purchase', {
+    flight_id: flightId,
+    value: totalValue,
+    currency,
+    passenger_count: passengerCount,
+    timestamp: new Date().toISOString()
+  });
 };

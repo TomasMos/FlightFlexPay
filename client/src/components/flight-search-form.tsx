@@ -20,7 +20,7 @@ import { SUPPORTED_CURRENCIES, determineUserCurrency, saveCurrencyToStorage, typ
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackFlightSearch } from "@/lib/metaPixel";
-import { trackFlightSearchConversion } from "@/lib/analytics";
+import { trackFlightSearchGTM } from "@/lib/analytics";
 import plane from '../assets/plane.jpg'
 
 interface FlightSearchFormProps {
@@ -90,8 +90,8 @@ export function FlightSearchForm({
     // Track flight search in Meta Pixel
     trackFlightSearch(originIata || data.origin, destinationIata || data.destination, data.passengers);
     
-    // Track Google Ads conversion
-    trackFlightSearchConversion();
+    // Track Google Tag Manager event
+    trackFlightSearchGTM(originIata || data.origin, destinationIata || data.destination, data.passengers);
     
     // Save currency to localStorage
     saveCurrencyToStorage(selectedCurrency);

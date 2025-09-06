@@ -22,7 +22,7 @@ import {
 } from "@/utils/formatters";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackPurchase } from "@/lib/metaPixel";
-import { trackPurchaseConversion } from "@/lib/analytics";
+import { trackPurchaseGTM } from "@/lib/analytics";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
@@ -267,8 +267,8 @@ export default function FlightBooking() {
       const passengerCount = passengerData?.passengers?.length || 1;
       trackPurchase(flight.id, totalValue, flight.price.currency, passengerCount);
       
-      // Track Google Ads conversion
-      trackPurchaseConversion(totalValue, flight.price.currency);
+      // Track Google Tag Manager event
+      trackPurchaseGTM(flight.id, totalValue, flight.price.currency, passengerCount);
       
       setBookingConfirmed(true);
     } catch (error) {

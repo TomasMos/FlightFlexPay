@@ -6,7 +6,7 @@ import { Carrier } from "@/components/carrier";
 import { formatTime, formatDuration, formattedPrice } from "@/utils/formatters";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackFlightView } from "@/lib/metaPixel";
-import { trackFlightInspectConversion } from "@/lib/analytics";
+import { trackFlightInspectGTM } from "@/lib/analytics";
 
 export function FlightCard({
   flight,
@@ -28,8 +28,8 @@ export function FlightCard({
         const route = `${flight.itineraries[0]?.segments[0]?.departure?.iataCode || ''} → ${flight.itineraries[0]?.segments[flight.itineraries[0]?.segments.length - 1]?.arrival?.iataCode || ''}`;
         trackFlightView(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
         
-        // Track Google Ads conversion
-        trackFlightInspectConversion();
+        // Track Google Tag Manager event
+        trackFlightInspectGTM(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
         
         onSelect(flight);
       }}

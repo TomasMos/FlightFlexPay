@@ -35,7 +35,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackContactSubmit } from "@/lib/metaPixel";
-import { trackContactSubmitConversion } from "@/lib/analytics";
+import { trackContactSubmitGTM } from "@/lib/analytics";
 
 // Passenger form schema
 const passengerSchema = z.object({
@@ -291,8 +291,8 @@ export default function PassengerDetails() {
         // Track contact details submission in Meta Pixel
         trackContactSubmit(flight?.id || '', allPassengerData.length);
         
-        // Track Google Ads conversion
-        trackContactSubmitConversion();
+        // Track Google Tag Manager event
+        trackContactSubmitGTM(flight?.id || '', allPassengerData.length);
 
         // Save to database as lead
         const response = await fetch("/api/leads", {
