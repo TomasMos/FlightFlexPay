@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
-import { trackPageView } from '@/lib/analytics';
 import { trackPageView as trackMetaPageView } from '@/lib/metaPixel';
 
 export const useAnalytics = () => {
@@ -9,9 +8,7 @@ export const useAnalytics = () => {
   
   useEffect(() => {
     if (location !== prevLocationRef.current) {
-      // Track for Google Analytics
-      trackPageView(location);
-      // Track for Meta Pixel
+      // Track for Meta Pixel (GTM handles page tracking automatically)
       trackMetaPageView();
       prevLocationRef.current = location;
     }
