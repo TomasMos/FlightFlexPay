@@ -6,6 +6,7 @@ import {
   formatDate,
   toTitleCase,
   stopoverDuration,
+  formattedPrice
 } from "@/utils/formatters";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -455,18 +456,17 @@ export function ItineraryModal({
           <div className="flex items-center justify-between">
             <div className="">
               <div className="text-2xl font-bold">
-                {currencySymbol}{parseFloat(flight.price.total).toFixed(2)}
+                {currencySymbol}{formattedPrice(Number(flight.price.total))}
               </div>
               {flight.paymentPlanEligible && (
                 <div className="text-splickets-slate-300 text-sm">
-                  {currencySymbol}{flight.paymentPlan?.installmentAmount?.toFixed(2) || "0.00"}
-                  /week
+                  {currencySymbol}{formattedPrice(Number(flight.paymentPlan?.installmentAmount))}/week
                 </div>
               )}
             </div>
             <Button
               size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+              className="bg-primary hover:bg-blue-700 text-white px-8"
               data-testid="button-select-flight"
               onClick={() => {
                 // Track flight selection in Meta Pixel

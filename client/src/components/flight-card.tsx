@@ -21,18 +21,9 @@ export function FlightCard({
 
   return (
     <div
-      className="bg-white rounded-xl hover:shadow-xl transition-all duration-300 shadow-md border border-splickets-slate-200 hover:shadow-md transition-shadow p-6 cursor-pointer hover:scale-[1.01]"
+      className="bg-white rounded-xl hover:shadow-xl transition-all duration-300 shadow-md border border-splickets-slate-200 hover:shadow-md transition-shadow p-6 hover:scale-[1.01]"
       data-testid={`card-flight-${flight.id}`}
-      onClick={() => {
-        // Track flight view in Meta Pixel
-        const route = `${flight.itineraries[0]?.segments[0]?.departure?.iataCode || ''} → ${flight.itineraries[0]?.segments[flight.itineraries[0]?.segments.length - 1]?.arrival?.iataCode || ''}`;
-        trackFlightView(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
-        
-        // Track Google Tag Manager event
-        trackFlightInspectGTM(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
-        
-        onSelect(flight);
-      }}
+      
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch  ">
         {/* Flight Details */}
@@ -109,7 +100,7 @@ export function FlightCard({
         </div>
         <div className="flex flex-col items-center justify-center lg:items-end gap-4">
           {/* Pricing */}
-          <div className="items-center lg:items-end flex flex-col gap-6">
+          <div className="items-center  flex flex-col gap-6">
             <div className="flex flex-row w-full  justify-center ">
               <div className="w-full">
                 <div
@@ -166,6 +157,23 @@ export function FlightCard({
         </div>
       </div>
             )}
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-blue-700 text-white px-8"
+              data-testid="button-select-flight"
+              onClick={() => {
+                // Track flight view in Meta Pixel
+                const route = `${flight.itineraries[0]?.segments[0]?.departure?.iataCode || ''} → ${flight.itineraries[0]?.segments[flight.itineraries[0]?.segments.length - 1]?.arrival?.iataCode || ''}`;
+                trackFlightView(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
+
+                // Track Google Tag Manager event
+                trackFlightInspectGTM(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
+
+                onSelect(flight);
+              }}
+            >
+              See  More Details
+            </Button>
           </div>
         </div>
       </div>

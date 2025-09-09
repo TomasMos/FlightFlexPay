@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { flightSearchSchema, type FlightSearchRequest } from "@shared/schema";
@@ -22,6 +22,8 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackFlightSearch } from "@/lib/metaPixel";
 import { trackFlightSearchGTM } from "@/lib/analytics";
 import plane from '../assets/plane.jpg'
+import { scrollSectionOutOfView } from "../utils/scroll";
+
 
 interface FlightSearchFormProps {
   onSearch: (searchParams: FlightSearchRequest & { currency: CurrencyCode }) => void;
@@ -110,10 +112,13 @@ export function FlightSearchForm({
 
   const today = new Date().toISOString().split("T")[0];
 
+  const sectionRef = useRef<HTMLDivElement>(null);
+
   return (
     <section className="bg-cover bg-no-repeat bg-center border-b border-splickets-slate-200 min-h-dvh flex flex-col gap-20 py-20 lg:py-0"
+      
       style={{ backgroundImage: `url(${plane})` }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow flex flex-col justify-center gap-20 ">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow flex flex-col justify-center gap-20 " ref={sectionRef}>
           <div
             className="rounded-2xl backdrop-blur-md bg-white/30 p-20 shadow-lg"
             data-testid="glass-container"
@@ -319,6 +324,7 @@ export function FlightSearchForm({
             <div className="flex justify-center pt-4">
               <Button
                 type="submit"
+                onClick={() => sectionRef.current && scrollSectionOutOfView(sectionRef.current, { headerOffset: 72 })}
                 disabled={isLoading}
                 className="bg-splickets-accent hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
                 data-testid="button-search-flights"
