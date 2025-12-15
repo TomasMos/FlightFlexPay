@@ -10,6 +10,7 @@ import {
   paymentPlans,
   installments,
   bookings,
+  promoCodes,
   flightSearchSchema,
 } from "@shared/schema";
 import { amadeusService } from "./services/amadeus";
@@ -949,6 +950,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch payment history" });
     }
   });
+
+  // Promo code validation endpoint
+  app.post("/api/promocodes/validate", async (req, res) => {
+    try {
+      const { code } = req.body;
+      
+      if (!code) {
+        return res.status(400).json({ valid: false, message: "Promo code is required" });
+      }
+      
+      // Validate promo code format: PROMOXXXX where XXXX is a number
+      const promoRegex = /^PROMO(\d+)$/;
+      const match = code.toUpperCase().match(promoRegex);
+      
+      if (!match) {
+        return res.status(400).json({ valid: false, message: "Invalid promo code format" });
+      }
+      
+      // Check if promo code exists in database and is active
+      const [promoCode] = await db
+        .select()
+        .from(promoCodes)
+        .where(and(
+          eq(promoCodes.code, code.toUpperCase()),
+          eq(promoCodes.isActive, true)
+        ))
+        .limit(1);
+      
+      if (!promoCode) {
+        return res.status(400).json({ valid: false, message: "Invalid or expired promo code" });
+      }
+      
+      res.json({
+        valid: true,
+        amount: parseFloat(promoCode.amount),
+        code: promoCode.code,
+      });
+    } catch (error) {
+      console.error("Promo code validation error:", error);
+      res.status(500).json({ valid: false, message: "Failed to validate promo code" });
+    }
+  });
+
+  // Seed promo codes on startup (runs once)
+  (async () => {
+    try {
+      // Check if PROMO2050 already exists
+      const [existing] = await db
+        .select()
+        .from(promoCodes)
+        .where(eq(promoCodes.code, "PROMO2050"))
+        .limit(1);
+      
+      if (!existing) {
+        await db.insert(promoCodes).values({
+          code: "PROMO2050",
+          amount: "2050",
+          isActive: true,
+        });
+        console.log("Seeded promo code: PROMO2050");
+      }
+    } catch (error) {
+      console.log("Promo code seeding skipped or failed:", error);
+    }
+  })();
 
   const httpServer = createServer(app);
   return httpServer;

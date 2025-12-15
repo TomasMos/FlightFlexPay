@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, Check, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Check, Loader2, Tag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import StripePaymentForm from "@/components/StripePaymentForm";
@@ -23,10 +24,12 @@ import {
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackPurchase } from "@/lib/metaPixel";
 import { trackPurchaseGTM } from "@/lib/analytics";
+import { useToast } from "@/hooks/use-toast";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
   const { currencySymbol, currency } = useCurrency();
+  const { toast } = useToast();
   const [flight, setFlight] = useState<EnhancedFlightWithPaymentPlan | null>(
     null,
   );
@@ -39,6 +42,12 @@ export default function FlightBooking() {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  
+  // Promo code state
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; amount: number } | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState("");
 
   // Load flight and passenger data from localStorage
   useEffect(() => {
@@ -74,8 +83,54 @@ export default function FlightBooking() {
       setSelectedDeposit(100)
     }
 
-  // Payment calculations
-  const flightTotal = parseFloat(flight.price.total);
+  // Payment calculations - use promo code amount if applied
+  const originalFlightTotal = parseFloat(flight.price.total);
+  const flightTotal = appliedPromo ? appliedPromo.amount : originalFlightTotal;
+  
+  // Promo code validation and application
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) {
+      setPromoError("Please enter a promo code");
+      return;
+    }
+    
+    setPromoLoading(true);
+    setPromoError("");
+    
+    try {
+      const response = await fetch("/api/promocodes/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoCode.trim().toUpperCase() }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data.valid) {
+        setPromoError(data.message || "Invalid promo code");
+        return;
+      }
+      
+      setAppliedPromo({ code: data.code, amount: data.amount });
+      setPromoCode("");
+      toast({
+        title: "Promo code applied!",
+        description: `Your new total is ${formatCurrency(data.amount)}`,
+      });
+    } catch (error) {
+      setPromoError("Failed to validate promo code");
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+  
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    toast({
+      title: "Promo code removed",
+      description: "Your original price has been restored",
+    });
+  };
   const depositAmount = (flightTotal * selectedDeposit) / 100;
   const remainingAmount = flightTotal - depositAmount;
 
@@ -531,6 +586,69 @@ export default function FlightBooking() {
                           ))}
                         </CollapsibleContent>
                       </Collapsible>
+                      
+                      {/* Promo Code Section */}
+                      <div className="border-t pt-4 mt-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Tag className="h-4 w-4 text-splickets-slate-600" />
+                          <span className="text-sm font-medium text-splickets-slate-700">Promo Code</span>
+                        </div>
+                        
+                        {appliedPromo ? (
+                          <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
+                            <div className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-medium text-green-800" data-testid="text-applied-promo">
+                                {appliedPromo.code} applied
+                              </span>
+                              <span className="text-xs text-green-600">
+                                (New total: {formatCurrency(appliedPromo.amount)})
+                              </span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleRemovePromo}
+                              className="text-green-700 hover:text-green-900 hover:bg-green-100"
+                              data-testid="button-remove-promo"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Enter promo code"
+                                value={promoCode}
+                                onChange={(e) => {
+                                  setPromoCode(e.target.value.toUpperCase());
+                                  setPromoError("");
+                                }}
+                                className="flex-1"
+                                data-testid="input-promo-code"
+                              />
+                              <Button
+                                onClick={handleApplyPromo}
+                                disabled={promoLoading || !promoCode.trim()}
+                                variant="outline"
+                                data-testid="button-apply-promo"
+                              >
+                                {promoLoading ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  "Apply"
+                                )}
+                              </Button>
+                            </div>
+                            {promoError && (
+                              <p className="text-sm text-red-500" data-testid="text-promo-error">
+                                {promoError}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 </>

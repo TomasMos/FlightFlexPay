@@ -183,6 +183,15 @@ export const bookings = pgTable("bookings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Promo codes table
+export const promoCodes = pgTable("promo_codes", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 12 }).notNull().unique(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Flight search schema for API requests
 export const flightSearchSchema = z.object({
   origin: z.string().min(3, "Origin is required"),
@@ -288,6 +297,8 @@ export const insertInstallmentSchema = createInsertSchema(installments);
 export const selectInstallmentSchema = createSelectSchema(installments);
 export const insertBookingSchema = createInsertSchema(bookings);
 export const selectBookingSchema = createSelectSchema(bookings);
+export const insertPromoCodeSchema = createInsertSchema(promoCodes);
+export const selectPromoCodeSchema = createSelectSchema(promoCodes);
 
 export type InsertFlightSearch = z.infer<typeof insertFlightSearchSchema>;
 export type FlightSearch = z.infer<typeof selectFlightSearchSchema>;
@@ -305,4 +316,6 @@ export type InsertInstallment = z.infer<typeof insertInstallmentSchema>;
 export type Installment = z.infer<typeof selectInstallmentSchema>;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
 export type Booking = z.infer<typeof selectBookingSchema>;
+export type InsertPromoCode = z.infer<typeof insertPromoCodeSchema>;
+export type PromoCode = z.infer<typeof selectPromoCodeSchema>;
 export type FlightSearchRequest = z.infer<typeof flightSearchSchema>;
