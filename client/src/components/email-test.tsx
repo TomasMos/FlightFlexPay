@@ -47,7 +47,7 @@ export function EmailTest() {
       } else {
         toast({
           title: "Email not sent",
-          description: "Email system is configured but sender verification may be needed in SendGrid. Check console for details.",
+          description: "Email system is configured but sender verification may be needed in MailerSend. Check console for details.",
           variant: "destructive",
         });
       }
@@ -73,7 +73,7 @@ export function EmailTest() {
       <CardHeader>
         <CardTitle>Email Testing</CardTitle>
         <CardDescription>
-          Test SendGrid email functionality (development only)
+          Test MailerSend email functionality (development only)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

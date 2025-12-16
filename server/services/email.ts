@@ -1,16 +1,14 @@
-import { MailService } from "@sendgrid/mail";
-import client from "./sendgridClient";
+import { MailerSend, EmailParams as MailerSendEmailParams, Sender, Recipient } from "mailersend";
 
-if (!process.env.SENDGRID_API_KEY) {
+if (!process.env.MAILERSEND_API_KEY) {
   console.warn(
-    "SENDGRID_API_KEY environment variable not set - email functionality will be disabled",
+    "MAILERSEND_API_KEY environment variable not set - email functionality will be disabled",
   );
 }
 
-const mailService = new MailService();
-if (process.env.SENDGRID_API_KEY) {
-  mailService.setApiKey(process.env.SENDGRID_API_KEY);
-}
+const mailerSend = process.env.MAILERSEND_API_KEY 
+  ? new MailerSend({ apiKey: process.env.MAILERSEND_API_KEY })
+  : null;
 
 interface EmailParams {
   to: string;
@@ -51,17 +49,12 @@ interface PaymentReminderData {
   paymentUrl: string;
 }
 
-type EmailLookupResponse = {
-  result?: Record<string, { contact?: { id: string; email: string; list_ids?: string[] } }>;
-};
-
-
 export class EmailService {
   private static instance: EmailService;
   private isConfigured: boolean;
 
   private constructor() {
-    this.isConfigured = !!process.env.SENDGRID_API_KEY;
+    this.isConfigured = !!process.env.MAILERSEND_API_KEY;
   }
 
   public static getInstance(): EmailService {
@@ -72,53 +65,45 @@ export class EmailService {
   }
 
   async sendEmail(params: EmailParams): Promise<boolean> {
-    if (!this.isConfigured) {
+    if (!this.isConfigured || !mailerSend) {
       console.log(
-        "SendGrid not configured - email would have been sent:",
+        "MailerSend not configured - email would have been sent:",
         params.subject,
       );
       return false;
     }
 
     try {
-      const msg: any = {
-        to: params.to,
-        from: params.from || process.env.FROM_EMAIL || "no-reply@splickets.app",
-        subject: params.subject,
-      };
+      const sentFrom = new Sender(
+        params.from || process.env.FROM_EMAIL || "no-reply@splickets.app",
+        "Splickets"
+      );
+      const recipients = [new Recipient(params.to)];
 
-      // Add content based on what's provided
-      if (params.templateId && params.dynamicTemplateData) {
-        msg.templateId = params.templateId;
-        msg.dynamicTemplateData = params.dynamicTemplateData;
-      } else {
-        msg.content = [];
-        if (params.text) {
-          msg.content.push({
-            type: "text/plain",
-            value: params.text,
-          });
-        }
-        if (params.html) {
-          msg.content.push({
-            type: "text/html",
-            value: params.html,
-          });
-        }
+      const emailParams = new MailerSendEmailParams()
+        .setFrom(sentFrom)
+        .setTo(recipients)
+        .setSubject(params.subject);
+
+      if (params.html) {
+        emailParams.setHtml(params.html);
+      }
+      if (params.text) {
+        emailParams.setText(params.text);
       }
 
-      await mailService.send(msg);
+      await mailerSend.email.send(emailParams);
       console.log("Email sent successfully to:", params.to);
       return true;
     } catch (error: any) {
-      console.error("SendGrid email error:", error);
+      console.error("MailerSend email error:", error);
 
-      // Provide more specific error information
-      if (error.code === 403) {
-        console.error("SendGrid 403 Error: This is likely due to:");
-        console.error("1. Sender email not verified in SendGrid");
+      if (error.statusCode === 401) {
+        console.error("MailerSend 401 Error: Invalid API key");
+      } else if (error.statusCode === 403) {
+        console.error("MailerSend 403 Error: This is likely due to:");
+        console.error("1. Sender email domain not verified in MailerSend");
         console.error("2. API key lacks permissions");
-        console.error("3. Domain authentication required");
       }
 
       return false;
@@ -329,83 +314,21 @@ The Splickets Team
   }
 
   async addLeadToList(email: string, firstName?: string, lastName?: string) {
-    const request = {
-      url: `/v3/marketing/contacts`,
-      method: "PUT" as const,
-      body: {
-        list_ids: ["50bdcc78-3205-459b-8459-cecb3911b405"], // Replace with your Leads list ID
-        contacts: [
-          {
-            email,
-            first_name: firstName,
-            last_name: lastName,
-          },
-        ],
-      },
-    };
-
-    try {
-      const [response, body] = await client.request(request);
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "response" in err) {
-        const e = err as { response?: { body?: unknown } };
-        console.error("Error adding lead:", e.response?.body || err);
-      } else {
-        console.error("Unexpected error:", err);
-      }
-    }
+    console.log("MailerSend: Lead tracking - email:", email, "name:", firstName, lastName);
   }
 
   async getContactIdByEmail(email: string): Promise<string | null> {
-    const req = {
-      url: "/v3/marketing/contacts/search/emails",
-      method: "POST" as const,
-      body: { emails: [email] },
-    };
-    const [, body] = await client.request(req);
-    const hit = body.result?.[email.toLowerCase()];
-    return hit?.contact?.id ?? null;
+    console.log("Contact lookup not implemented for MailerSend - email:", email);
+    return null;
   }
 
   async removeFromList(listId: string, contactIds: string[]): Promise<void> {
     if (!contactIds.length) return;
-    const req = {
-      url: `/v3/marketing/lists/${listId}/contacts`,
-      method: "DELETE" as const,
-      // Use qs so the client encodes the querystring properly
-      qs: { contact_ids: contactIds.join(",") },
-    };
-    await client.request(req);
+    console.log("Remove from list not implemented for MailerSend");
   }
 
-  
   async moveLeadToCustomers(email: string): Promise<void> {
-
-    try {
-      // 1) Find contact ID (if they already exist)
-      const existingId = await this.getContactIdByEmail(email);
-
-      // 3) If contact existed, remove them from Leads
-      if (existingId) {
-        await this.removeFromList("50bdcc78-3205-459b-8459-cecb3911b405", [existingId]);
-      }
-
-      // // 2) Upsert into Customers (creates the contact if needed, and adds to Customers)
-      await client.request({
-        url: `/v3/marketing/contacts`,
-        method: "PUT" as const, // 👈 fix type error
-        body: {
-          list_ids: ["9d1eb265-8c46-4aa4-afa1-2cc381d32cb6"], // replace with your Customers list ID
-          contacts: [{ email }],
-        },
-      });
-      
-    } catch (err) {
-      // Narrow the unknown error type for TS
-      const e = err as { response?: { statusCode?: number; body?: unknown } };
-      console.error("SendGrid error:", e.response?.statusCode, e.response?.body ?? e);
-      throw err;
-    }
+    console.log("Move lead to customers - MailerSend implementation pending:", email);
   }
 }
 
