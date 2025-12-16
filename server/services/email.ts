@@ -96,14 +96,24 @@ export class EmailService {
       console.log("Email sent successfully to:", params.to);
       return true;
     } catch (error: any) {
-      console.error("MailerSend email error:", error);
+      console.error("MailerSend email error:", JSON.stringify(error, null, 2));
+      
+      if (error.body) {
+        console.error("MailerSend error body:", JSON.stringify(error.body, null, 2));
+      }
+      if (error.response) {
+        console.error("MailerSend error response:", JSON.stringify(error.response, null, 2));
+      }
 
-      if (error.statusCode === 401) {
+      const statusCode = error.statusCode || error.code;
+      if (statusCode === 401) {
         console.error("MailerSend 401 Error: Invalid API key");
-      } else if (error.statusCode === 403) {
+      } else if (statusCode === 403) {
         console.error("MailerSend 403 Error: This is likely due to:");
         console.error("1. Sender email domain not verified in MailerSend");
         console.error("2. API key lacks permissions");
+      } else if (statusCode === 422) {
+        console.error("MailerSend 422 Error: Validation failed - check sender/recipient emails");
       }
 
       return false;

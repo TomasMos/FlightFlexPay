@@ -665,63 +665,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // // Test email endpoint (development only)
-  // app.post("/api/test-email", async (req, res) => {
-  //   if (process.env.NODE_ENV !== "development") {
-  //     return res
-  //       .status(403)
-  //       .json({ error: "Test endpoint only available in development" });
-  //   }
+  // Test email endpoint (development only)
+  app.post("/api/test-email", async (req, res) => {
+    if (process.env.NODE_ENV !== "development") {
+      return res
+        .status(403)
+        .json({ error: "Test endpoint only available in development" });
+    }
 
-  //   try {
-  //     const { type, email } = req.body;
+    try {
+      const { type, email } = req.body;
+      console.log("Test email request received:", { type, email });
 
-  //     let success = false;
-  //     switch (type) {
-  //       case "welcome":
-  //         success = await emailService.sendWelcomeEmail(email, "Test User");
-  //         break;
-  //       case "booking":
-  //         success = await emailService.sendBookingConfirmation(email, {
-  //           customerName: "Test User",
-  //           flightDetails: {
-  //             origin: "LAX",
-  //             destination: "JFK",
-  //             departureDate: new Date().toISOString(),
-  //             flightNumber: "AA123",
-  //             passengers: 1,
-  //           },
-  //           paymentPlan: {
-  //             totalAmount: 500,
-  //             depositAmount: 100,
-  //             installmentAmount: 100,
-  //             installmentCount: 4,
-  //             frequency: "weekly",
-  //           },
-  //           bookingReference: "FP000001",
-  //         });
-  //         break;
-  //       case "reminder":
-  //         success = await emailService.sendPaymentReminder(email, {
-  //           customerName: "Test User",
-  //           dueAmount: 100,
-  //           dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-  //             .toISOString()
-  //             .split("T")[0],
-  //           bookingReference: "FP000001",
-  //           paymentUrl: "http://localhost:5000/payment/1",
-  //         });
-  //         break;
-  //       default:
-  //         return res.status(400).json({ error: "Invalid email type" });
-  //     }
+      let success = false;
+      switch (type) {
+        case "welcome":
+          success = await emailService.sendWelcomeEmail(email, "Test User");
+          break;
+        case "booking":
+          success = await emailService.sendBookingConfirmation(email, {
+            customerName: "Test User",
+            flightDetails: {
+              origin: "LAX",
+              destination: "JFK",
+              departureDate: new Date().toISOString(),
+              flightNumber: "AA123",
+              passengers: 1,
+            },
+            paymentPlan: {
+              totalAmount: 500,
+              depositAmount: 100,
+              installmentAmount: 100,
+              installmentCount: 4,
+              frequency: "weekly",
+              currency: "USD",
+            },
+            bookingReference: "FP000001",
+          });
+          break;
+        case "reminder":
+          success = await emailService.sendPaymentReminder(email, {
+            customerName: "Test User",
+            dueAmount: 100,
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split("T")[0],
+            bookingReference: "FP000001",
+            paymentUrl: "http://localhost:5000/payment/1",
+          });
+          break;
+        default:
+          return res.status(400).json({ error: "Invalid email type" });
+      }
 
-  //     res.json({ success, type, recipient: email });
-  //   } catch (error) {
-  //     console.error("Error sending test email:", error);
-  //     res.status(400).json({ error: "Failed to send test email" });
-  //   }
-  // });
+      console.log("Test email result:", { success, type, email });
+      res.json({ success, type, recipient: email });
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      res.status(400).json({ error: "Failed to send test email" });
+    }
+  });
 
   // Auth verification endpoint
   app.post("/api/auth/verify-user", async (req, res) => {
