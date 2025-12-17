@@ -1027,6 +1027,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timesUsed: 0,
           discountPercent: newReferralCode.discountPercent,
           discountAmount: newReferralCode.discountAmount,
+          credit: user.credit || "0.00",
         });
       }
 
@@ -1047,6 +1048,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timesUsed: referralCode.timesUsed || 0,
         discountPercent: referralCode.discountPercent,
         discountAmount: referralCode.discountAmount,
+        credit: user.credit || "0.00",
         bookings: referralBookings,
       });
     } catch (error) {

@@ -122,6 +122,7 @@ export const users = pgTable("users", {
   passportCountry: varchar("passport_country", { length: 3 }),
   preferredCurrency: varchar("currency", { length: 3 }).notNull().default("USD"),
   role: userRoleEnum("role").notNull().default("user"),
+  credit: decimal("credit", { precision: 10, scale: 2 }).notNull().default("0.00"), // Credit balance in USD
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
