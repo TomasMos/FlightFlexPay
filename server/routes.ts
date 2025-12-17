@@ -1455,10 +1455,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ valid: false, message: "Invalid or expired promo code" });
       }
       
+      // Calculate discount based on the promo code type
+      let discount = 0;
+      if (promoCode.discountAmount) {
+        discount = parseFloat(promoCode.discountAmount);
+      } else if (promoCode.discountPercent) {
+        discount = parseFloat(promoCode.discountPercent);
+      }
+      
       res.json({
         valid: true,
-        amount: parseFloat(promoCode.amount),
+        discountAmount: promoCode.discountAmount ? parseFloat(promoCode.discountAmount) : null,
+        discountPercent: promoCode.discountPercent ? parseFloat(promoCode.discountPercent) : null,
         code: promoCode.code,
+        type: promoCode.type,
       });
     } catch (error) {
       console.error("Promo code validation error:", error);
@@ -1479,7 +1489,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!existing) {
         await db.insert(promoCodes).values({
           code: "PROMO2050",
-          amount: "2050",
+          type: "system",
+          discountAmount: "20.50",
+          discountPercent: null,
           isActive: true,
         });
         console.log("Seeded promo code: PROMO2050");
