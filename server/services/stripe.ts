@@ -1,24 +1,24 @@
 import Stripe from "stripe";
 
-// ---------------- Production --------------
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY environment variable is required");
+const isProduction = process.env.NODE_ENV === "production";
+
+const secretKey = isProduction 
+  ? process.env.STRIPE_SECRET_KEY 
+  : process.env.STRIPE_SECRET_KEY_TEST;
+
+if (!secretKey) {
+  throw new Error(
+    isProduction 
+      ? "STRIPE_SECRET_KEY environment variable is required for production"
+      : "STRIPE_SECRET_KEY_TEST environment variable is required for development"
+  );
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+console.log(`Stripe configured for ${isProduction ? 'PRODUCTION' : 'TEST'} environment`);
+
+export const stripe = new Stripe(secretKey, {
   apiVersion: "2025-07-30.basil",
 });
-// -----------------------------------------
-
-// ---------------- TEST --------------
-// if (!process.env.STRIPE_SECRET_KEY_TEST) {
-//   throw new Error("STRIPE_SECRET_KEY environment variable is required");
-// }
-
-// export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY_TEST, {
-//   apiVersion: "2025-07-30.basil",
-// });
-// -----------------------------------------
 
 export interface PaymentIntentData {
   amount: number; // in cents
