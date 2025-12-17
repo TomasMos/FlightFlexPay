@@ -1,10 +1,26 @@
 import admin from 'firebase-admin';
 
+// Parse private key - handle various formats (escaped newlines, JSON string, etc.)
+function parsePrivateKey(key: string | undefined): string {
+  if (!key) return "";
+  // Replace escaped newlines with actual newlines
+  let parsed = key.replace(/\\n/g, '\n');
+  // If the key was JSON stringified (has extra quotes), parse it
+  if (parsed.startsWith('"') && parsed.endsWith('"')) {
+    try {
+      parsed = JSON.parse(parsed);
+    } catch (e) {
+      // Keep as is if JSON parse fails
+    }
+  }
+  return parsed;
+}
+
 const serviceAccount = {
   type: "service_account",
   project_id: "splickets",
   private_key_id: "18703dce6ee713932e463948899864ebb44aed2f",
-  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n') || "",
+  private_key: parsePrivateKey(process.env.FIREBASE_PRIVATE_KEY),
   client_email: "firebase-adminsdk-fbsvc@splickets.iam.gserviceaccount.com",
   client_id: "112376092229928311088",
   auth_uri: "https://accounts.google.com/o/oauth2/auth",
