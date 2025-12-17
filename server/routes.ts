@@ -18,6 +18,7 @@ import { emailService } from "./services/email";
 import { PaymentPlanService } from "./services/paymentPlan";
 import { StripeService } from "./services/stripe";
 import { safeAdminAuth } from "./services/firebaseAdmin";
+import { createReferralCodeForUser, getUserReferralCode } from "./services/referralCode";
 import { z } from "zod";
 import { eq, and, desc } from "drizzle-orm";
 
@@ -263,6 +264,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .returning();
 
         userId = newUser.id;
+
+        // Create referral code for new user
+        try {
+          await createReferralCodeForUser(userId, newUser.firstName, newUser.lastName);
+        } catch (error) {
+          console.error("Failed to create referral code:", error);
+        }
 
         // Update lead status to converted
         await db
@@ -951,6 +959,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching payment history:", error);
       res.status(500).json({ error: "Failed to fetch payment history" });
+    }
+  });
+
+  // ============ REFERRAL & PROMO CODE ROUTES ============
+
+  // Get user's referral code and stats
+  app.get("/api/user/referral", async (req, res) => {
+    try {
+      const { email } = req.query;
+
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email as string))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Get user's referral code
+      const [referralCode] = await db
+        .select()
+        .from(promoCodes)
+        .where(and(
+          eq(promoCodes.userId, user.id),
+          eq(promoCodes.type, "referral")
+        ))
+        .limit(1);
+
+      if (!referralCode) {
+        // Create one if it doesn't exist
+        const newCode = await createReferralCodeForUser(user.id, user.firstName, user.lastName);
+        const [newReferralCode] = await db
+          .select()
+          .from(promoCodes)
+          .where(eq(promoCodes.code, newCode))
+          .limit(1);
+        
+        return res.json({
+          code: newReferralCode.code,
+          timesUsed: 0,
+          discountPercent: newReferralCode.discountPercent,
+          discountAmount: newReferralCode.discountAmount,
+        });
+      }
+
+      // Get bookings that used this referral code
+      const referralBookings = await db
+        .select({
+          id: bookings.id,
+          createdAt: bookings.createdAt,
+          totalPrice: bookings.totalPrice,
+          currency: bookings.currency,
+        })
+        .from(bookings)
+        .where(eq(bookings.promoCodeId, referralCode.id))
+        .orderBy(desc(bookings.createdAt));
+
+      res.json({
+        code: referralCode.code,
+        timesUsed: referralCode.timesUsed || 0,
+        discountPercent: referralCode.discountPercent,
+        discountAmount: referralCode.discountAmount,
+        bookings: referralBookings,
+      });
+    } catch (error) {
+      console.error("Error fetching referral code:", error);
+      res.status(500).json({ error: "Failed to fetch referral code" });
+    }
+  });
+
+  // Validate and calculate promo code discount
+  app.post("/api/promo/validate", async (req, res) => {
+    try {
+      const { code, totalAmount, currency } = req.body;
+
+      if (!code || !totalAmount || !currency) {
+        return res.status(400).json({ error: "Code, total amount, and currency are required" });
+      }
+
+      // Look up the promo code
+      const [promoCode] = await db
+        .select()
+        .from(promoCodes)
+        .where(eq(promoCodes.code, code.toUpperCase()))
+        .limit(1);
+
+      if (!promoCode) {
+        return res.status(404).json({ error: "Invalid promo code" });
+      }
+
+      if (!promoCode.isActive) {
+        return res.status(400).json({ error: "This promo code is no longer active" });
+      }
+
+      let discount = 0;
+
+      if (promoCode.type === "referral") {
+        // Referral code logic: minimum of 10% or $25 USD converted
+        const tenPercent = totalAmount * 0.10;
+        
+        // Convert $25 USD to the booking currency
+        // For simplicity, we'll use approximate rates. In production, use a real exchange rate API.
+        const usdToRate: Record<string, number> = {
+          USD: 1,
+          GBP: 0.79,
+          EUR: 0.92,
+          AUD: 1.53,
+          CAD: 1.36,
+          JPY: 149.50,
+          INR: 83.12,
+          SGD: 1.34,
+          HKD: 7.82,
+          NZD: 1.64,
+        };
+        
+        const rate = usdToRate[currency] || 1;
+        const twentyFiveUsdConverted = 25 * rate;
+        
+        // Take the minimum of 10% or $25 USD converted
+        discount = Math.min(tenPercent, twentyFiveUsdConverted);
+      } else if (promoCode.type === "system") {
+        // System promo codes use fixed amount or percentage as defined
+        if (promoCode.discountPercent) {
+          discount = totalAmount * (parseFloat(promoCode.discountPercent) / 100);
+        } else if (promoCode.discountAmount) {
+          discount = parseFloat(promoCode.discountAmount);
+        }
+      }
+
+      // Ensure discount doesn't exceed total
+      discount = Math.min(discount, totalAmount);
+
+      res.json({
+        valid: true,
+        promoCodeId: promoCode.id,
+        code: promoCode.code,
+        type: promoCode.type,
+        discount: Math.round(discount * 100) / 100, // Round to 2 decimal places
+        newTotal: Math.round((totalAmount - discount) * 100) / 100,
+      });
+    } catch (error) {
+      console.error("Error validating promo code:", error);
+      res.status(500).json({ error: "Failed to validate promo code" });
     }
   });
 
