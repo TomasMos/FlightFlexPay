@@ -216,6 +216,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentIntentId,
         leadId,
         searchId,
+        promoCode,
       } = req.body;
 
       let userId: number;
@@ -347,6 +348,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await db.insert(installments).values(installmentRecords);
       }
 
+      // Update promo code usage if one was used
+      if (promoCode?.promoCodeId) {
+        const [existingPromo] = await db
+          .select()
+          .from(promoCodes)
+          .where(eq(promoCodes.id, promoCode.promoCodeId))
+          .limit(1);
+        
+        if (existingPromo) {
+          await db
+            .update(promoCodes)
+            .set({ timesUsed: (existingPromo.timesUsed || 0) + 1 })
+            .where(eq(promoCodes.id, promoCode.promoCodeId));
+        }
+      }
+
       // Create booking
       const [booking] = await db
         .insert(bookings)
@@ -354,8 +371,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId,
           flightId: flight.id,
           paymentPlanId: paymentPlanRecord.id,
+          promoCodeId: promoCode?.promoCodeId || null,
           passengers: passengerData.passengers,
           status: "paid",
+          originalPrice: promoCode?.originalPrice?.toString() || null,
+          discountAmount: promoCode?.discount?.toString() || null,
           totalPrice: paymentPlan.totalAmount.toString(),
           currency: flightData.price.currency,
         })

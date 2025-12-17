@@ -45,7 +45,12 @@ export default function FlightBooking() {
   
   // Promo code state
   const [promoCode, setPromoCode] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState<{ code: string; amount: number } | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{ 
+    code: string; 
+    promoCodeId: number;
+    discount: number; 
+    newTotal: number;
+  } | null>(null);
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoError, setPromoError] = useState("");
 
@@ -85,7 +90,8 @@ export default function FlightBooking() {
 
   // Payment calculations - use promo code amount if applied
   const originalFlightTotal = parseFloat(flight.price.total);
-  const flightTotal = appliedPromo ? appliedPromo.amount : originalFlightTotal;
+  const flightTotal = appliedPromo ? appliedPromo.newTotal : originalFlightTotal;
+  const discountAmount = appliedPromo ? appliedPromo.discount : 0;
   
   // Promo code validation and application
   const handleApplyPromo = async () => {
@@ -98,24 +104,33 @@ export default function FlightBooking() {
     setPromoError("");
     
     try {
-      const response = await fetch("/api/promocodes/validate", {
+      const response = await fetch("/api/promo/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: promoCode.trim().toUpperCase() }),
+        body: JSON.stringify({ 
+          code: promoCode.trim().toUpperCase(),
+          totalAmount: originalFlightTotal,
+          currency: currency,
+        }),
       });
       
       const data = await response.json();
       
       if (!response.ok || !data.valid) {
-        setPromoError(data.message || "Invalid promo code");
+        setPromoError(data.error || "Invalid promo code");
         return;
       }
       
-      setAppliedPromo({ code: data.code, amount: data.amount });
+      setAppliedPromo({ 
+        code: data.code, 
+        promoCodeId: data.promoCodeId,
+        discount: data.discount,
+        newTotal: data.newTotal,
+      });
       setPromoCode("");
       toast({
         title: "Promo code applied!",
-        description: `Your new total is ${formatCurrency(data.amount)}`,
+        description: `You saved ${formatCurrency(data.discount)}! New total: ${formatCurrency(data.newTotal)}`,
       });
     } catch (error) {
       setPromoError("Failed to validate promo code");
@@ -285,6 +300,12 @@ export default function FlightBooking() {
           paymentIntentId: paymentResult.paymentIntentId,
           leadId: parseInt(leadId),
           searchId: searchId,
+          promoCode: appliedPromo ? {
+            promoCodeId: appliedPromo.promoCodeId,
+            code: appliedPromo.code,
+            discount: appliedPromo.discount,
+            originalPrice: originalFlightTotal,
+          } : null,
         }),
       });
 
@@ -602,7 +623,7 @@ export default function FlightBooking() {
                                 {appliedPromo.code} applied
                               </span>
                               <span className="text-xs text-green-600">
-                                (New total: {formatCurrency(appliedPromo.amount)})
+                                (Saved {formatCurrency(appliedPromo.discount)})
                               </span>
                             </div>
                             <Button
