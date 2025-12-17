@@ -430,8 +430,8 @@ export class AmadeusService {
         iataZA.includes(lastSegment?.arrival.iataCode ?? "")
       ) {
         // Domestic ZA flight → apply discount
-        priceBase *= 0.75;
-        priceTotal *= 0.75;
+        priceBase *= 0.7;
+        priceTotal *= 0.7;
       }
 
       return {
