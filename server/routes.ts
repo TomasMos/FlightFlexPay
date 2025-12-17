@@ -954,6 +954,228 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============ ADMIN ROUTES ============
+  
+  // Middleware to verify admin role
+  const verifyAdmin = async (req: any, res: any, next: any) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const token = authHeader.split(' ')[1];
+      const decodedToken = await adminAuth.verifyIdToken(token);
+      const email = decodedToken.email;
+      
+      if (!email) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+      
+      // Check if user exists and has admin role
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      req.adminUser = user;
+      next();
+    } catch (error) {
+      console.error("Admin verification error:", error);
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+  };
+
+  // Check if current user is admin
+  app.get("/api/admin/check", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.json({ isAdmin: false });
+      }
+      
+      const token = authHeader.split(' ')[1];
+      const decodedToken = await adminAuth.verifyIdToken(token);
+      const email = decodedToken.email;
+      
+      if (!email) {
+        return res.json({ isAdmin: false });
+      }
+      
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+      
+      res.json({ isAdmin: user?.role === 'admin' });
+    } catch (error) {
+      res.json({ isAdmin: false });
+    }
+  });
+
+  // Get all users (admin only)
+  app.get("/api/admin/users", verifyAdmin, async (req, res) => {
+    try {
+      const allUsers = await db
+        .select()
+        .from(users)
+        .orderBy(desc(users.createdAt));
+      
+      res.json({ users: allUsers });
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  // Get single user with their bookings (admin only)
+  app.get("/api/admin/users/:id", verifyAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Get user's bookings
+      const userBookings = await db
+        .select()
+        .from(bookings)
+        .where(eq(bookings.userId, userId))
+        .orderBy(desc(bookings.createdAt));
+      
+      res.json({ user, bookings: userBookings });
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: "Failed to fetch user" });
+    }
+  });
+
+  // Get all leads (admin only)
+  app.get("/api/admin/leads", verifyAdmin, async (req, res) => {
+    try {
+      const allLeads = await db
+        .select()
+        .from(leads)
+        .orderBy(desc(leads.createdAt));
+      
+      res.json({ leads: allLeads });
+    } catch (error) {
+      console.error("Error fetching leads:", error);
+      res.status(500).json({ error: "Failed to fetch leads" });
+    }
+  });
+
+  // Get single lead with their flight searches and attempts (admin only)
+  app.get("/api/admin/leads/:id", verifyAdmin, async (req, res) => {
+    try {
+      const leadId = parseInt(req.params.id);
+      
+      const [lead] = await db
+        .select()
+        .from(leads)
+        .where(eq(leads.id, leadId))
+        .limit(1);
+      
+      if (!lead) {
+        return res.status(404).json({ error: "Lead not found" });
+      }
+      
+      // Get lead attempts with related flight searches
+      const attempts = await db
+        .select({
+          attempt: leadAttempts,
+          search: flightSearches,
+        })
+        .from(leadAttempts)
+        .leftJoin(flightSearches, eq(leadAttempts.searchId, flightSearches.id))
+        .where(eq(leadAttempts.leadId, leadId))
+        .orderBy(desc(leadAttempts.attemptedAt));
+      
+      res.json({ lead, attempts });
+    } catch (error) {
+      console.error("Error fetching lead:", error);
+      res.status(500).json({ error: "Failed to fetch lead" });
+    }
+  });
+
+  // Get all bookings (admin only)
+  app.get("/api/admin/bookings", verifyAdmin, async (req, res) => {
+    try {
+      const allBookings = await db
+        .select({
+          booking: bookings,
+          user: users,
+          flight: flights,
+          paymentPlan: paymentPlans,
+        })
+        .from(bookings)
+        .leftJoin(users, eq(bookings.userId, users.id))
+        .leftJoin(flights, eq(bookings.flightId, flights.id))
+        .leftJoin(paymentPlans, eq(bookings.paymentPlanId, paymentPlans.id))
+        .orderBy(desc(bookings.createdAt));
+      
+      res.json({ bookings: allBookings });
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      res.status(500).json({ error: "Failed to fetch bookings" });
+    }
+  });
+
+  // Get single booking with full details (admin only)
+  app.get("/api/admin/bookings/:id", verifyAdmin, async (req, res) => {
+    try {
+      const bookingId = parseInt(req.params.id);
+      
+      const [bookingData] = await db
+        .select({
+          booking: bookings,
+          user: users,
+          flight: flights,
+          paymentPlan: paymentPlans,
+        })
+        .from(bookings)
+        .leftJoin(users, eq(bookings.userId, users.id))
+        .leftJoin(flights, eq(bookings.flightId, flights.id))
+        .leftJoin(paymentPlans, eq(bookings.paymentPlanId, paymentPlans.id))
+        .where(eq(bookings.id, bookingId))
+        .limit(1);
+      
+      if (!bookingData) {
+        return res.status(404).json({ error: "Booking not found" });
+      }
+      
+      // Get installments if payment plan exists
+      let bookingInstallments: any[] = [];
+      if (bookingData.paymentPlan) {
+        bookingInstallments = await db
+          .select()
+          .from(installments)
+          .where(eq(installments.paymentPlanId, bookingData.paymentPlan.id))
+          .orderBy(installments.dueDate);
+      }
+      
+      res.json({ ...bookingData, installments: bookingInstallments });
+    } catch (error) {
+      console.error("Error fetching booking:", error);
+      res.status(500).json({ error: "Failed to fetch booking" });
+    }
+  });
+
+  // ============ END ADMIN ROUTES ============
+
   // Promo code validation endpoint
   app.post("/api/promocodes/validate", async (req, res) => {
     try {

@@ -53,6 +53,8 @@ export const bookingStatusEnum = pgEnum("booking_status", [
   "cancelled",
 ]);
 
+export const userRoleEnum = pgEnum("user_role", ["user", "admin"]);
+
 // Flight searches table - tracks all search queries
 export const flightSearches = pgTable("flight_searches", {
   id: serial("id").primaryKey(),
@@ -119,6 +121,7 @@ export const users = pgTable("users", {
   passportNumber: varchar("passport_number", { length: 50 }),
   passportCountry: varchar("passport_country", { length: 3 }),
   preferredCurrency: varchar("currency", { length: 3 }).notNull().default("USD"),
+  role: userRoleEnum("role").notNull().default("user"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
