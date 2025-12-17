@@ -18,7 +18,10 @@ import { emailService } from "./services/email";
 import { PaymentPlanService } from "./services/paymentPlan";
 import { StripeService } from "./services/stripe";
 import { safeAdminAuth } from "./services/firebaseAdmin";
-import { createReferralCodeForUser, getUserReferralCode } from "./services/referralCode";
+import {
+  createReferralCodeForUser,
+  getUserReferralCode,
+} from "./services/referralCode";
 import { z } from "zod";
 import { eq, and, desc } from "drizzle-orm";
 
@@ -268,7 +271,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Create referral code for new user
         try {
-          await createReferralCodeForUser(userId, newUser.firstName, newUser.lastName);
+          await createReferralCodeForUser(
+            userId,
+            newUser.firstName,
+            newUser.lastName,
+          );
         } catch (error) {
           console.error("Failed to create referral code:", error);
         }
@@ -355,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .from(promoCodes)
           .where(eq(promoCodes.id, promoCode.promoCodeId))
           .limit(1);
-        
+
         if (existingPromo) {
           await db
             .update(promoCodes)
@@ -400,7 +407,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               origin: flightData.origin,
               destination: flightData.destination,
               departureDate: firstItinerary.segments[0].departure.at,
-              returnDate: lastItinerary.segments[lastItinerary.segments.length - 1].departure.at,
+              returnDate:
+                lastItinerary.segments[lastItinerary.segments.length - 1]
+                  .departure.at,
               flightNumber: firstItinerary.segments[0].number,
               passengers: passengerData.passengers.length,
             },
@@ -410,7 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               installmentAmount: paymentPlan.installmentAmount,
               installmentCount: paymentPlan.installmentCount,
               frequency: paymentPlan.installmentType,
-              currency: flightData.price.currency
+              currency: flightData.price.currency,
             },
             bookingReference: `FP${booking.id.toString().padStart(6, "0")}`,
           });
@@ -456,8 +465,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     interval: z.enum(["week", "month"]),
     interval_count: z.number().min(1).max(12),
     start_date: z.preprocess(
-      (val) => (typeof val === "string" || val instanceof Date ? new Date(val) : undefined),
-      z.date()
+      (val) =>
+        typeof val === "string" || val instanceof Date
+          ? new Date(val)
+          : undefined,
+      z.date(),
     ),
     installment_count: z.number(),
     payment_method_id: z.string().optional(), // Payment method from successful payment
@@ -501,7 +513,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionData.installment_amount, // amount in dollars
         subscriptionData.currency,
         subscriptionData.interval,
-        subscriptionData.interval_count
+        subscriptionData.interval_count,
       );
 
       // 3. Create subscription schedule starting in 1 week
@@ -934,7 +946,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(users)
         .where(eq(users.email, email as string))
         .limit(1);
-      
+
       if (userDB.length === 0) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -1007,21 +1019,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const [referralCode] = await db
         .select()
         .from(promoCodes)
-        .where(and(
-          eq(promoCodes.userId, user.id),
-          eq(promoCodes.type, "referral")
-        ))
+        .where(
+          and(eq(promoCodes.userId, user.id), eq(promoCodes.type, "referral")),
+        )
         .limit(1);
 
       if (!referralCode) {
         // Create one if it doesn't exist
-        const newCode = await createReferralCodeForUser(user.id, user.firstName, user.lastName);
+        const newCode = await createReferralCodeForUser(
+          user.id,
+          user.firstName,
+          user.lastName,
+        );
         const [newReferralCode] = await db
           .select()
           .from(promoCodes)
           .where(eq(promoCodes.code, newCode))
           .limit(1);
-        
+
         return res.json({
           code: newReferralCode.code,
           timesUsed: 0,
@@ -1063,7 +1078,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { code, totalAmount, currency } = req.body;
 
       if (!code || !totalAmount || !currency) {
-        return res.status(400).json({ error: "Code, total amount, and currency are required" });
+        return res
+          .status(400)
+          .json({ error: "Code, total amount, and currency are required" });
       }
 
       // Look up the promo code
@@ -1078,15 +1095,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (!promoCode.isActive) {
-        return res.status(400).json({ error: "This promo code is no longer active" });
+        return res
+          .status(400)
+          .json({ error: "This promo code is no longer active" });
       }
 
       let discount = 0;
 
       if (promoCode.type === "referral") {
         // Referral code logic: minimum of 10% or $25 USD converted
-        const tenPercent = totalAmount * 0.10;
-        
+        const tenPercent = totalAmount * 0.1;
+
         // Convert $25 USD to the booking currency
         // For simplicity, we'll use approximate rates. In production, use a real exchange rate API.
         const usdToRate: Record<string, number> = {
@@ -1095,22 +1114,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           EUR: 0.92,
           AUD: 1.53,
           CAD: 1.36,
-          JPY: 149.50,
+          JPY: 149.5,
           INR: 83.12,
           SGD: 1.34,
           HKD: 7.82,
           NZD: 1.64,
+          ZAR: 19.34,
         };
-        
+
         const rate = usdToRate[currency] || 1;
         const twentyFiveUsdConverted = 25 * rate;
-        
+
         // Take the minimum of 10% or $25 USD converted
         discount = Math.min(tenPercent, twentyFiveUsdConverted);
       } else if (promoCode.type === "system") {
         // System promo codes use fixed amount or percentage as defined
         if (promoCode.discountPercent) {
-          discount = totalAmount * (parseFloat(promoCode.discountPercent) / 100);
+          discount =
+            totalAmount * (parseFloat(promoCode.discountPercent) / 100);
         } else if (promoCode.discountAmount) {
           discount = parseFloat(promoCode.discountAmount);
         }
@@ -1134,34 +1155,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============ ADMIN ROUTES ============
-  
+
   // Middleware to verify admin role
   const verifyAdmin = async (req: any, res: any, next: any) => {
     try {
       const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ error: "Unauthorized" });
       }
-      
-      const token = authHeader.split(' ')[1];
+
+      const token = authHeader.split(" ")[1];
       const decodedToken = await safeAdminAuth.verifyIdToken(token);
       const email = decodedToken.email;
-      
+
       if (!email) {
         return res.status(401).json({ error: "Invalid token" });
       }
-      
+
       // Check if user exists and has admin role
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.email, email))
         .limit(1);
-      
-      if (!user || user.role !== 'admin') {
+
+      if (!user || user.role !== "admin") {
         return res.status(403).json({ error: "Admin access required" });
       }
-      
+
       req.adminUser = user;
       next();
     } catch (error) {
@@ -1174,25 +1195,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/check", async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.json({ isAdmin: false });
       }
-      
-      const token = authHeader.split(' ')[1];
+
+      const token = authHeader.split(" ")[1];
       const decodedToken = await safeAdminAuth.verifyIdToken(token);
       const email = decodedToken.email;
-      
+
       if (!email) {
         return res.json({ isAdmin: false });
       }
-      
+
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.email, email))
         .limit(1);
-      
-      res.json({ isAdmin: user?.role === 'admin' });
+
+      res.json({ isAdmin: user?.role === "admin" });
     } catch (error) {
       res.json({ isAdmin: false });
     }
@@ -1205,7 +1226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .select()
         .from(users)
         .orderBy(desc(users.createdAt));
-      
+
       res.json({ users: allUsers });
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -1217,24 +1238,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/users/:id", verifyAdmin, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      
+
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, userId))
         .limit(1);
-      
+
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-      
+
       // Get user's bookings
       const userBookings = await db
         .select()
         .from(bookings)
         .where(eq(bookings.userId, userId))
         .orderBy(desc(bookings.createdAt));
-      
+
       res.json({ user, bookings: userBookings });
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -1249,7 +1270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .select()
         .from(leads)
         .orderBy(desc(leads.createdAt));
-      
+
       res.json({ leads: allLeads });
     } catch (error) {
       console.error("Error fetching leads:", error);
@@ -1261,17 +1282,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/leads/:id", verifyAdmin, async (req, res) => {
     try {
       const leadId = parseInt(req.params.id);
-      
+
       const [lead] = await db
         .select()
         .from(leads)
         .where(eq(leads.id, leadId))
         .limit(1);
-      
+
       if (!lead) {
         return res.status(404).json({ error: "Lead not found" });
       }
-      
+
       // Get lead attempts with related flight searches
       const attempts = await db
         .select({
@@ -1282,7 +1303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .leftJoin(flightSearches, eq(leadAttempts.searchId, flightSearches.id))
         .where(eq(leadAttempts.leadId, leadId))
         .orderBy(desc(leadAttempts.attemptedAt));
-      
+
       res.json({ lead, attempts });
     } catch (error) {
       console.error("Error fetching lead:", error);
@@ -1305,7 +1326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .leftJoin(flights, eq(bookings.flightId, flights.id))
         .leftJoin(paymentPlans, eq(bookings.paymentPlanId, paymentPlans.id))
         .orderBy(desc(bookings.createdAt));
-      
+
       res.json({ bookings: allBookings });
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -1317,7 +1338,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/bookings/:id", verifyAdmin, async (req, res) => {
     try {
       const bookingId = parseInt(req.params.id);
-      
+
       const [bookingData] = await db
         .select({
           booking: bookings,
@@ -1331,11 +1352,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .leftJoin(paymentPlans, eq(bookings.paymentPlanId, paymentPlans.id))
         .where(eq(bookings.id, bookingId))
         .limit(1);
-      
+
       if (!bookingData) {
         return res.status(404).json({ error: "Booking not found" });
       }
-      
+
       // Get installments if payment plan exists
       let bookingInstallments: any[] = [];
       if (bookingData.paymentPlan) {
@@ -1345,7 +1366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .where(eq(installments.paymentPlanId, bookingData.paymentPlan.id))
           .orderBy(installments.dueDate);
       }
-      
+
       res.json({ ...bookingData, installments: bookingInstallments });
     } catch (error) {
       console.error("Error fetching booking:", error);
@@ -1354,75 +1375,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin: Resend booking confirmation email
-  app.post("/api/admin/bookings/:id/resend-confirmation", verifyAdmin, async (req, res) => {
-    try {
-      const bookingId = parseInt(req.params.id);
-      
-      const [bookingData] = await db
-        .select({
-          booking: bookings,
-          user: users,
-          flight: flights,
-          paymentPlan: paymentPlans,
-        })
-        .from(bookings)
-        .leftJoin(users, eq(bookings.userId, users.id))
-        .leftJoin(flights, eq(bookings.flightId, flights.id))
-        .leftJoin(paymentPlans, eq(bookings.paymentPlanId, paymentPlans.id))
-        .where(eq(bookings.id, bookingId))
-        .limit(1);
-      
-      if (!bookingData || !bookingData.user) {
-        return res.status(404).json({ error: "Booking or user not found" });
-      }
+  app.post(
+    "/api/admin/bookings/:id/resend-confirmation",
+    verifyAdmin,
+    async (req, res) => {
+      try {
+        const bookingId = parseInt(req.params.id);
 
-      // Build flight details from stored data
-      const flightOffer = bookingData.flight?.flightOffer as any;
-      const itineraries = flightOffer?.itineraries || [];
-      
-      let flightNumber = "N/A";
-      if (itineraries.length > 0 && itineraries[0].segments?.length > 0) {
-        const firstSegment = itineraries[0].segments[0];
-        flightNumber = `${firstSegment.carrierCode || ''}${firstSegment.number || ''}`;
-      }
+        const [bookingData] = await db
+          .select({
+            booking: bookings,
+            user: users,
+            flight: flights,
+            paymentPlan: paymentPlans,
+          })
+          .from(bookings)
+          .leftJoin(users, eq(bookings.userId, users.id))
+          .leftJoin(flights, eq(bookings.flightId, flights.id))
+          .leftJoin(paymentPlans, eq(bookings.paymentPlanId, paymentPlans.id))
+          .where(eq(bookings.id, bookingId))
+          .limit(1);
 
-      // Send the booking confirmation email
-      const emailSent = await emailService.sendBookingConfirmation(
-        bookingData.user.email,
-        {
-          customerName: `${bookingData.user.firstName} ${bookingData.user.lastName}`,
-          bookingReference: `SPL-${bookingData.booking.id}`,
-          flightDetails: {
-            origin: bookingData.flight?.originIata || '',
-            destination: bookingData.flight?.destinationIata || '',
-            departureDate: bookingData.flight?.departureDate || '',
-            returnDate: bookingData.flight?.returnDate || undefined,
-            flightNumber,
-            passengers: bookingData.flight?.passengerCount || 1,
-          },
-          paymentPlan: {
-            totalAmount: parseFloat(bookingData.booking.totalPrice || '0'),
-            depositAmount: parseFloat(bookingData.paymentPlan?.depositAmount || '0'),
-            installmentAmount: bookingData.paymentPlan?.installmentCount && bookingData.paymentPlan?.depositAmount
-              ? (parseFloat(bookingData.paymentPlan.totalAmount) - parseFloat(bookingData.paymentPlan.depositAmount)) / bookingData.paymentPlan.installmentCount
-              : undefined,
-            installmentCount: bookingData.paymentPlan?.installmentCount || undefined,
-            frequency: bookingData.paymentPlan?.installmentFrequency || undefined,
-            currency: bookingData.paymentPlan?.currency || bookingData.booking.currency || 'GBP',
-          },
+        if (!bookingData || !bookingData.user) {
+          return res.status(404).json({ error: "Booking or user not found" });
         }
-      );
 
-      if (emailSent) {
-        res.json({ success: true, message: "Booking confirmation email resent successfully" });
-      } else {
-        res.status(500).json({ error: "Failed to send email" });
+        // Build flight details from stored data
+        const flightOffer = bookingData.flight?.flightOffer as any;
+        const itineraries = flightOffer?.itineraries || [];
+
+        let flightNumber = "N/A";
+        if (itineraries.length > 0 && itineraries[0].segments?.length > 0) {
+          const firstSegment = itineraries[0].segments[0];
+          flightNumber = `${firstSegment.carrierCode || ""}${firstSegment.number || ""}`;
+        }
+
+        // Send the booking confirmation email
+        const emailSent = await emailService.sendBookingConfirmation(
+          bookingData.user.email,
+          {
+            customerName: `${bookingData.user.firstName} ${bookingData.user.lastName}`,
+            bookingReference: `SPL-${bookingData.booking.id}`,
+            flightDetails: {
+              origin: bookingData.flight?.originIata || "",
+              destination: bookingData.flight?.destinationIata || "",
+              departureDate: bookingData.flight?.departureDate || "",
+              returnDate: bookingData.flight?.returnDate || undefined,
+              flightNumber,
+              passengers: bookingData.flight?.passengerCount || 1,
+            },
+            paymentPlan: {
+              totalAmount: parseFloat(bookingData.booking.totalPrice || "0"),
+              depositAmount: parseFloat(
+                bookingData.paymentPlan?.depositAmount || "0",
+              ),
+              installmentAmount:
+                bookingData.paymentPlan?.installmentCount &&
+                bookingData.paymentPlan?.depositAmount
+                  ? (parseFloat(bookingData.paymentPlan.totalAmount) -
+                      parseFloat(bookingData.paymentPlan.depositAmount)) /
+                    bookingData.paymentPlan.installmentCount
+                  : undefined,
+              installmentCount:
+                bookingData.paymentPlan?.installmentCount || undefined,
+              frequency:
+                bookingData.paymentPlan?.installmentFrequency || undefined,
+              currency:
+                bookingData.paymentPlan?.currency ||
+                bookingData.booking.currency ||
+                "GBP",
+            },
+          },
+        );
+
+        if (emailSent) {
+          res.json({
+            success: true,
+            message: "Booking confirmation email resent successfully",
+          });
+        } else {
+          res.status(500).json({ error: "Failed to send email" });
+        }
+      } catch (error) {
+        console.error("Error resending booking confirmation:", error);
+        res
+          .status(500)
+          .json({ error: "Failed to resend booking confirmation" });
       }
-    } catch (error) {
-      console.error("Error resending booking confirmation:", error);
-      res.status(500).json({ error: "Failed to resend booking confirmation" });
-    }
-  });
+    },
+  );
 
   // ============ END ADMIN ROUTES ============
 
@@ -1430,33 +1471,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/promocodes/validate", async (req, res) => {
     try {
       const { code } = req.body;
-      
+
       if (!code) {
-        return res.status(400).json({ valid: false, message: "Promo code is required" });
+        return res
+          .status(400)
+          .json({ valid: false, message: "Promo code is required" });
       }
-      
+
       // Validate promo code format: PROMOXXXX where XXXX is a number
       const promoRegex = /^PROMO(\d+)$/;
       const match = code.toUpperCase().match(promoRegex);
-      
+
       if (!match) {
-        return res.status(400).json({ valid: false, message: "Invalid promo code format" });
+        return res
+          .status(400)
+          .json({ valid: false, message: "Invalid promo code format" });
       }
-      
+
       // Check if promo code exists in database and is active
       const [promoCode] = await db
         .select()
         .from(promoCodes)
-        .where(and(
-          eq(promoCodes.code, code.toUpperCase()),
-          eq(promoCodes.isActive, true)
-        ))
+        .where(
+          and(
+            eq(promoCodes.code, code.toUpperCase()),
+            eq(promoCodes.isActive, true),
+          ),
+        )
         .limit(1);
-      
+
       if (!promoCode) {
-        return res.status(400).json({ valid: false, message: "Invalid or expired promo code" });
+        return res
+          .status(400)
+          .json({ valid: false, message: "Invalid or expired promo code" });
       }
-      
+
       // Calculate discount based on the promo code type
       let discount = 0;
       if (promoCode.discountAmount) {
@@ -1464,17 +1513,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (promoCode.discountPercent) {
         discount = parseFloat(promoCode.discountPercent);
       }
-      
+
       res.json({
         valid: true,
-        discountAmount: promoCode.discountAmount ? parseFloat(promoCode.discountAmount) : null,
-        discountPercent: promoCode.discountPercent ? parseFloat(promoCode.discountPercent) : null,
+        discountAmount: promoCode.discountAmount
+          ? parseFloat(promoCode.discountAmount)
+          : null,
+        discountPercent: promoCode.discountPercent
+          ? parseFloat(promoCode.discountPercent)
+          : null,
         code: promoCode.code,
         type: promoCode.type,
       });
     } catch (error) {
       console.error("Promo code validation error:", error);
-      res.status(500).json({ valid: false, message: "Failed to validate promo code" });
+      res
+        .status(500)
+        .json({ valid: false, message: "Failed to validate promo code" });
     }
   });
 
@@ -1487,7 +1542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(promoCodes)
         .where(eq(promoCodes.code, "PROMO2050"))
         .limit(1);
-      
+
       if (!existing) {
         await db.insert(promoCodes).values({
           code: "PROMO2050",
