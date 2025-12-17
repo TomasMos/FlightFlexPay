@@ -103,6 +103,16 @@ The application uses eight main tables following the specification requirements:
 - **Profile Management**: User profile page with auth provider information and sign-out functionality
 - **Navbar Integration**: Profile dropdown with authentication state management across all pages
 
+### Admin Panel System
+- **Role-Based Access Control**: Users table has a role enum ("user", "admin") - default is "user"
+- **Firebase Token Verification**: Admin routes verify Firebase ID tokens and check admin role in database
+- **Admin Panel Page**: Accessible at `/admin` with tabs for Users, Leads, and Bookings management
+- **Users Management**: View all registered users with details modal showing bookings and payment history
+- **Leads Management**: View all leads with associated flight searches and conversion status
+- **Bookings Management**: View all bookings with detailed flight, payment plan, and installment information
+- **Navbar Integration**: "Admin Panel" link shown only for users with admin role
+- **Graceful Degradation**: Admin features disabled if FIREBASE_PRIVATE_KEY not configured
+
 ## Data Flow
 
 ### Complete Customer Journey (According to Specification)
@@ -165,6 +175,7 @@ The application uses eight main tables following the specification requirements:
 - **DATABASE_URL**: PostgreSQL connection string (required)
 - **NODE_ENV**: Environment setting (development/production)
 - **Amadeus API**: Client ID and secret for flight data
+- **FIREBASE_PRIVATE_KEY**: Firebase Admin SDK private key (required for admin panel)
 
 ### Hosting Considerations
 - **Static Assets**: Frontend builds to standard web-servable directory
