@@ -10,14 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CreditCard, CheckCircle } from "lucide-react";
 
-const STRIPE_PUBLISHABLE_KEY_PROD = "pk_live_51MgwsMAmEcsh1VOd2iSLbvZ7335oyK2OxjO1QrPM5lab8tU87jldpeUbHbhmTZuqSmJirLt02o3bLUfOokze4ENJ00NWRTsZuh";
-const STRIPE_PUBLISHABLE_KEY_TEST = "pk_test_51Rt7ymAUy8x2iu0HB3xDTUlgU7zGr0QukGNjkcrQHbK1HmQtgKQziPH0DqQzQ2SxFVTbxRhhYqUXu43UqB2qn3fc00l5IihEVR";
+// Initialize Stripe Prod
+// const stripePromise = loadStripe("pk_live_51MgwsMAmEcsh1VOd2iSLbvZ7335oyK2OxjO1QrPM5lab8tU87jldpeUbHbhmTZuqSmJirLt02o3bLUfOokze4ENJ00NWRTsZuh");
 
+// Initialize Stripe Test
 const stripePromise = loadStripe(
-  import.meta.env.PROD ? STRIPE_PUBLISHABLE_KEY_PROD : STRIPE_PUBLISHABLE_KEY_TEST
+  "pk_test_51Rt7ymAUy8x2iu0HB3xDTUlgU7zGr0QukGNjkcrQHbK1HmQtgKQziPH0DqQzQ2SxFVTbxRhhYqUXu43UqB2qn3fc00l5IihEVR",
 );
-
-console.log(`Stripe frontend configured for ${import.meta.env.PROD ? 'PRODUCTION' : 'TEST'} environment`);
 
 interface PaymentFormProps {
   onSuccess: (paymentIntent: any) => void;
