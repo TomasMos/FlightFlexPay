@@ -178,19 +178,32 @@ export const bookings = pgTable("bookings", {
   paymentPlanId: integer("payment_plan_id")
     .references(() => paymentPlans.id)
     .notNull(),
+  promoCodeId: integer("promo_code_id").references(() => promoCodes.id), // nullable - tracks which promo code was used
   passengers: json("passengers"), // JSON containing passenger details (nullable for existing bookings)
   status: bookingStatusEnum("status").default("payment_pending"),
-  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
+  originalPrice: decimal("original_price", { precision: 10, scale: 2 }), // Price before discount
+  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }), // Amount discounted
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(), // Final price after discount
   currency: varchar("currency", { length: 3 }).notNull().default("USD"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Promo code type enum
+export const promoCodeTypeEnum = pgEnum("promo_code_type", [
+  "system",   // System-wide promo codes like PROMO2050
+  "referral", // User referral codes
+]);
+
 // Promo codes table
 export const promoCodes = pgTable("promo_codes", {
   id: serial("id").primaryKey(),
-  code: varchar("code", { length: 12 }).notNull().unique(),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  type: promoCodeTypeEnum("type").notNull().default("system"),
+  userId: integer("user_id").references(() => users.id), // nullable - only for referral codes
+  discountPercent: decimal("discount_percent", { precision: 5, scale: 2 }), // e.g., 10.00 for 10%
+  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }), // fixed amount in USD
+  timesUsed: integer("times_used").default(0),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
