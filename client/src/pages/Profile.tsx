@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingsTab } from "@/components/profile/BookingsTab";
@@ -6,6 +5,7 @@ import { BillingTab } from "@/components/profile/BillingTab";
 import { SettingsTab } from "@/components/profile/SettingsTab";
 import { SupportTab } from "@/components/profile/SupportTab";
 import { AccountTab } from "@/components/profile/AccountTab";
+import { ReferralsTab } from "@/components/profile/ReferralsTab";
 import { useLocation } from "wouter";
 
 export default function Profile() {
@@ -27,20 +27,25 @@ export default function Profile() {
           Your Profile
         </h1>
 
-        <Tabs defaultValue="bookings" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+        <Tabs defaultValue="referrals" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
+            <TabsTrigger value="referrals" data-testid="tab-referrals">
+              Referrals
+            </TabsTrigger>
             <TabsTrigger value="bookings" data-testid="tab-bookings">
               Bookings
             </TabsTrigger>
             <TabsTrigger value="billing" data-testid="tab-billing">
               Billing
             </TabsTrigger>
-            {/* <TabsTrigger value="settings" data-testid="tab-settings">Settings</TabsTrigger>
-            <TabsTrigger value="support" data-testid="tab-support">Support</TabsTrigger> */}
             <TabsTrigger value="account" data-testid="tab-account">
               Account
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="referrals">
+            <ReferralsTab />
+          </TabsContent>
 
           <TabsContent value="bookings">
             <BookingsTab />
