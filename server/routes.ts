@@ -17,7 +17,7 @@ import { amadeusService } from "./services/amadeus";
 import { emailService } from "./services/email";
 import { PaymentPlanService } from "./services/paymentPlan";
 import { StripeService } from "./services/stripe";
-import { adminAuth } from "./services/firebaseAdmin";
+import { safeAdminAuth } from "./services/firebaseAdmin";
 import { z } from "zod";
 import { eq, and, desc } from "drizzle-orm";
 
@@ -965,7 +965,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const token = authHeader.split(' ')[1];
-      const decodedToken = await adminAuth.verifyIdToken(token);
+      const decodedToken = await safeAdminAuth.verifyIdToken(token);
       const email = decodedToken.email;
       
       if (!email) {
@@ -1000,7 +1000,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const token = authHeader.split(' ')[1];
-      const decodedToken = await adminAuth.verifyIdToken(token);
+      const decodedToken = await safeAdminAuth.verifyIdToken(token);
       const email = decodedToken.email;
       
       if (!email) {

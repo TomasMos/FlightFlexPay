@@ -3,17 +3,32 @@ import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Menu, X, User, LogOut, TicketsPlane } from 'lucide-react';
+import { Menu, X, User, LogOut, TicketsPlane, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [Location, setLocation] = useLocation();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, getIdToken } = useAuth();
   const { toast } = useToast();
+
+  const { data: adminCheck } = useQuery({
+    queryKey: ['/api/admin/check'],
+    queryFn: async () => {
+      const token = await getIdToken();
+      const res = await fetch('/api/admin/check', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return res.json();
+    },
+    enabled: !!currentUser
+  });
+
+  const isAdmin = adminCheck?.isAdmin || false;
 
   const handleSignOut = async () => {
     try {
@@ -116,6 +131,12 @@ export function Navbar() {
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => setLocation('/admin')} data-testid="dropdown-admin">
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>Admin Panel</span>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} data-testid="dropdown-signout">
                     <LogOut className="mr-2 h-4 w-4" />
@@ -205,6 +226,12 @@ export function Navbar() {
                       <span className={Location === '/profile' ? "text-xl font-medium text-splickets-accent" : "text-xl font-medium text-gray-700"}>Profile</span>
                       <User className="ml-2 h-5 w-5 text-gray-700" />
                     </Link>
+                    {isAdmin && (
+                      <Link href="/admin" className="flex items-center justify-end border-b border-gray-200 py-4 pr-6 pl-10" onClick={() => setIsMobileMenuOpen(false)} data-testid="mobile-nav-admin">
+                        <span className={Location === '/admin' ? "text-xl font-medium text-splickets-accent" : "text-xl font-medium text-gray-700"}>Admin Panel</span>
+                        <Shield className="ml-2 h-5 w-5 text-gray-700" />
+                      </Link>
+                    )}
                     <Button
                       variant="ghost"
                       className="flex w-full items-center justify-end py-4 pr-6 pl-10 text-right"

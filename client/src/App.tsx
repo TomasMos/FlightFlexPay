@@ -16,6 +16,7 @@ import About from "@/pages/About";
 import HowItWorks from "@/pages/HowItWorks";
 import ReferralProgram from "@/pages/ReferralProgram";
 import Contact from "@/pages/Contact";
+import AdminPanel from "@/pages/AdminPanel";
 import NotFound from "@/pages/not-found";
 import { Layout } from '@/pages/Layout';
 import { useEffect } from "react";
@@ -42,6 +43,7 @@ function Router() {
       <Route path="/referral-program" component={ReferralProgram}/>
       <Route path="/contact" component={Contact}/>
       <Route path="/email-test" component={EmailTestPage}/>
+      <Route path="/admin" component={AdminPanel}/>
       <Route component={NotFound} />
     </Switch>
   );

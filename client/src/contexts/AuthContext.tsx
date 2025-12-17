@@ -21,6 +21,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  getIdToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -126,6 +127,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await sendPasswordResetEmail(auth, email);
   };
 
+  const getIdToken = async (): Promise<string | null> => {
+    if (!currentUser) return null;
+    return await currentUser.getIdToken();
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -154,7 +160,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signin,
     signInWithGoogle,
     logout,
-    resetPassword
+    resetPassword,
+    getIdToken
   };
 
   return (
