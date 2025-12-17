@@ -1174,6 +1174,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: Resend booking confirmation email
+  app.post("/api/admin/bookings/:id/resend-confirmation", verifyAdmin, async (req, res) => {
+    try {
+      const bookingId = parseInt(req.params.id);
+      
+      const [bookingData] = await db
+        .select({
+          booking: bookings,
+          user: users,
+          flight: flights,
+          paymentPlan: paymentPlans,
+        })
+        .from(bookings)
+        .leftJoin(users, eq(bookings.userId, users.id))
+        .leftJoin(flights, eq(bookings.flightId, flights.id))
+        .leftJoin(paymentPlans, eq(bookings.paymentPlanId, paymentPlans.id))
+        .where(eq(bookings.id, bookingId))
+        .limit(1);
+      
+      if (!bookingData || !bookingData.user) {
+        return res.status(404).json({ error: "Booking or user not found" });
+      }
+
+      // Build flight details from stored data
+      const flightOffer = bookingData.flight?.flightOffer as any;
+      const itineraries = flightOffer?.itineraries || [];
+      
+      let flightNumber = "N/A";
+      if (itineraries.length > 0 && itineraries[0].segments?.length > 0) {
+        const firstSegment = itineraries[0].segments[0];
+        flightNumber = `${firstSegment.carrierCode || ''}${firstSegment.number || ''}`;
+      }
+
+      // Send the booking confirmation email
+      const emailSent = await emailService.sendBookingConfirmation(
+        bookingData.user.email,
+        {
+          customerName: `${bookingData.user.firstName} ${bookingData.user.lastName}`,
+          bookingReference: `SPL-${bookingData.booking.id}`,
+          flightDetails: {
+            origin: bookingData.flight?.originIata || '',
+            destination: bookingData.flight?.destinationIata || '',
+            departureDate: bookingData.flight?.departureDate || '',
+            returnDate: bookingData.flight?.returnDate || undefined,
+            flightNumber,
+            passengers: bookingData.flight?.passengerCount || 1,
+          },
+          paymentPlan: {
+            totalAmount: parseFloat(bookingData.booking.totalPrice || '0'),
+            depositAmount: parseFloat(bookingData.paymentPlan?.depositAmount || '0'),
+            installmentAmount: bookingData.paymentPlan?.installmentCount && bookingData.paymentPlan?.depositAmount
+              ? (parseFloat(bookingData.paymentPlan.totalAmount) - parseFloat(bookingData.paymentPlan.depositAmount)) / bookingData.paymentPlan.installmentCount
+              : undefined,
+            installmentCount: bookingData.paymentPlan?.installmentCount || undefined,
+            frequency: bookingData.paymentPlan?.installmentFrequency || undefined,
+            currency: bookingData.paymentPlan?.currency || bookingData.booking.currency || 'GBP',
+          },
+        }
+      );
+
+      if (emailSent) {
+        res.json({ success: true, message: "Booking confirmation email resent successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to send email" });
+      }
+    } catch (error) {
+      console.error("Error resending booking confirmation:", error);
+      res.status(500).json({ error: "Failed to resend booking confirmation" });
+    }
+  });
+
   // ============ END ADMIN ROUTES ============
 
   // Promo code validation endpoint

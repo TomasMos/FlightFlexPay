@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -26,13 +27,13 @@ import {
   UserCheck, 
   Plane, 
   CreditCard, 
-  ArrowLeft, 
   Eye, 
   Mail, 
   Phone, 
   Calendar,
   Loader2,
-  ShieldAlert
+  ShieldAlert,
+  Send
 } from "lucide-react";
 import { format } from "date-fns";
 import type { User, Lead, Booking } from "@shared/schema";
@@ -52,12 +53,44 @@ interface LeadAttempt {
 export default function AdminPanel() {
   const { currentUser, getIdToken } = useAuth();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null);
   const [userDetailOpen, setUserDetailOpen] = useState(false);
   const [leadDetailOpen, setLeadDetailOpen] = useState(false);
   const [bookingDetailOpen, setBookingDetailOpen] = useState(false);
+
+  const resendConfirmationMutation = useMutation({
+    mutationFn: async (bookingId: number) => {
+      const token = await getIdToken();
+      const res = await fetch(`/api/admin/bookings/${bookingId}/resend-confirmation`, {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to resend confirmation');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Email Sent",
+        description: "Booking confirmation email has been resent successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to Send",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const { data: adminCheck, isLoading: checkingAdmin } = useQuery({
     queryKey: ['/api/admin/check'],
@@ -579,7 +612,25 @@ export default function AdminPanel() {
       <Dialog open={bookingDetailOpen} onOpenChange={setBookingDetailOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Booking Details</DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Booking Details</DialogTitle>
+              {selectedBooking && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => resendConfirmationMutation.mutate(selectedBooking.booking.id)}
+                  disabled={resendConfirmationMutation.isPending}
+                  data-testid="resend-confirmation-button"
+                >
+                  {resendConfirmationMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4 mr-2" />
+                  )}
+                  Resend Confirmation
+                </Button>
+              )}
+            </div>
           </DialogHeader>
           {selectedBooking && bookingDetail && (
             <div className="space-y-6">
