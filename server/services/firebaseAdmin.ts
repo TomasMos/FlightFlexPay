@@ -3,16 +3,29 @@ import admin from 'firebase-admin';
 // Parse private key - handle various formats (escaped newlines, JSON string, etc.)
 function parsePrivateKey(key: string | undefined): string {
   if (!key) return "";
-  // Replace escaped newlines with actual newlines
-  let parsed = key.replace(/\\n/g, '\n');
-  // If the key was JSON stringified (has extra quotes), parse it
-  if (parsed.startsWith('"') && parsed.endsWith('"')) {
+  
+  let parsed = key;
+  
+  // Try JSON parsing first (handles quoted strings with escape sequences)
+  if (parsed.startsWith('"')) {
     try {
       parsed = JSON.parse(parsed);
     } catch (e) {
-      // Keep as is if JSON parse fails
+      // Continue with other methods
     }
   }
+  
+  // Replace literal \n with newline characters
+  parsed = parsed.replace(/\\n/g, '\n');
+  
+  // Also try replacing escaped backslash-n (\\n as 4 chars)
+  parsed = parsed.replace(/\\\\n/g, '\n');
+  
+  // Ensure proper PEM format
+  if (!parsed.includes('-----BEGIN')) {
+    console.warn("Private key does not appear to be in PEM format");
+  }
+  
   return parsed;
 }
 
