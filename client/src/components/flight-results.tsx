@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Shield, CreditCard, Filter } from "lucide-react";
 import { ItineraryModal } from "./itinerary-modal";
+import { PaymentPlanModal } from "./payment-plan-modal";
 import { FlightCard } from "@/components/flight-card.tsx";
 import { parseDurationToMinutes } from "@/utils/formatters";
 
@@ -30,6 +31,9 @@ export function FlightResults({
   const [selectedFlight, setSelectedFlight] =
     useState<EnhancedFlightWithPaymentPlan | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPaymentPlanFlight, setSelectedPaymentPlanFlight] =
+    useState<EnhancedFlightWithPaymentPlan | null>(null);
+  const [isPaymentPlanModalOpen, setIsPaymentPlanModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState("best");
 
   const getFlightPrice = (flight: EnhancedFlightWithPaymentPlan): number => {
@@ -103,6 +107,11 @@ export function FlightResults({
   const handleSelectFlight = (flight: EnhancedFlightWithPaymentPlan) => {
     setSelectedFlight(flight);
     setIsModalOpen(true);
+  };
+
+  const handlePaymentPlanClick = (flight: EnhancedFlightWithPaymentPlan) => {
+    setSelectedPaymentPlanFlight(flight);
+    setIsPaymentPlanModalOpen(true);
   };
 
   if (isLoading) {
@@ -230,6 +239,7 @@ export function FlightResults({
               key={flight.id}
               flight={flight}
               onSelect={handleSelectFlight}
+              onPaymentPlanClick={handlePaymentPlanClick}
             />
           ))}
         </div>
@@ -239,6 +249,14 @@ export function FlightResults({
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             flight={selectedFlight}
+          />
+        )}
+
+        {selectedPaymentPlanFlight && (
+          <PaymentPlanModal
+            isOpen={isPaymentPlanModalOpen}
+            onClose={() => setIsPaymentPlanModalOpen(false)}
+            flight={selectedPaymentPlanFlight}
           />
         )}
       </section>

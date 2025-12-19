@@ -11,9 +11,11 @@ import { trackFlightInspectGTM } from "@/lib/analytics";
 export function FlightCard({
   flight,
   onSelect,
+  onPaymentPlanClick,
 }: {
   flight: EnhancedFlightWithPaymentPlan;
   onSelect: (flight: EnhancedFlightWithPaymentPlan) => void;
+  onPaymentPlanClick?: (flight: EnhancedFlightWithPaymentPlan) => void;
 }) {
   const { currencySymbol } = useCurrency();
   const pricePerTraveller =
@@ -25,13 +27,13 @@ export function FlightCard({
       data-testid={`card-flight-${flight.id}`}
       
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch  ">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Flight Details */}
-        <div className="lg:col-span-2  h-full flex flex-col">
+        <div className="lg:col-span-2 flex flex-col">
           {/*Airline & Flight Information  */}
           <Carrier flight={flight} />
 
-          <div className="flex flex-col gap-4 h-full">
+          <div className="flex flex-col gap-4 mt-4">
             {/* Map over all itineraries */}
             {flight.itineraries.map((itinerary, index) => {
               const firstSegment = itinerary.segments[0];
@@ -41,7 +43,7 @@ export function FlightCard({
               return (
                 <div
                   key={index}
-                  className={`flex items-center justify-center flex-grow ${index > 0 ? "border-t pt-4" : ""}`}
+                  className={`flex items-center justify-center ${index > 0 ? "border-t pt-4" : ""}`}
                 >
                   <div className="text-left w-[100px] ">
                     <div
@@ -98,7 +100,7 @@ export function FlightCard({
             })}
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center lg:items-end gap-4">
+        <div className="flex flex-col items-center lg:items-end gap-4">
           {/* Pricing */}
           <div className="items-center  flex flex-col gap-6">
             <div className="flex flex-row w-full  justify-center ">
@@ -132,7 +134,7 @@ export function FlightCard({
 
             {flight.paymentPlanEligible && flight.paymentPlan ? (
               <div
-                className="bg-splickets-secondary/10 rounded-lg p-3 border border-splickets-secondary/20 flex flex-col items-center"
+                className="bg-splickets-secondary/10 rounded-lg p-3 border border-splickets-secondary/20 flex flex-col items-center w-full"
                 data-testid={`payment-plan-preview-${flight.id}`}
               >
                 <div className="flex  items-center gap-2 mb-2">
@@ -149,7 +151,7 @@ export function FlightCard({
                 </div>
               </div>
             ) : (
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center space-x-2">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center space-x-2 w-full">
         <div className="text-sm text-splickets-primary">
           <p>
             Payment plans are available for flights more than 3 weeks away.
@@ -157,23 +159,39 @@ export function FlightCard({
         </div>
       </div>
             )}
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-blue-700 text-white px-8"
-              data-testid="button-select-flight"
-              onClick={() => {
-                // Track flight view in Meta Pixel
-                const route = `${flight.itineraries[0]?.segments[0]?.departure?.iataCode || ''} → ${flight.itineraries[0]?.segments[flight.itineraries[0]?.segments.length - 1]?.arrival?.iataCode || ''}`;
-                trackFlightView(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
+            <div className="flex flex-col lg:flex-row gap-3 w-full">
+            {flight.paymentPlanEligible && onPaymentPlanClick && (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary text-primary bg-white hover:bg-blue-50 hover:border-blue-700 hover:text-blue-700 px-8 w-full lg:flex-1"
+                  data-testid="button-payment-plan"
+                  onClick={() => {
+                    onPaymentPlanClick(flight);
+                  }}
+                >
+                  Payment Plan
+                </Button>
+              )}
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-blue-700 text-white px-8 w-full lg:flex-1"
+                data-testid="button-select-flight"
+                onClick={() => {
+                  // Track flight view in Meta Pixel
+                  const route = `${flight.itineraries[0]?.segments[0]?.departure?.iataCode || ''} → ${flight.itineraries[0]?.segments[flight.itineraries[0]?.segments.length - 1]?.arrival?.iataCode || ''}`;
+                  trackFlightView(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
 
-                // Track Google Tag Manager event
-                trackFlightInspectGTM(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
+                  // Track Google Tag Manager event
+                  trackFlightInspectGTM(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
 
-                onSelect(flight);
-              }}
-            >
-              See  More Details
-            </Button>
+                  onSelect(flight);
+                }}
+              >
+                More Details
+              </Button>
+              
+            </div>
           </div>
         </div>
       </div>

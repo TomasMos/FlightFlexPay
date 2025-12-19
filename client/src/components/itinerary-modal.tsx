@@ -453,8 +453,8 @@ export function ItineraryModal({
 
         {/* Footer with pricing and select button */}
         <div className="border-t border-splickets-slate-200 h-md:p-6 h-md:py-3 px-6 bg-splickets-slate-900">
-          <div className="flex items-center justify-between">
-            <div className="">
+          <div className="grid grid-cols-3 items-center lg:flex lg:justify-between">
+            <div className="col-span-1">
               <div className="text-2xl font-bold">
                 {currencySymbol}{formattedPrice(Number(flight.price.total))}
               </div>
@@ -464,27 +464,29 @@ export function ItineraryModal({
                 </div>
               )}
             </div>
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-blue-700 text-white px-8"
-              data-testid="button-select-flight"
-              onClick={() => {
-                // Track flight selection in Meta Pixel
-                const route = `${flight.itineraries[0]?.segments[0]?.departure?.iataCode || ''} → ${flight.itineraries[0]?.segments[flight.itineraries[0]?.segments.length - 1]?.arrival?.iataCode || ''}`;
-                trackFlightSelect(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
-                
-                // Track Google Tag Manager event
-                trackFlightSelectGTM(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
-                
-                // Store flight data in localStorage for the passenger details page
-                localStorage.setItem("selectedFlight", JSON.stringify(flight));
-                // Navigate to passenger details page
-                setLocation(`/flight-search/passenger-details/${flight.id}`);
-                onClose(); // Close the modal
-              }}
-            >
-              Select
-            </Button>
+            <div className="col-span-1 flex justify-center lg:col-span-0 lg:flex-none lg:ml-auto">
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-blue-700 text-white px-8"
+                data-testid="button-select-flight"
+                onClick={() => {
+                  // Track flight selection in Meta Pixel
+                  const route = `${flight.itineraries[0]?.segments[0]?.departure?.iataCode || ''} → ${flight.itineraries[0]?.segments[flight.itineraries[0]?.segments.length - 1]?.arrival?.iataCode || ''}`;
+                  trackFlightSelect(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
+                  
+                  // Track Google Tag Manager event
+                  trackFlightSelectGTM(flight.id, route, parseFloat(flight.price.total), flight.price.currency);
+                  
+                  // Store flight data in localStorage for the passenger details page
+                  localStorage.setItem("selectedFlight", JSON.stringify(flight));
+                  // Navigate to passenger details page
+                  setLocation(`/flight-search/passenger-details/${flight.id}`);
+                  onClose(); // Close the modal
+                }}
+              >
+                Select
+              </Button>
+            </div>
           </div>
         </div>
       </div>
