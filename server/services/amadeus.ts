@@ -203,7 +203,7 @@ export class AmadeusService {
         destinationLocationCode: searchParams.destination,
         departureDate: searchParams.departureDate,
         adults: searchParams.passengers.toString(),
-        max: "40", // Increased for better results
+        max: "25", // Increased for better results
         currencyCode: searchParams.currency || "USD",
       });
 
