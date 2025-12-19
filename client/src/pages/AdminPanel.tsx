@@ -339,7 +339,7 @@ export default function AdminPanel() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight" data-testid="admin-title">Admin Panel</h1>
+        <h1 className="text-3xl font-semibold tracking-tight" data-testid="admin-title">Admin Panels</h1>
         <p className="text-gray-600 mt-1">Manage users, leads, and bookings</p>
       </div>
 
