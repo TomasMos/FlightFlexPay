@@ -65,8 +65,70 @@ const mockAuth = {
   verifyIdToken: async (token: string) => {
     console.warn("Firebase Admin not configured - using mock verification");
     throw new Error("Firebase Admin not configured");
+  },
+  createUser: async (properties: any) => {
+    console.warn("Firebase Admin not configured - cannot create user");
+    throw new Error("Firebase Admin not configured");
+  },
+  createCustomToken: async (uid: string) => {
+    console.warn("Firebase Admin not configured - cannot create custom token");
+    throw new Error("Firebase Admin not configured");
+  },
+  getUserByEmail: async (email: string) => {
+    console.warn("Firebase Admin not configured - cannot get user by email");
+    throw new Error("Firebase Admin not configured");
   }
 };
+
+// Helper to create a Firebase Auth user with email/password
+export async function createFirebaseUser(email: string, password: string, displayName?: string): Promise<{ uid: string }> {
+  if (!adminAuth) {
+    throw new Error("Firebase Admin not configured");
+  }
+  
+  try {
+    // Check if user already exists
+    const existingUser = await adminAuth.getUserByEmail(email).catch(() => null);
+    if (existingUser) {
+      return { uid: existingUser.uid };
+    }
+    
+    // Create new user
+    const userRecord = await adminAuth.createUser({
+      email,
+      password,
+      displayName,
+      emailVerified: true, // Skip email verification since they've booked/been created by admin
+    });
+    
+    return { uid: userRecord.uid };
+  } catch (error: any) {
+    // If user already exists, that's fine
+    if (error.code === 'auth/email-already-exists') {
+      const existingUser = await adminAuth.getUserByEmail(email);
+      return { uid: existingUser.uid };
+    }
+    throw error;
+  }
+}
+
+// Helper to create a custom token for auto-login
+export async function createCustomToken(uid: string): Promise<string> {
+  if (!adminAuth) {
+    throw new Error("Firebase Admin not configured");
+  }
+  return adminAuth.createCustomToken(uid);
+}
+
+// Generate a random temporary password
+export function generateTemporaryPassword(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+  let password = '';
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
 
 export { adminAuth };
 export const safeAdminAuth = adminAuth || mockAuth;

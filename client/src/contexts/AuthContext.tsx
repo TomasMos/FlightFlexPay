@@ -9,7 +9,8 @@ import {
   GoogleAuthProvider,
   sendPasswordResetEmail,
   linkWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  signInWithCustomToken
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
@@ -19,6 +20,7 @@ interface AuthContextType {
   signup: (email: string, password: string) => Promise<void>;
   signin: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<any>;
+  signInWithToken: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   getIdToken: () => Promise<string | null>;
@@ -113,6 +115,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Sign in with a custom token (for auto-login after booking)
+  const signInWithToken = async (token: string) => {
+    await signInWithCustomToken(auth, token);
+  };
+
   const logout = async () => {
     await signOut(auth);
   };
@@ -159,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signup,
     signin,
     signInWithGoogle,
+    signInWithToken,
     logout,
     resetPassword,
     getIdToken

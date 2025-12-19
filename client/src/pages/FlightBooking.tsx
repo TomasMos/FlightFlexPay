@@ -25,11 +25,13 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackPurchase } from "@/lib/metaPixel";
 import { trackPurchaseGTM } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
   const { currencySymbol, currency } = useCurrency();
   const { toast } = useToast();
+  const { signInWithToken } = useAuth();
   const [flight, setFlight] = useState<EnhancedFlightWithPaymentPlan | null>(
     null,
   );
@@ -345,6 +347,23 @@ export default function FlightBooking() {
       
       // Track Google Tag Manager event
       trackPurchaseGTM(flight.id, totalValue, flight.price.currency, passengerCount);
+      
+      // Auto-login using custom token if available
+      if (result.customToken) {
+        try {
+          await signInWithToken(result.customToken);
+          toast({
+            title: "Account created",
+            description: "You're now signed in to your Splickets account",
+          });
+          // Redirect to profile page after successful auto-login
+          setLocation("/profile");
+          return;
+        } catch (authError) {
+          console.error("Auto-login failed:", authError);
+          // Continue without auto-login - user can sign in later
+        }
+      }
       
       setBookingConfirmed(true);
     } catch (error) {

@@ -17,7 +17,7 @@ import { amadeusService } from "./services/amadeus";
 import { emailService } from "./services/email";
 import { PaymentPlanService } from "./services/paymentPlan";
 import { StripeService } from "./services/stripe";
-import { safeAdminAuth } from "./services/firebaseAdmin";
+import { safeAdminAuth, createFirebaseUser, createCustomToken, generateTemporaryPassword } from "./services/firebaseAdmin";
 import {
   createReferralCodeForUser,
   getUserReferralCode,
@@ -287,6 +287,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .where(eq(leads.id, leadId));
       }
 
+      // Create Firebase Auth account for the user if it doesn't exist
+      // This allows them to sign in with Google (same email) or reset password
+      let customToken: string | null = null;
+      try {
+        const tempPassword = generateTemporaryPassword();
+        const firebaseUser = await createFirebaseUser(
+          lead[0].email,
+          tempPassword,
+          `${lead[0].firstName || ''} ${lead[0].lastName || ''}`.trim()
+        );
+        // Create custom token for auto-login on the frontend
+        customToken = await createCustomToken(firebaseUser.uid);
+      } catch (firebaseError) {
+        console.error("Firebase user creation/token error:", firebaseError);
+        // Continue without auto-login - user can reset password later
+      }
+
       await db
         .update(flightSearches)
         .set({ userId: userId })
@@ -441,6 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         flightId: flight.id,
         paymentPlanId: paymentPlanRecord.id,
         success: true,
+        customToken, // For auto-login after booking
       });
     } catch (error) {
       console.error("Error completing booking:", error);
@@ -1464,6 +1482,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     },
   );
+
+  // Admin: Create new user with Firebase Auth account
+  app.post("/api/admin/users/create", verifyAdmin, async (req, res) => {
+    try {
+      const {
+        email,
+        firstName,
+        lastName,
+        title,
+        diallingCode,
+        phoneNumber,
+        dob,
+        passportCountry,
+        preferredCurrency,
+      } = req.body;
+
+      // Validate required fields
+      if (!email || !firstName || !lastName) {
+        return res.status(400).json({ error: "Email, first name, and last name are required" });
+      }
+
+      // Check if user already exists
+      const existingUser = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
+      if (existingUser.length > 0) {
+        return res.status(400).json({ error: "A user with this email already exists" });
+      }
+
+      // Generate temporary password for Firebase Auth
+      const temporaryPassword = generateTemporaryPassword();
+
+      // Create Firebase Auth account
+      try {
+        await createFirebaseUser(email, temporaryPassword, `${firstName} ${lastName}`);
+      } catch (firebaseError: any) {
+        console.error("Firebase user creation error:", firebaseError);
+        // Continue anyway - user can reset password later
+      }
+
+      // Create user in database
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          email,
+          firstName,
+          lastName,
+          title: title || null,
+          diallingCode: diallingCode || null,
+          phoneNumber: phoneNumber || null,
+          dob: dob || null,
+          passportCountry: passportCountry || null,
+          preferredCurrency: preferredCurrency || "USD",
+        })
+        .returning();
+
+      // Create referral code for new user
+      try {
+        await createReferralCodeForUser(newUser.id, firstName, lastName);
+      } catch (error) {
+        console.error("Failed to create referral code:", error);
+      }
+
+      res.json({
+        success: true,
+        user: newUser,
+        temporaryPassword,
+        message: "User created successfully. Share the temporary password with the user.",
+      });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  });
 
   // ============ END ADMIN ROUTES ============
 

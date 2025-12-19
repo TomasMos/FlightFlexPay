@@ -92,9 +92,11 @@ The application uses eight main tables following the specification requirements:
 - **Error Handling**: Graceful fallback when MailerSend is not configured
 
 ### Firebase Authentication System
-- **Restricted Access**: Users can only sign in after completing a booking (booking-first requirement)
-- **Email/Password Authentication**: Traditional signup with email and password validation
-- **Google OAuth Integration**: Single sign-on with Google accounts
+- **Booking-First Account Creation**: User accounts are only created through successful bookings or by admins - no self-registration
+- **Auto-Login After Booking**: Upon successful booking, Firebase Auth account is created and user is automatically signed in using custom tokens
+- **Temporary Password System**: System generates secure temporary passwords for new accounts that users can change later
+- **Email/Password Authentication**: Sign-in with email and password (no self-signup option)
+- **Google OAuth Integration**: Single sign-on with Google accounts for users with existing accounts
 - **Account Linking**: Automatic linking of same email between different auth providers
 - **Database Verification**: All auth attempts verified against users table before allowing access
 - **Password Reset**: Secure password reset functionality with database verification
@@ -107,9 +109,11 @@ The application uses eight main tables following the specification requirements:
 - **Role-Based Access Control**: Users table has a role enum ("user", "admin") - default is "user"
 - **Firebase Token Verification**: Admin routes verify Firebase ID tokens and check admin role in database
 - **Admin Panel Page**: Accessible at `/admin` with tabs for Users, Leads, and Bookings management
+- **Create User Feature**: Admins can create new user accounts with all details; system generates temporary password to share with user
 - **Users Management**: View all registered users with details modal showing bookings and payment history
 - **Leads Management**: View all leads with associated flight searches and conversion status
 - **Bookings Management**: View all bookings with detailed flight, payment plan, and installment information
+- **Resend Confirmation**: Ability to resend booking confirmation emails from admin panel
 - **Navbar Integration**: "Admin Panel" link shown only for users with admin role
 - **Graceful Degradation**: Admin features disabled if FIREBASE_PRIVATE_KEY not configured
 

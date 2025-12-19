@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Eye, EyeOff, TicketsPlane } from "lucide-react";
+import { Eye, EyeOff, TicketsPlane } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -20,11 +20,10 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isResetMode, setIsResetMode] = useState(false);
   const { toast } = useToast();
-  const { signin, signup, signInWithGoogle, resetPassword } = useAuth();
+  const { signin, signInWithGoogle, resetPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,26 +69,16 @@ export default function SignIn() {
 
     setIsLoading(true);
     try {
-      if (isSignUp) {
-        await signup(email, password);
-        toast({
-          title: "Account created",
-          description: "Welcome to Splickets!",
-        });
-      } else {
-        await signin(email, password);
-        toast({
-          title: "Welcome back",
-          description: "You've been signed in successfully",
-        });
-      }
+      await signin(email, password);
+      toast({
+        title: "Welcome back",
+        description: "You've been signed in successfully",
+      });
       setLocation("/");
     } catch (error: any) {
       toast({
         title: "Error",
-        description:
-          error.message ||
-          `Failed to ${isSignUp ? "create account" : "sign in"}`,
+        description: error.message || "Failed to sign in",
         variant: "destructive",
       });
     } finally {
@@ -117,11 +106,6 @@ export default function SignIn() {
     }
   };
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setIsSignUp(params.get("signup") === "true");
-  }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -145,33 +129,15 @@ export default function SignIn() {
         <Card className="shadow-xl border-0">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">
-              {isResetMode
-                ? "Reset Password"
-                : isSignUp
-                  ? "Create Account"
-                  : "Welcome Back"}
+              {isResetMode ? "Reset Password" : "Welcome Back"}
             </CardTitle>
             <CardDescription className="text-center">
               {isResetMode
                 ? "Enter your email to receive reset instructions"
-                : isSignUp
-                  ? "Create your account to access your bookings"
-                  : "Sign in to your Splickets account"}
+                : "Sign in to your Splickets account"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Important Notice */}
-
-            {isSignUp && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center space-x-2">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                <div className="text-sm text-amber-800 items-center">
-                  <p>
-                    Book a flight, then create your account.
-                  </p>
-                </div>
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -228,9 +194,7 @@ export default function SignIn() {
                   ? "Please wait..."
                   : isResetMode
                     ? "Send Reset Email"
-                    : isSignUp
-                      ? "Create Account"
-                      : "Sign In"}
+                    : "Sign In"}
               </Button>
             </form>
 
@@ -278,34 +242,16 @@ export default function SignIn() {
               </>
             )}
 
-            <div className="text-sm flex  justify-around">
-              {!isResetMode && (
-                <div>
-    
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="p-0 h-auto font-medium "
-                    onClick={() => setIsSignUp(!isSignUp)}
-                    data-testid="button-toggle-mode"
-                  >
-                    {isSignUp ? "Sign in" : "Create account"}
-                  </Button>
-                </div>
-              )}
-              {!isSignUp && (
-                <div>
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="p-0 h-auto text-sm b"
-                    onClick={() => setIsResetMode(!isResetMode)}
-                    data-testid="button-reset-password"
-                  >
-                    {isResetMode ? "Back to sign in" : "Password Reset"}
-                  </Button>
-                </div>
-              )}
+            <div className="text-sm flex justify-center">
+              <Button
+                type="button"
+                variant="link"
+                className="p-0 h-auto text-sm"
+                onClick={() => setIsResetMode(!isResetMode)}
+                data-testid="button-reset-password"
+              >
+                {isResetMode ? "Back to sign in" : "Forgot password?"}
+              </Button>
             </div>
           </CardContent>
         </Card>

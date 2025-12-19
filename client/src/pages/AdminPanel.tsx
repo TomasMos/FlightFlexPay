@@ -3,17 +3,28 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
 } from "@/components/ui/dialog";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Table, 
   TableBody, 
@@ -33,10 +44,14 @@ import {
   Calendar,
   Loader2,
   ShieldAlert,
-  Send
+  Send,
+  Plus,
+  Copy,
+  Check
 } from "lucide-react";
 import { format } from "date-fns";
 import type { User, Lead, Booking } from "@shared/schema";
+import { queryClient } from "@/lib/queryClient";
 
 interface AdminBooking {
   booking: Booking;
@@ -60,6 +75,20 @@ export default function AdminPanel() {
   const [userDetailOpen, setUserDetailOpen] = useState(false);
   const [leadDetailOpen, setLeadDetailOpen] = useState(false);
   const [bookingDetailOpen, setBookingDetailOpen] = useState(false);
+  
+  // Create User Modal State
+  const [createUserOpen, setCreateUserOpen] = useState(false);
+  const [createdUserResult, setCreatedUserResult] = useState<{ user: User; temporaryPassword: string } | null>(null);
+  const [copiedPassword, setCopiedPassword] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    title: "",
+    diallingCode: "",
+    phoneNumber: "",
+    preferredCurrency: "USD",
+  });
 
   const resendConfirmationMutation = useMutation({
     mutationFn: async (bookingId: number) => {
@@ -91,6 +120,74 @@ export default function AdminPanel() {
       });
     },
   });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: typeof newUserForm) => {
+      const token = await getIdToken();
+      const res = await fetch('/api/admin/users/create', {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to create user');
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setCreatedUserResult({ user: data.user, temporaryPassword: data.temporaryPassword });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "User Created",
+        description: "New user account created successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to Create User",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateUser = () => {
+    if (!newUserForm.email || !newUserForm.firstName || !newUserForm.lastName) {
+      toast({
+        title: "Missing Fields",
+        description: "Email, first name, and last name are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+    createUserMutation.mutate(newUserForm);
+  };
+
+  const resetCreateUserForm = () => {
+    setNewUserForm({
+      email: "",
+      firstName: "",
+      lastName: "",
+      title: "",
+      diallingCode: "",
+      phoneNumber: "",
+      preferredCurrency: "USD",
+    });
+    setCreatedUserResult(null);
+    setCopiedPassword(false);
+  };
+
+  const copyPasswordToClipboard = async () => {
+    if (createdUserResult?.temporaryPassword) {
+      await navigator.clipboard.writeText(createdUserResult.temporaryPassword);
+      setCopiedPassword(true);
+      setTimeout(() => setCopiedPassword(false), 2000);
+    }
+  };
 
   const { data: adminCheck, isLoading: checkingAdmin } = useQuery({
     queryKey: ['/api/admin/check'],
@@ -302,8 +399,15 @@ export default function AdminPanel() {
 
         <TabsContent value="users">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>All Users</CardTitle>
+              <Button 
+                onClick={() => { resetCreateUserForm(); setCreateUserOpen(true); }}
+                data-testid="button-create-user"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create User
+              </Button>
             </CardHeader>
             <CardContent>
               {loadingUsers ? (
@@ -786,6 +890,189 @@ export default function AdminPanel() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Modal */}
+      <Dialog open={createUserOpen} onOpenChange={(open) => {
+        setCreateUserOpen(open);
+        if (!open) resetCreateUserForm();
+      }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {createdUserResult ? "User Created Successfully" : "Create New User"}
+            </DialogTitle>
+            <DialogDescription>
+              {createdUserResult 
+                ? "Share the temporary password with the user. They can sign in and change it later."
+                : "Create a new user account with a temporary password."
+              }
+            </DialogDescription>
+          </DialogHeader>
+
+          {createdUserResult ? (
+            <div className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <span className="font-semibold text-green-800">Account Created</span>
+                </div>
+                <p className="text-sm text-green-700">
+                  {createdUserResult.user.firstName} {createdUserResult.user.lastName} ({createdUserResult.user.email})
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Temporary Password</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    value={createdUserResult.temporaryPassword} 
+                    readOnly 
+                    className="font-mono"
+                    data-testid="input-temp-password"
+                  />
+                  <Button 
+                    variant="outline" 
+                    onClick={copyPasswordToClipboard}
+                    data-testid="button-copy-password"
+                  >
+                    {copiedPassword ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500">
+                  The user should change this password after signing in.
+                </p>
+              </div>
+
+              <DialogFooter>
+                <Button onClick={() => { setCreateUserOpen(false); resetCreateUserForm(); }} data-testid="button-done">
+                  Done
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name *</Label>
+                  <Input
+                    id="firstName"
+                    value={newUserForm.firstName}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, firstName: e.target.value })}
+                    placeholder="John"
+                    data-testid="input-first-name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Input
+                    id="lastName"
+                    value={newUserForm.lastName}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, lastName: e.target.value })}
+                    placeholder="Doe"
+                    data-testid="input-last-name"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={newUserForm.email}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
+                  placeholder="john@example.com"
+                  data-testid="input-email"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Select
+                  value={newUserForm.title}
+                  onValueChange={(value) => setNewUserForm({ ...newUserForm, title: value })}
+                >
+                  <SelectTrigger data-testid="select-title">
+                    <SelectValue placeholder="Select title" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Mr">Mr</SelectItem>
+                    <SelectItem value="Mrs">Mrs</SelectItem>
+                    <SelectItem value="Ms">Ms</SelectItem>
+                    <SelectItem value="Dr">Dr</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="diallingCode">Dialling Code</Label>
+                  <Input
+                    id="diallingCode"
+                    value={newUserForm.diallingCode}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, diallingCode: e.target.value })}
+                    placeholder="+1"
+                    data-testid="input-dialling-code"
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input
+                    id="phoneNumber"
+                    value={newUserForm.phoneNumber}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, phoneNumber: e.target.value })}
+                    placeholder="555-1234"
+                    data-testid="input-phone-number"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="currency">Preferred Currency</Label>
+                <Select
+                  value={newUserForm.preferredCurrency}
+                  onValueChange={(value) => setNewUserForm({ ...newUserForm, preferredCurrency: value })}
+                >
+                  <SelectTrigger data-testid="select-currency">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD - US Dollar</SelectItem>
+                    <SelectItem value="EUR">EUR - Euro</SelectItem>
+                    <SelectItem value="GBP">GBP - British Pound</SelectItem>
+                    <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
+                    <SelectItem value="AUD">AUD - Australian Dollar</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setCreateUserOpen(false)}
+                  data-testid="button-cancel"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleCreateUser}
+                  disabled={createUserMutation.isPending}
+                  data-testid="button-create"
+                >
+                  {createUserMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create User"
+                  )}
+                </Button>
+              </DialogFooter>
             </div>
           )}
         </DialogContent>
