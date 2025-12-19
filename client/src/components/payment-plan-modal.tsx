@@ -4,17 +4,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  formatDate,
-  formattedPrice,
-} from "@/utils/formatters";
+import { formatDate, formattedPrice } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
-import {
-  X,
-  ChevronDown,
-  ChevronUp,
-  Check,
-} from "lucide-react";
+import { X, ChevronDown, ChevronUp, Check } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { useState } from "react";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -31,7 +23,7 @@ export function PaymentPlanModal({
   onClose,
 }: PaymentPlanModalProps) {
   const { currencySymbol, currency } = useCurrency();
-  
+
   // Payment plan calculator state
   const [selectedDeposit, setSelectedDeposit] = useState(30); // Default to 30%
   const [selectedInstallment, setSelectedInstallment] = useState<
@@ -63,7 +55,7 @@ export function PaymentPlanModal({
     twoWeeksBeforeDeparture = new Date(departureDate);
     twoWeeksBeforeDeparture.setDate(departureDate.getDate() - 19);
   }
-  
+
   const weeksUntilPayoff = Math.max(
     1,
     Math.ceil(
@@ -142,7 +134,6 @@ export function PaymentPlanModal({
         {/* Scrollable content */}
         <div className="overflow-y-auto flex-1">
           <div className="p-6 space-y-6">
-
             {/* Payment Plan Calculator */}
             {ppEligible ? (
               <>
@@ -304,7 +295,7 @@ export function PaymentPlanModal({
                         {installmentDates.map((date, index) => (
                           <div
                             key={index}
-                            className="flex justify-between items-center py-1 text-sm border-l-2 border-splickets-slate-200 pl-4"
+                            className="flex justify-between items-center py-1 text-sm border-l-2 border-splickets-slate-200 pl-4 mr-6"
                           >
                             <span className="text-splickets-slate-600">
                               {formatDate(String(date))}
@@ -322,18 +313,21 @@ export function PaymentPlanModal({
             ) : (
               <div className="py-6">
                 <p className="text-center text-sm text-splickets-slate-600">
-                  Payment plans are available for flights more than 3 weeks away.
+                  Payment plans are available for flights more than 3 weeks
+                  away.
                 </p>
               </div>
             )}
 
-<div className="border-t border-splickets-slate-200 pt-6">
-          <p className="text-sm text-splickets-slate-600"> Your payment plan will be confirmed at checkout.</p>
-    </div>
+            <div className="border-t border-splickets-slate-200 pt-6">
+              <p className="text-sm text-splickets-slate-600">
+                {" "}
+                Your payment plan will be confirmed at checkout.
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
