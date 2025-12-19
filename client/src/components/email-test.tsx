@@ -2,10 +2,21 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-
 
 export function EmailTest() {
   const [email, setEmail] = useState("");
@@ -47,7 +58,8 @@ export function EmailTest() {
       } else {
         toast({
           title: "Email not sent",
-          description: "Email system is configured but sender verification may be needed in MailerSend. Check console for details.",
+          description:
+            "Email system is configured but sender verification may be needed in MailerSend. Check console for details.",
           variant: "destructive",
         });
       }
@@ -64,9 +76,9 @@ export function EmailTest() {
   };
 
   // Only show in development environment
-  if (import.meta.env.PROD) {
-    return null;
-  }
+  // if (import.meta.env.PROD) {
+  //   return null;
+  // }
 
   return (
     <Card className="w-full max-w-md">
@@ -88,7 +100,7 @@ export function EmailTest() {
             data-testid="input-test-email"
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="email-type">Email Type</Label>
           <Select value={emailType} onValueChange={setEmailType}>
@@ -103,8 +115,8 @@ export function EmailTest() {
           </Select>
         </div>
 
-        <Button 
-          onClick={handleSendTestEmail} 
+        <Button
+          onClick={handleSendTestEmail}
           disabled={isLoading}
           className="w-full"
           data-testid="button-send-test-email"

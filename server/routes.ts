@@ -1133,7 +1133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           discount =
             totalAmount * (parseFloat(promoCode.discountPercent) / 100);
         } else if (promoCode.discountAmount) {
-          discount = parseFloat(promoCode.discountAmount);
+          discount = totalAmount - parseFloat(promoCode.discountAmount);
         }
       }
 
@@ -1467,96 +1467,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============ END ADMIN ROUTES ============
 
-  // Promo code validation endpoint
-  app.post("/api/promocodes/validate", async (req, res) => {
-    try {
-      const { code } = req.body;
+  // // Promo code validation endpoint
+  // app.post("/api/promocodes/validate", async (req, res) => {
+  //   try {
+  //     const { code } = req.body;
 
-      if (!code) {
-        return res
-          .status(400)
-          .json({ valid: false, message: "Promo code is required" });
-      }
+  //     if (!code) {
+  //       return res
+  //         .status(400)
+  //         .json({ valid: false, message: "Promo code is required" });
+  //     }
 
-      // Validate promo code format: PROMOXXXX where XXXX is a number
-      const promoRegex = /^PROMO(\d+)$/;
-      const match = code.toUpperCase().match(promoRegex);
+  //     // Validate promo code format: PROMOXXXX where XXXX is a number
+  //     const promoRegex = /^PROMO(\d+)$/;
+  //     const match = code.toUpperCase().match(promoRegex);
 
-      if (!match) {
-        return res
-          .status(400)
-          .json({ valid: false, message: "Invalid promo code format" });
-      }
+  //     if (!match) {
+  //       return res
+  //         .status(400)
+  //         .json({ valid: false, message: "Invalid promo code format" });
+  //     }
 
-      // Check if promo code exists in database and is active
-      const [promoCode] = await db
-        .select()
-        .from(promoCodes)
-        .where(
-          and(
-            eq(promoCodes.code, code.toUpperCase()),
-            eq(promoCodes.isActive, true),
-          ),
-        )
-        .limit(1);
+  //     // Check if promo code exists in database and is active
+  //     const [promoCode] = await db
+  //       .select()
+  //       .from(promoCodes)
+  //       .where(
+  //         and(
+  //           eq(promoCodes.code, code.toUpperCase()),
+  //           eq(promoCodes.isActive, true),
+  //         ),
+  //       )
+  //       .limit(1);
 
-      if (!promoCode) {
-        return res
-          .status(400)
-          .json({ valid: false, message: "Invalid or expired promo code" });
-      }
+  //     if (!promoCode) {
+  //       return res
+  //         .status(400)
+  //         .json({ valid: false, message: "Invalid or expired promo code" });
+  //     }
 
-      // Calculate discount based on the promo code type
-      let discount = 0;
-      if (promoCode.discountAmount) {
-        discount = parseFloat(promoCode.discountAmount);
-      } else if (promoCode.discountPercent) {
-        discount = parseFloat(promoCode.discountPercent);
-      }
+  //     // Calculate discount based on the promo code type
+  //     let discount = 0;
+  //     if (promoCode.discountAmount) {
+  //       discount = parseFloat(promoCode.discountAmount);
+  //     } else if (promoCode.discountPercent) {
+  //       discount = parseFloat(promoCode.discountPercent);
+  //     }
 
-      res.json({
-        valid: true,
-        discountAmount: promoCode.discountAmount
-          ? parseFloat(promoCode.discountAmount)
-          : null,
-        discountPercent: promoCode.discountPercent
-          ? parseFloat(promoCode.discountPercent)
-          : null,
-        code: promoCode.code,
-        type: promoCode.type,
-      });
-    } catch (error) {
-      console.error("Promo code validation error:", error);
-      res
-        .status(500)
-        .json({ valid: false, message: "Failed to validate promo code" });
-    }
-  });
-
-  // Seed promo codes on startup (runs once)
-  (async () => {
-    try {
-      // Check if PROMO2050 already exists
-      const [existing] = await db
-        .select()
-        .from(promoCodes)
-        .where(eq(promoCodes.code, "PROMO2050"))
-        .limit(1);
-
-      if (!existing) {
-        await db.insert(promoCodes).values({
-          code: "PROMO2050",
-          type: "system",
-          discountAmount: "20.50",
-          discountPercent: null,
-          isActive: true,
-        });
-        console.log("Seeded promo code: PROMO2050");
-      }
-    } catch (error) {
-      console.log("Promo code seeding skipped or failed:", error);
-    }
-  })();
+  //     res.json({
+  //       valid: true,
+  //       discountAmount: promoCode.discountAmount
+  //         ? parseFloat(promoCode.discountAmount)
+  //         : null,
+  //       discountPercent: promoCode.discountPercent
+  //         ? parseFloat(promoCode.discountPercent)
+  //         : null,
+  //       code: promoCode.code,
+  //       type: promoCode.type,
+  //     });
+  //   } catch (error) {
+  //     console.error("Promo code validation error:", error);
+  //     res
+  //       .status(500)
+  //       .json({ valid: false, message: "Failed to validate promo code" });
+  //   }
+  // });
 
   const httpServer = createServer(app);
   return httpServer;
