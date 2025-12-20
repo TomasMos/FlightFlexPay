@@ -265,7 +265,7 @@ export function PaymentPlanModal({
 
                     <div className="flex justify-between items-center">
                       <span className="text-splickets-slate-700">
-                        Today's Deposit ({selectedDeposit})
+                        Today's Deposit ({selectedDeposit}%)
                       </span>
                       <span className="font-semibold text-splickets-slate-900 mr-6">
                         {formatCurrency(depositAmount)}
