@@ -119,7 +119,7 @@ export function PaymentPlanModal({
       <div className="bg-white w-full h-full sm:max-w-4xl sm:rounded-xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex flex-row items-center justify-between h-md:p-6 h-md:py-3 px-6 border-b border-splickets-slate-200">
-          <h2 className="text-2xl font-semibold text-splickets-slate-900">
+          <h2 className="text-xl font-semibold text-splickets-slate-900">
             Payment Plan Calculator
           </h2>
           <button
@@ -139,7 +139,7 @@ export function PaymentPlanModal({
               <>
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-xl font-semibold text-splickets-slate-900 mb-4">
+                    <h2 className="text-lg font-semibold text-splickets-slate-900 mb-4">
                       Deposit Amount
                     </h2>
                     <div className="grid grid-cols-4 gap-3">
@@ -165,7 +165,7 @@ export function PaymentPlanModal({
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold text-splickets-slate-900 mb-4">
+                    <h2 className="text-lg font-semibold text-splickets-slate-900 mb-4">
                       Payment Schedule
                     </h2>
                     <div className="grid grid-cols-2 gap-4">
@@ -250,7 +250,7 @@ export function PaymentPlanModal({
                 </div>
 
                 <div className="border-t border-splickets-slate-200 pt-6">
-                  <h3 className="text-xl font-semibold text-splickets-slate-900 mb-4">
+                  <h3 className="text-lg font-semibold text-splickets-slate-900 mb-4">
                     Billing Plan
                   </h3>
                   <div className="space-y-4">

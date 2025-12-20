@@ -159,12 +159,12 @@ export function FlightCard({
         </div>
       </div>
             )}
-            <div className="flex flex-col lg:flex-row gap-3 w-full">
+            <div className="flex flex-col gap-3 w-full">
             {flight.paymentPlanEligible && onPaymentPlanClick && (
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-primary text-primary bg-white hover:bg-blue-50 hover:border-blue-700 hover:text-blue-700 px-8 w-full lg:flex-1"
+                  className="border-primary text-primary bg-white hover:bg-blue-50 hover:border-blue-700 hover:text-blue-700 px-8 w-full"
                   data-testid="button-payment-plan"
                   onClick={() => {
                     onPaymentPlanClick(flight);
@@ -175,7 +175,7 @@ export function FlightCard({
               )}
               <Button
                 size="lg"
-                className="bg-primary hover:bg-blue-700 text-white px-8 w-full lg:flex-1"
+                className="bg-primary hover:bg-blue-700 text-white px-8 w-full"
                 data-testid="button-select-flight"
                 onClick={() => {
                   // Track flight view in Meta Pixel

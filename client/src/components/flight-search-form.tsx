@@ -58,13 +58,17 @@ export function FlightSearchForm({
     },
   });
 
+  const isInitialMount = useRef(true);
+  const previousTripType = useRef<string | null>(null);
+
   // Initialize currency and load previous search from localStorage on component mount
   useEffect(() => {
-    
     const savedSearch = localStorage.getItem("lastFlightSearch");
     if (savedSearch) {
       try {
         const searchData = JSON.parse(savedSearch);
+        const savedTripType = searchData.tripType || "return";
+        
         // Restore form values
         form.reset({
           origin: searchData.originFull || "",
@@ -72,33 +76,45 @@ export function FlightSearchForm({
           departureDate: searchData.departureDate || "",
           returnDate: searchData.returnDate || "",
           passengers: searchData.passengers || 1,
-          tripType: searchData.tripType || "return",
+          tripType: savedTripType,
         });
-        setTripType(searchData.tripType || "return");
+        setTripType(savedTripType);
         setOriginIata(searchData.origin || "");
         setDestinationIata(searchData.destination || "");
         
         // Restore selected dates
         if (searchData.departureDate) {
           const departure = new Date(searchData.departureDate);
-          if (searchData.tripType === "return" && searchData.returnDate) {
+          if (savedTripType === "return" && searchData.returnDate) {
             const returnDate = new Date(searchData.returnDate);
             setSelectedDates({ from: departure, to: returnDate });
           } else {
             setSelectedDates(departure);
           }
         }
+        
+        previousTripType.current = savedTripType;
       } catch (error) {
         console.error("Error loading saved search:", error);
       }
+    } else {
+      previousTripType.current = tripType;
     }
+    isInitialMount.current = false;
   }, [form, currentUser]);
 
-  // Clear dates when trip type changes
+  // Clear dates when trip type changes (but not on initial mount)
   useEffect(() => {
-    setSelectedDates(undefined);
-    form.setValue("departureDate", "");
-    form.setValue("returnDate", "");
+    if (isInitialMount.current) {
+      return;
+    }
+    
+    if (previousTripType.current !== null && previousTripType.current !== tripType) {
+      setSelectedDates(undefined);
+      form.setValue("departureDate", "");
+      form.setValue("returnDate", "");
+    }
+    previousTripType.current = tripType;
   }, [tripType, form]);
 
   const onSubmit = (data: FlightSearchRequest) => {
