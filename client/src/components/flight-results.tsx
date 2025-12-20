@@ -299,7 +299,7 @@ export function FlightResults({
 
   // Filter panel component
   const FiltersPanel = ({ onClose }: { onClose?: () => void }) => ( 
-    <div className="space-y-6">
+    <div className="space-y-6 pb-6">
      
 
       {/* Sort Dropdown - Desktop Only */}
