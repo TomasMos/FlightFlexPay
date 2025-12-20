@@ -12,8 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AirportAutocomplete } from "./airport-autocomplete.tsx";
+import { DatePickerModal } from "./date-picker-modal.tsx";
 import { Calendar, User, Search, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SUPPORTED_CURRENCIES, determineUserCurrency, saveCurrencyToStorage, type CurrencyCode } from "@/utils/currency";
@@ -23,6 +24,7 @@ import { trackFlightSearch } from "@/lib/metaPixel";
 import { trackFlightSearchGTM } from "@/lib/analytics";
 import plane from '../assets/plane.jpg'
 import { scrollSectionOutOfView } from "../utils/scroll";
+import { DateRange } from "react-day-picker";
 
 
 interface FlightSearchFormProps {
@@ -39,6 +41,8 @@ export function FlightSearchForm({
   >("return");
   const [originIata, setOriginIata] = useState("");
   const [destinationIata, setDestinationIata] = useState("");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [selectedDates, setSelectedDates] = useState<DateRange | Date | undefined>();
   const { setCurrency, currency: selectedCurrency } = useCurrency();
   const { currentUser } = useAuth();
 
@@ -73,11 +77,29 @@ export function FlightSearchForm({
         setTripType(searchData.tripType || "return");
         setOriginIata(searchData.origin || "");
         setDestinationIata(searchData.destination || "");
+        
+        // Restore selected dates
+        if (searchData.departureDate) {
+          const departure = new Date(searchData.departureDate);
+          if (searchData.tripType === "return" && searchData.returnDate) {
+            const returnDate = new Date(searchData.returnDate);
+            setSelectedDates({ from: departure, to: returnDate });
+          } else {
+            setSelectedDates(departure);
+          }
+        }
       } catch (error) {
         console.error("Error loading saved search:", error);
       }
     }
   }, [form, currentUser]);
+
+  // Clear dates when trip type changes
+  useEffect(() => {
+    setSelectedDates(undefined);
+    form.setValue("departureDate", "");
+    form.setValue("returnDate", "");
+  }, [tripType, form]);
 
   const onSubmit = (data: FlightSearchRequest) => {
     // Use IATA codes if available, otherwise fall back to entered text
@@ -114,6 +136,68 @@ export function FlightSearchForm({
 
   const sectionRef = useRef<HTMLDivElement>(null);
 
+  const formatDateDisplay = (): string => {
+    if (!selectedDates) return "";
+    
+    if (tripType === "return" && "from" in selectedDates) {
+      const range = selectedDates as DateRange;
+      if (range.from && range.to) {
+        return formatDateRange(range.from, range.to);
+      }
+      if (range.from) {
+        return formatSingleDate(range.from);
+      }
+    } else if (tripType === "one_way" && !("from" in selectedDates)) {
+      return formatSingleDate(selectedDates as Date);
+    }
+    
+    return "";
+  };
+
+  const formatSingleDate = (date: Date): string => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const day = days[date.getDay()];
+    const dayNum = date.getDate();
+    const month = months[date.getMonth()];
+    return `${day} ${dayNum} ${month}`;
+  };
+
+  const formatDateRange = (from: Date, to: Date): string => {
+    return `${formatSingleDate(from)} - ${formatSingleDate(to)}`;
+  };
+
+  const handleDateSelect = (dates: DateRange | Date | undefined) => {
+    setSelectedDates(dates);
+    
+    if (tripType === "return" && dates && "from" in dates) {
+      const range = dates as DateRange;
+      if (range.from) {
+        form.setValue("departureDate", range.from.toISOString().split("T")[0]);
+      }
+      if (range.to) {
+        form.setValue("returnDate", range.to.toISOString().split("T")[0]);
+      }
+    } else if (tripType === "one_way" && dates && !("from" in dates)) {
+      const singleDate = dates as Date;
+      form.setValue("departureDate", singleDate.toISOString().split("T")[0]);
+      form.setValue("returnDate", "");
+    }
+  };
+
   return (
     <section className="bg-cover bg-no-repeat bg-center border-b border-splickets-slate-200 min-h-dvh flex flex-col gap-20 py-20 lg:py-0"
       
@@ -146,33 +230,93 @@ export function FlightSearchForm({
             data-testid="form-flight-search"
           >
             <div className="flex flex-wrap justify-between items-center mb-6">
-              <RadioGroup
-                value={tripType}
-                onValueChange={(value) => setTripType(value as typeof tripType)}
-                className="flex flex-wrap gap-4"
-                data-testid="radiogroup-trip-type"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="return"
-                    id="return"
-                    data-testid="radio-return"
-                  />
-                  <Label htmlFor="return" className="text-splickets-slate-700">
-                    Return
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="one_way"
-                    id="one_way"
-                    data-testid="radio-one_way"
-                  />
-                  <Label htmlFor="one_way" className="text-splickets-slate-700">
-                    One way
-                  </Label>
-                </div>
-              </RadioGroup>
+            <Tabs
+              value={tripType}
+              onValueChange={(value) => setTripType(value as typeof tripType)}
+              className="w-auto"
+              data-testid="tabs-trip-type"
+            >
+              <TabsList className="bg-transparent p-0 h-auto flex gap-0 border-0">
+              <TabsTrigger
+  value="return"
+  className="
+    relative
+    px-4 py-2
+    rounded-none
+
+    bg-transparent
+    data-[state=active]:bg-transparent
+    focus:bg-transparent
+
+    border-0
+    outline-none
+    ring-0
+    shadow-none
+    data-[state=active]:shadow-none
+    data-[state=active]:ring-0
+
+    text-splickets-slate-900
+    data-[state=active]:text-splickets-primary
+
+    after:absolute
+    after:left-0
+    after:bottom-0
+    after:h-[2px]
+    after:w-full
+    after:bg-transparent
+    data-[state=active]:after:bg-splickets-primary
+
+    focus-visible:outline-none
+    focus-visible:ring-0
+  "
+>
+  Return
+</TabsTrigger>
+
+
+<TabsTrigger
+  value="one_way"
+  className="
+    relative
+    px-4 py-2
+    rounded-none
+
+    bg-transparent
+    data-[state=active]:bg-transparent
+    focus:bg-transparent
+
+    border-0
+    outline-none
+    ring-0
+    shadow-none
+    data-[state=active]:shadow-none
+    data-[state=active]:ring-0
+
+    text-splickets-slate-900
+    data-[state=active]:text-splickets-primary
+
+    after:absolute
+    after:left-0
+    after:bottom-0
+    after:h-[2px]
+    after:w-full
+    after:bg-transparent
+    data-[state=active]:after:bg-splickets-primary
+
+    focus-visible:outline-none
+    focus-visible:ring-0
+    focus-visible:ring-offset-0
+
+    transition-colors
+  "
+  data-testid="tab-one-way"
+>
+  One way
+</TabsTrigger>
+
+              </TabsList>
+            </Tabs>
+
               
               {/* Currency Dropdown */}
               <div className="flex items-center space-x-2">
@@ -199,7 +343,7 @@ export function FlightSearchForm({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="flex flex-col gap-4">
               {/* Origin */}
               <AirportAutocomplete
                 label="From"
@@ -228,23 +372,21 @@ export function FlightSearchForm({
                 testId="input-destination"
               />
 
-              {/* Departure Date */}
+              {/* Dates */}
               <div className="relative">
                 <Label className="block text-sm font-medium text-splickets-slate-700 mb-1">
-                  Departure
+                  Dates
                 </Label>
                 <div className="relative flex">
                   <Input
-                    {...form.register("departureDate")}
-                    type="date"
-                    min={today}
-                  className="hide-date-icon pl-10 pr-4 py-3 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary cursor-pointer"
-                    data-testid="input-departure-date"
-                    // CORRECTED: Use e.target to access the input element
-                    onClick={(e) => (e.target as HTMLInputElement).showPicker()}
+                    readOnly
+                    value={formatDateDisplay()}
+                    placeholder="Select dates"
+                    className="hide-date-icon pl-10 pr-4 py-3 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary cursor-pointer bg-white"
+                    data-testid="input-dates"
+                    onClick={() => setDatePickerOpen(true)}
                   />
                   <Calendar
-                    // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
                     className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-splickets-slate-600 pointer-events-none"
                   />
                 </div>
@@ -256,37 +398,14 @@ export function FlightSearchForm({
                     {form.formState.errors.departureDate.message}
                   </p>
                 )}
-              </div>
-
-              {/* Return Date */}
-              <div className="relative">
-                <Label
-                  className={cn(
-                    "block text-sm font-medium mb-1",
-                    tripType === "one_way"
-                      ? "text-splickets-slate-400"
-                      : "text-splickets-slate-700",
-                  )}
-                >
-                  Return
-                </Label>
-                <div className="relative flex">
-                  <Input
-                    {...form.register("returnDate")}
-                    type="date"
-                    min={form.watch("departureDate") || today}
-                    disabled={tripType === "one_way"}
-                  className="hide-date-icon pl-10 w-full pr-4 py-3 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white cursor-pointer"
-                    data-testid="input-return-date"
-                    // CORRECTED: Use e.target to access the input element
-                    onClick={(e) => (e.target as HTMLInputElement).showPicker()}
-                  />
-                  <Calendar
-                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-splickets-slate-600 pointer-events-none" 
-                    // Crucial: Add 'pointer-events-none' so clicks go *through* the icon to the input
-                  />
-                  
-                </div>
+                {form.formState.errors.returnDate && (
+                  <p
+                    className="text-sm text-red-600 mt-1"
+                    data-testid="error-return-date"
+                  >
+                    {form.formState.errors.returnDate.message}
+                  </p>
+                )}
               </div>
 
               {/* Passengers */}
@@ -336,6 +455,14 @@ export function FlightSearchForm({
           </form>
         </div>
       </div>
+
+      <DatePickerModal
+        open={datePickerOpen}
+        onOpenChange={setDatePickerOpen}
+        tripType={tripType === "multicity" ? "return" : tripType}
+        selectedDates={selectedDates}
+        onDateSelect={handleDateSelect}
+      />
     </section>
   );
 }

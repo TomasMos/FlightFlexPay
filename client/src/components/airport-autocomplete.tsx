@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,104 @@ interface Airport {
   name: string;
   city: string;
 }
+
+// Popular South African airports - always available immediately
+const POPULAR_SA_AIRPORTS: Airport[] = [
+  { code: "JNB", name: "O.R. Tambo International Airport", city: "Johannesburg" },
+  { code: "CPT", name: "Cape Town International Airport", city: "Cape Town" },
+  { code: "DUR", name: "King Shaka International Airport", city: "Durban" },
+  { code: "PLZ", name: "Port Elizabeth Airport", city: "Gqeberha" },
+  { code: "BFN", name: "Bram Fischer International Airport", city: "Bloemfontein" },
+  { code: "ELS", name: "East London Airport", city: "East London" },
+  { code: "GRJ", name: "George Airport", city: "George" },
+  { code: "UTN", name: "Upington Airport", city: "Upington" },
+  { code: "KIM", name: "Kimberley Airport", city: "Kimberley" },
+  { code: "MQP", name: "Kruger Mpumalanga International Airport", city: "Nelspruit" },
+];
+
+// Cache utilities
+const CACHE_KEY_PREFIX = "airport_autocomplete_";
+const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+interface CachedResult {
+  airports: Airport[];
+  timestamp: number;
+}
+
+const getCacheKey = (query: string): string => {
+  return `${CACHE_KEY_PREFIX}${query.toLowerCase().trim()}`;
+};
+
+const getCachedResults = (query: string): Airport[] | null => {
+  try {
+    const cacheKey = getCacheKey(query);
+    const cached = localStorage.getItem(cacheKey);
+    if (!cached) return null;
+
+    const parsed: CachedResult = JSON.parse(cached);
+    const age = Date.now() - parsed.timestamp;
+
+    if (age > CACHE_EXPIRY_MS) {
+      localStorage.removeItem(cacheKey);
+      return null;
+    }
+
+    return parsed.airports;
+  } catch (error) {
+    console.error("Error reading cache:", error);
+    return null;
+  }
+};
+
+const setCachedResults = (query: string, airports: Airport[]): void => {
+  try {
+    const cacheKey = getCacheKey(query);
+    const cacheData: CachedResult = {
+      airports,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+  } catch (error) {
+    console.error("Error writing cache:", error);
+    // If storage is full, try to clear old entries
+    try {
+      const keys = Object.keys(localStorage);
+      const oldCacheKeys = keys.filter((k) => k.startsWith(CACHE_KEY_PREFIX));
+      // Remove oldest 10 entries
+      const entries = oldCacheKeys
+        .map((k) => {
+          const data = localStorage.getItem(k);
+          if (!data) return null;
+          try {
+            const parsed: CachedResult = JSON.parse(data);
+            return { key: k, timestamp: parsed.timestamp };
+          } catch {
+            return null;
+          }
+        })
+        .filter((e): e is { key: string; timestamp: number } => e !== null)
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .slice(0, 10);
+
+      entries.forEach((e) => localStorage.removeItem(e.key));
+      // Retry setting cache
+      localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+    } catch (retryError) {
+      console.error("Error clearing old cache:", retryError);
+    }
+  }
+};
+
+// Filter airports by query (case-insensitive)
+const filterAirports = (airports: Airport[], query: string): Airport[] => {
+  const lowerQuery = query.toLowerCase().trim();
+  return airports.filter(
+    (airport) =>
+      airport.code.toLowerCase().includes(lowerQuery) ||
+      airport.city.toLowerCase().includes(lowerQuery) ||
+      airport.name.toLowerCase().includes(lowerQuery)
+  );
+};
 
 interface AirportAutocompleteProps {
   label: string;
@@ -39,22 +137,78 @@ export function AirportAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  const { data: airports = [] } = useQuery<Airport[]>({
+  // Get filtered SA airports immediately (no API call needed)
+  const filteredSAAirports = useMemo(() => {
+    if (inputValue.length < 2) return [];
+    return filterAirports(POPULAR_SA_AIRPORTS, inputValue);
+  }, [inputValue]);
+
+  // Fetch from API (with localStorage caching)
+  const { data: apiAirports = [] } = useQuery<Airport[]>({
     queryKey: ["/api/airports/search", inputValue],
     queryFn: async () => {
       if (inputValue.length < 2) return [];
 
+      // Check localStorage cache first for instant results
+      const cached = getCachedResults(inputValue);
+      if (cached && cached.length > 0) {
+        return cached;
+      }
+
+      // Fetch from API if not cached
       const response = await fetch(
         `/api/airports/search?q=${encodeURIComponent(inputValue)}`,
       );
       if (!response.ok) return [];
 
       const data = await response.json();
-      return data.airports || [];
+      const airports = data.airports || [];
+
+      // Cache the results for future use
+      if (airports.length > 0) {
+        setCachedResults(inputValue, airports);
+      }
+
+      return airports;
     },
     enabled: inputValue.length >= 2,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 7 * 24 * 60 * 60 * 1000, // 7 days (same as localStorage cache)
+    gcTime: 7 * 24 * 60 * 60 * 1000, // Keep in memory cache for 7 days
+    // Return cached data immediately while refetching in background
+    placeholderData: (previousData) => {
+      // If we have previous data, show it while fetching
+      if (previousData) return previousData;
+      // Otherwise check localStorage for instant results
+      if (inputValue.length >= 2) {
+        return getCachedResults(inputValue) || undefined;
+      }
+      return undefined;
+    },
   });
+
+  // Merge results: SA airports first (most relevant), then API results (avoiding duplicates)
+  const airports = useMemo(() => {
+    const allAirports: Airport[] = [];
+    const seenCodes = new Set<string>();
+
+    // Add filtered SA airports first (they're most relevant and instant)
+    filteredSAAirports.forEach((airport) => {
+      if (!seenCodes.has(airport.code)) {
+        allAirports.push(airport);
+        seenCodes.add(airport.code);
+      }
+    });
+
+    // Add API results (which may include cached data)
+    apiAirports.forEach((airport) => {
+      if (!seenCodes.has(airport.code)) {
+        allAirports.push(airport);
+        seenCodes.add(airport.code);
+      }
+    });
+
+    return allAirports;
+  }, [filteredSAAirports, apiAirports]);
 
   useEffect(() => {
     setInputValue(value);
@@ -71,7 +225,7 @@ export function AirportAutocomplete({
       setIsOpen(false);
     }
     setSelectedIndex(-1);
-  }, [airports, inputValue]);
+  }, [airports, inputValue, isSelectedValue]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
