@@ -106,10 +106,10 @@ export function DatePickerModal({
 
   // Range mode classNames - conditionally apply rounded corners based on range completion
   const rangeClassNames = useMemo(() => ({
-    months: "flex flex-col space-y-6",
-    month: "space-y-4 md:space-y-6",
-    caption: "flex justify-center pt-1 relative items-center mb-4 md:mb-6",
-    caption_label: "text-sm md:text-base font-medium",
+    months: "flex flex-col space-y-8 md:space-y-10",
+    month: "space-y-5 md:space-y-7",
+    caption: "flex justify-center pt-1 relative items-center mb-5 md:mb-7",
+    caption_label: "text-base md:text-lg font-medium",
     nav: "space-x-1 flex items-center",
     nav_button: "hidden",
     nav_button_previous: "hidden",
@@ -117,11 +117,11 @@ export function DatePickerModal({
     table: "w-full border-collapse space-y-1 mx-auto",
     head_row: "flex justify-center",
     head_cell:
-      "text-muted-foreground rounded-md w-9 md:w-12 font-normal text-[0.8rem] md:text-sm",
+      "text-muted-foreground rounded-md w-11 md:w-14 font-normal text-sm md:text-base",
     row: "flex w-full mt-2 justify-center",
-    cell: "h-9 w-9 md:h-12 md:w-12 text-center text-sm md:text-base p-0 relative focus-within:relative focus-within:z-20",
+    cell: "h-11 w-11 md:h-14 md:w-14 text-center text-base md:text-lg p-0 relative focus-within:relative focus-within:z-20",
     day: cn(
-      "h-9 w-9 md:h-12 md:w-12 p-0 font-normal aria-selected:opacity-100 rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+      "h-11 w-11 md:h-14 md:w-14 p-0 font-normal aria-selected:opacity-100 rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
     ),
     day_range_start: isRangeComplete
       ? "rounded-l-md rounded-r-none"
@@ -214,10 +214,10 @@ export function DatePickerModal({
                 }}
                 className="w-full"
                 classNames={{
-                  months: "flex flex-col space-y-6",
-                  month: "space-y-4 md:space-y-6",
-                  caption: "flex justify-center pt-1 relative items-center mb-4 md:mb-6",
-                  caption_label: "text-sm md:text-base font-medium",
+                  months: "flex flex-col space-y-8 md:space-y-10",
+                  month: "space-y-5 md:space-y-7",
+                  caption: "flex justify-center pt-1 relative items-center mb-5 md:mb-7",
+                  caption_label: "text-base md:text-lg font-medium",
                   nav: "space-x-1 flex items-center",
                   nav_button: "hidden",
                   nav_button_previous: "hidden",
@@ -225,11 +225,11 @@ export function DatePickerModal({
                   table: "w-full border-collapse space-y-1 mx-auto",
                   head_row: "flex justify-center",
                   head_cell:
-                    "text-muted-foreground rounded-md w-9 md:w-12 font-normal text-[0.8rem] md:text-sm",
+                    "text-muted-foreground rounded-md w-11 md:w-14 font-normal text-sm md:text-base",
                   row: "flex w-full mt-2 justify-center",
-                  cell: "h-9 w-9 md:h-12 md:w-12 text-center text-sm md:text-base p-0 relative focus-within:relative focus-within:z-20 [&:has([aria-selected])]:!rounded-md",
+                  cell: "h-11 w-11 md:h-14 md:w-14 text-center text-base md:text-lg p-0 relative focus-within:relative focus-within:z-20 [&:has([aria-selected])]:!rounded-md",
                   day: cn(
-                    "h-9 w-9 md:h-12 md:w-12 p-0 font-normal aria-selected:opacity-100 rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                    "h-11 w-11 md:h-14 md:w-14 p-0 font-normal aria-selected:opacity-100 rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                   ),
                   day_selected:
                     "bg-splickets-accent text-white hover:bg-splickets-accent hover:text-white focus:bg-splickets-accent focus:text-white !rounded-md",

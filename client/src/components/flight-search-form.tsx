@@ -338,7 +338,7 @@ export function FlightSearchForm({
               
               {/* Currency Dropdown */}
               <div className="flex items-center space-x-2 flex-shrink-0">
-                <div className="relative w-28">
+                <div className="relative w-32">
                   <Select
                     value={selectedCurrency}
                     onValueChange={(value) => setCurrency(value as CurrencyCode)}
@@ -348,7 +348,7 @@ export function FlightSearchForm({
                       data-testid="select-currency"
                     >
                       <SelectValue>
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-4">
                           <span>{getCurrencyFlag(selectedCurrency)}</span>
                           <span>{selectedCurrency}</span>
                         </span>

@@ -3,16 +3,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSwipeable } from "react-swipeable";
 import { 
-  Shield, 
-  Calendar, 
-  CreditCard, 
-  Heart, 
-  Star, 
   ChevronLeft, 
   ChevronRight, 
-  CheckCircle,
   Lock,
-  Building,
+  CreditCard,
   Headphones,
   ArrowRight
 } from "lucide-react";
@@ -24,6 +18,9 @@ import london from '../assets/london.avif'
 import capeTown from '../assets/capeTown.avif'
 import sydney from '../assets/sydney.avif'
 import newYork from '../assets/newYork.avif'
+import lockInPricesVideo from '../assets/Booked.mp4'
+import flexiblePaymentsVideo from '../assets/Installments2.mp4'
+import payInFullVideo from '../assets/Takeoff.mp4'
 
 const testimonials = [
   {
@@ -55,34 +52,21 @@ const testimonials = [
   },
 ];
 
-const whyChooseReasons = [
+const videoFeatures = [
   {
-    icon: Shield,
     title: "Lock in Today's Prices",
     description: "Secure current flight prices and pay later with our flexible installment plans. No price increases, guaranteed.",
-    color: "text-blue-600",
-    bgColor: "bg-blue-50"
+    video: lockInPricesVideo
   },
   {
-    icon: Calendar,
-    title: "Flexible Payment Terms",
+    title: "Flexible Payment Plans",
     description: "Choose from weekly or bi-weekly payment schedules that work with your budget and lifestyle.",
-    color: "text-green-600",
-    bgColor: "bg-green-50"
+    video: flexiblePaymentsVideo
   },
   {
-    icon: CreditCard,
-    title: "No Debt or Credit Checks",
-    description: "No credit score requirements, no debt accumulation, and no hidden fees. Just transparent payment plans.",
-    color: "text-purple-600",
-    bgColor: "bg-purple-50"
-  },
-  {
-    icon: Heart,
-    title: "Customer-First Support",
-    description: "Our dedicated team is here to help you every step of the way, from booking to boarding.",
-    color: "text-red-600",
-    bgColor: "bg-red-50"
+    title: "Fly with Lay-by",
+    description: "Complete your payments before your departure date. No surprises, just peace of mind.",
+    video: payInFullVideo
   }
 ];
 
@@ -142,43 +126,49 @@ export function TrustSection() {
 
   return (
     <>
-      {/* Why Choose Splickets */}
+      {/* Video Features Section */}
       <section className="py-20 bg-white" data-testid="section-trust">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4" data-testid="title-why-choose">
-              Why Choose Splickets?
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4" data-testid="title-main">
+              Leave upfront costs behind
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto" data-testid="text-trust-subtitle">
-              We're revolutionizing travel by making flights accessible to everyone with transparent, flexible payment solutions
+            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto" data-testid="text-subtitle">
+              Find flights for you (or your whole crew) and secure them with a small deposit.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {whyChooseReasons.map((reason, index) => (
-              <Card key={index} className="p-8 border-2 hover:shadow-xl transition-all duration-300 group" data-testid={`why-choose-card-${index}`}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-6">
-                    <div className={`w-16 h-16 rounded-2xl ${reason.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                      <reason.icon className={`w-8 h-8 ${reason.color}`} />
-                    </div>
-                    
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 mb-3">
-                        {reason.title}
-                      </h3>
-                      <p className="text-gray-600 leading-relaxed">
-                        {reason.description}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="flex flex-col lg:flex-row gap-12 lg:gap-8 max-w-7xl mx-auto">
+            {videoFeatures.map((feature, index) => (
+              <div 
+                key={index} 
+                className="flex-1 flex flex-col items-center text-center group"
+                data-testid={`video-feature-${index}`}
+              >
+                <div className="w-full max-w-lg mb-8 r">
+                  <video 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline
+                    className="w-full h-auto object-cover"
+                  >
+                    <source src={feature.video} type="video/mp4" />
+                  </video>
+                </div>
+                
+                <h3 className="text-xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                  {feature.title}
+                </h3>
+                <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-lg">
+                  {feature.description}
+                </p>
+              </div>
             ))}
           </div>
 
           {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center items-center gap-8 mt-16 pt-8 border-t border-gray-200" data-testid="section-trust-badges">
+          <div className="flex flex-wrap justify-center items-center gap-8 mt-16 pt-20 border-t border-gray-200" data-testid="section-trust-badges">
             <div className="flex items-center gap-3 text-gray-600" data-testid="badge-ssl">
               <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
                 <Lock className="h-5 w-5 text-green-600" />
