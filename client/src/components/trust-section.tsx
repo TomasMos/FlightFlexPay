@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSwipeable } from "react-swipeable";
@@ -105,7 +105,6 @@ const destinations = [
 
 export function TrustSection() {
   const [current, setCurrent] = useState(0);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   const prev = () =>
     setCurrent((current - 1 + destinations.length) % destinations.length);
@@ -116,54 +115,6 @@ export function TrustSection() {
       const img = new Image();
       img.src = dest.image; // preload each background image
     });
-  }, []);
-
-  // Handle video autoplay for iOS
-  useEffect(() => {
-    const playVideos = async () => {
-      for (const video of videoRefs.current) {
-        if (video) {
-          try {
-            await video.play();
-          } catch (error) {
-            // Autoplay was prevented, which is fine - user interaction will be needed
-            console.log('Video autoplay prevented:', error);
-          }
-        }
-      }
-    };
-
-    // Try to play videos after a short delay to ensure they're loaded
-    const timer = setTimeout(playVideos, 100);
-
-    // Also set up Intersection Observer to play videos when they're visible
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.target instanceof HTMLVideoElement) {
-            entry.target.play().catch(() => {
-              // Ignore play errors
-            });
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    videoRefs.current.forEach((video) => {
-      if (video) {
-        observer.observe(video);
-      }
-    });
-
-    return () => {
-      clearTimeout(timer);
-      videoRefs.current.forEach((video) => {
-        if (video) {
-          observer.unobserve(video);
-        }
-      });
-    };
   }, []);
 
   const handlers = useSwipeable({
@@ -258,14 +209,10 @@ export function TrustSection() {
               >
                 <div className="w-full max-w-lg mb-8 r">
                   <video 
-                    ref={(el) => {
-                      videoRefs.current[index] = el;
-                    }}
                     autoPlay 
                     loop 
                     muted 
                     playsInline
-                    preload="auto"
                     className="w-full h-auto object-cover"
                   >
                     <source src={feature.video} type="video/mp4" />
