@@ -338,19 +338,19 @@ export function FlightSearchForm({
               
               {/* Currency Dropdown */}
               <div className="flex items-center space-x-2 flex-shrink-0">
-                <div className="relative w-32">
+                <div className="relative w-auto min-w-[120px]">
                   <Select
                     value={selectedCurrency}
                     onValueChange={(value) => setCurrency(value as CurrencyCode)}
                   >
                     <SelectTrigger
-                      className=" pl-4 pr-4 py-2 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white"
+                      className="pl-4 pr-4 py-2 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white [&>span]:!line-clamp-none [&>span]:!overflow-visible [&>span]:!whitespace-nowrap"
                       data-testid="select-currency"
                     >
                       <SelectValue>
-                        <span className="flex items-center gap-4">
-                          <span>{getCurrencyFlag(selectedCurrency)}</span>
-                          <span>{selectedCurrency}</span>
+                        <span className="flex items-center gap-2 whitespace-nowrap">
+                          <span className="flex-shrink-0">{getCurrencyFlag(selectedCurrency)}</span>
+                          <span className="flex-shrink-0">{selectedCurrency}</span>
                         </span>
                       </SelectValue>
                     </SelectTrigger>

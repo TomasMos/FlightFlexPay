@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSwipeable } from "react-swipeable";
@@ -105,6 +105,7 @@ const destinations = [
 
 export function TrustSection() {
   const [current, setCurrent] = useState(0);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   const prev = () =>
     setCurrent((current - 1 + destinations.length) % destinations.length);
@@ -123,6 +124,86 @@ export function TrustSection() {
     preventScrollOnSwipe: true,
     trackMouse: true, // allows drag with mouse too
   });
+
+  // Handle video autoplay for iOS - use Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.target instanceof HTMLVideoElement) {
+            const video = entry.target;
+            // Ensure video is ready and play it
+            if (video.readyState >= 2) {
+              video.play().catch((error) => {
+                // Silently handle play errors (autoplay may be blocked)
+                console.log('Video autoplay prevented:', error);
+              });
+            } else {
+              // Wait for video to be ready
+              video.addEventListener('loadeddata', () => {
+                video.play().catch(() => {
+                  // Ignore play errors
+                });
+              }, { once: true });
+            }
+          } else if (entry.target instanceof HTMLVideoElement) {
+            // Pause when out of view to save resources
+            entry.target.pause();
+          }
+        });
+      },
+      { 
+        threshold: 0.5, // Play when 50% visible
+        rootMargin: '0px'
+      }
+    );
+
+    // Observe all video elements
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        observer.observe(video);
+      }
+    });
+
+    // Also try to play videos after initial load (for non-iOS or after user interaction)
+    const attemptPlay = async () => {
+      for (const video of videoRefs.current) {
+        if (video && video.readyState >= 2) {
+          try {
+            await video.play();
+          } catch (error) {
+            // Autoplay was prevented, Intersection Observer will handle it
+          }
+        }
+      }
+    };
+
+    // Try after a short delay to ensure videos are loaded
+    const timer = setTimeout(attemptPlay, 500);
+
+    // Enable autoplay after first user interaction (required for iOS)
+    const enableAutoplay = async () => {
+      await attemptPlay();
+      // Remove listeners after first interaction
+      document.removeEventListener('touchstart', enableAutoplay);
+      document.removeEventListener('click', enableAutoplay);
+    };
+
+    // Listen for first user interaction to enable autoplay on iOS
+    document.addEventListener('touchstart', enableAutoplay, { once: true, passive: true });
+    document.addEventListener('click', enableAutoplay, { once: true, passive: true });
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('touchstart', enableAutoplay);
+      document.removeEventListener('click', enableAutoplay);
+      videoRefs.current.forEach((video) => {
+        if (video) {
+          observer.unobserve(video);
+        }
+      });
+    };
+  }, []);
 
   const airlineLogos = [
     { name: 'Qatar Airways', logo: '/airline-logos/qatar.png' },
@@ -193,7 +274,7 @@ export function TrustSection() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4" data-testid="title-main">
-              Leave upfront costs behind
+              Leave Upfront Costs Behind
             </h2>
             <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto" data-testid="text-subtitle">
               Find flights for you (or your whole crew) and secure them with a small deposit.
@@ -209,10 +290,14 @@ export function TrustSection() {
               >
                 <div className="w-full max-w-lg mb-8 r">
                   <video 
+                    ref={(el) => {
+                      videoRefs.current[index] = el;
+                    }}
                     autoPlay 
                     loop 
                     muted 
                     playsInline
+                    preload="auto"
                     className="w-full h-auto object-cover"
                   >
                     <source src={feature.video} type="video/mp4" />

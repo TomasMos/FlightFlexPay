@@ -29,6 +29,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    host: true, // Allow network access (accessible from other devices on your network)
     fs: {
       strict: true,
       deny: ["**/.*"],
