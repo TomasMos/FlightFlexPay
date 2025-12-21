@@ -6,10 +6,13 @@ import {
 } from "@/components/ui/collapsible";
 import { formatDate, formattedPrice } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
-import { X, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { X, ChevronDown, ChevronUp, Check, Lock } from "lucide-react";
 import { EnhancedFlightWithPaymentPlan } from "@shared/schema";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 
 interface PaymentPlanModalProps {
   flight: EnhancedFlightWithPaymentPlan;
@@ -23,13 +26,38 @@ export function PaymentPlanModal({
   onClose,
 }: PaymentPlanModalProps) {
   const { currencySymbol, currency } = useCurrency();
+  const { currentUser } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Check if user has bookings
+  const { data: userBookings = [] } = useQuery({
+    queryKey: ['/api/bookings/user', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser?.email) return [];
+      const response = await fetch(`/api/bookings/user?email=${encodeURIComponent(currentUser.email)}`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!currentUser?.email,
+  });
+
+  const hasBookings = (userBookings as any[]).length > 0;
+  const canAccessLowerDeposits = currentUser && hasBookings;
 
   // Payment plan calculator state
-  const [selectedDeposit, setSelectedDeposit] = useState(30); // Default to 30%
+  // Default to 50% if user doesn't have access to lower deposits, otherwise 30%
+  const [selectedDeposit, setSelectedDeposit] = useState(canAccessLowerDeposits ? 30 : 50);
   const [selectedInstallment, setSelectedInstallment] = useState<
     "weekly" | "bi-weekly"
   >("weekly");
   const [installmentDetailsOpen, setInstallmentDetailsOpen] = useState(false);
+
+  // Update default deposit when user status changes
+  useEffect(() => {
+    if (!canAccessLowerDeposits && selectedDeposit < 50) {
+      setSelectedDeposit(50);
+    }
+  }, [canAccessLowerDeposits, selectedDeposit]);
 
   if (!isOpen) return null;
 
@@ -107,11 +135,14 @@ export function PaymentPlanModal({
     }).format(amount);
   };
 
+  // Define all deposit options - always show all options
   const depositOptions = [
     { value: 20, label: "20%" },
     { value: 30, label: "30%" },
     { value: 40, label: "40%" },
     { value: 50, label: "50%" },
+    { value: 75, label: "75%" },
+    { value: 100, label: "100%" },
   ];
 
   return (
@@ -142,33 +173,51 @@ export function PaymentPlanModal({
                     <h2 className="text-lg font-semibold text-splickets-slate-900 mb-4">
                       Deposit Amount
                     </h2>
-                    <div className="grid grid-cols-4 gap-3">
-                      {depositOptions.map((option) => (
-                        <Button
-                          key={option.value}
-                          variant={
-                            selectedDeposit === option.value
-                              ? "default"
-                              : "outline"
-                          }
-                          className={cn(
-                            "h-12 text-base font-semibold",
-                            selectedDeposit === option.value
-                              ? "bg-primary text-white"
-                              : "border-splickets-slate-300 text-splickets-slate-700 hover:bg-splickets-hover hover:text-splickets-slate-700",
-                          )}
-                          onClick={() => setSelectedDeposit(option.value)}
-                        >
-                          {option.label}
-                        </Button>
-                      ))}
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                      {depositOptions.map((option) => {
+                        const isLocked = !canAccessLowerDeposits && option.value < 50;
+                        return (
+                          <div key={option.value} className="relative">
+                            <Button
+                              variant={
+                                selectedDeposit === option.value
+                                  ? "default"
+                                  : "outline"
+                              }
+                              className={cn(
+                                "h-12 text-base font-semibold w-full",
+                                selectedDeposit === option.value
+                                  ? "bg-primary text-white"
+                                  : "border-splickets-slate-300 text-splickets-slate-700 hover:bg-splickets-hover hover:text-splickets-slate-700",
+                                isLocked && "opacity-60 cursor-not-allowed"
+                              )}
+                              onClick={() => !isLocked && setSelectedDeposit(option.value)}
+                              disabled={isLocked}
+                            >
+                              {option.label}
+                            </Button>
+                            {isLocked && (
+                                <div className="absolute inset-0 bg-black/20 bg-splickets-slate-900 bg-opacity-60 rounded-md pointer-events-none">
+<Lock className="absolute top-2 right-2 w-5 h-5 text-white opacity-80" />
+</div>
+                              
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
+                    {!canAccessLowerDeposits && (
+                      <p className="text-sm text-splickets-slate-600 mt-3">
+                        You can unlock smaller deposits the more you use Splickets. If you have a Splickets account, sign in to get access.
+                      </p>
+                    )}
                   </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-splickets-slate-900 mb-4">
-                      Payment Schedule
-                    </h2>
-                    <div className="grid grid-cols-2 gap-4">
+                  {selectedDeposit < 100 && (
+                    <div>
+                      <h2 className="text-lg font-semibold text-splickets-slate-900 mb-4">
+                        Payment Schedule
+                      </h2>
+                      <div className="grid grid-cols-2 gap-4">
                       <div
                         className={cn(
                           "relative border-2 rounded-lg p-4 cursor-pointer transition-colors",
@@ -241,12 +290,15 @@ export function PaymentPlanModal({
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="text-sm text-splickets-slate-600">
-                    {installmentCount} instalments, starting{" "}
-                    {formatDate(String(firstInstallmentDate))} and ending{" "}
-                    {formatDate(String(lastInstallmentDate))}
-                  </div>
+                    </div>
+                  )}
+                  {selectedDeposit < 100 && (
+                    <div className="text-sm text-splickets-slate-600">
+                      {installmentCount} instalments, starting{" "}
+                      {formatDate(String(firstInstallmentDate))} and ending{" "}
+                      {formatDate(String(lastInstallmentDate))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="border-t border-splickets-slate-200 pt-6">
@@ -272,41 +324,48 @@ export function PaymentPlanModal({
                       </span>
                     </div>
 
-                    <Collapsible
-                      open={installmentDetailsOpen}
-                      onOpenChange={setInstallmentDetailsOpen}
-                    >
-                      <CollapsibleTrigger className="flex justify-between items-center w-full hover:bg-splickets-slate-50 rounded">
-                        <span className="text-splickets-slate-700">
-                          Instalments ({installmentCount})
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-splickets-slate-900">
-                            {formatCurrency(remainingAmount)}
+                    {selectedDeposit < 100 && (
+                      <Collapsible
+                        open={installmentDetailsOpen}
+                        onOpenChange={setInstallmentDetailsOpen}
+                      >
+                        <CollapsibleTrigger className="flex justify-between items-center w-full hover:bg-splickets-slate-50 rounded">
+                          <span className="text-splickets-slate-700">
+                            Instalments ({installmentCount})
                           </span>
-                          {installmentDetailsOpen ? (
-                            <ChevronUp className="h-4 w-4 text-splickets-slate-500" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4 text-splickets-slate-500" />
-                          )}
-                        </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="space-y-2 pt-2">
-                        {installmentDates.map((date, index) => (
-                          <div
-                            key={index}
-                            className="flex justify-between items-center py-1 text-sm border-l-2 border-splickets-slate-200 pl-4 mr-6"
-                          >
-                            <span className="text-splickets-slate-600">
-                              {formatDate(String(date))}
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-splickets-slate-900">
+                              {formatCurrency(remainingAmount)}
                             </span>
-                            <span className="text-splickets-slate-900">
-                              {formatCurrency(installmentAmount)}
-                            </span>
+                            {installmentDetailsOpen ? (
+                              <ChevronUp className="h-4 w-4 text-splickets-slate-500" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-splickets-slate-500" />
+                            )}
                           </div>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2 pt-2">
+                          {installmentDates.map((date, index) => (
+                            <div
+                              key={index}
+                              className="flex justify-between items-center py-1 text-sm border-l-2 border-splickets-slate-200 pl-4 mr-6"
+                            >
+                              <span className="text-splickets-slate-600">
+                                {formatDate(String(date))}
+                              </span>
+                              <span className="text-splickets-slate-900">
+                                {formatCurrency(installmentAmount)}
+                              </span>
+                            </div>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+                    {selectedDeposit === 100 && (
+                      <div className="text-sm text-splickets-slate-600 pt-2">
+                        Full payment - no payment plan required
+                      </div>
+                    )}
                   </div>
                 </div>
               </>
@@ -325,6 +384,30 @@ export function PaymentPlanModal({
                 Your payment plan will be confirmed at checkout.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Footer with select button */}
+        <div className="border-t border-splickets-slate-200 h-md:p-6 h-md:py-3 px-6 bg-splickets-slate-900">
+          <div className="flex justify-center lg:justify-end">
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-blue-700 text-white px-8"
+              data-testid="button-select-payment-plan"
+              onClick={() => {
+                // Store flight data and selected payment plan options in localStorage
+                localStorage.setItem("selectedFlight", JSON.stringify(flight));
+                localStorage.setItem("selectedPaymentPlan", JSON.stringify({
+                  depositPercentage: selectedDeposit,
+                  installmentType: selectedInstallment,
+                }));
+                // Navigate to passenger details page
+                setLocation(`/flight-search/passenger-details/${flight.id}`);
+                onClose(); // Close the modal
+              }}
+            >
+              Select
+            </Button>
           </div>
         </div>
       </div>

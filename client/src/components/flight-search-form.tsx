@@ -196,20 +196,28 @@ export function FlightSearchForm({
     return `${formatSingleDate(from)} - ${formatSingleDate(to)}`;
   };
 
+  // Helper function to format date as YYYY-MM-DD in local timezone
+  const formatDateLocal = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleDateSelect = (dates: DateRange | Date | undefined) => {
     setSelectedDates(dates);
     
     if (tripType === "return" && dates && "from" in dates) {
       const range = dates as DateRange;
       if (range.from) {
-        form.setValue("departureDate", range.from.toISOString().split("T")[0]);
+        form.setValue("departureDate", formatDateLocal(range.from));
       }
       if (range.to) {
-        form.setValue("returnDate", range.to.toISOString().split("T")[0]);
+        form.setValue("returnDate", formatDateLocal(range.to));
       }
     } else if (tripType === "one_way" && dates && !("from" in dates)) {
       const singleDate = dates as Date;
-      form.setValue("departureDate", singleDate.toISOString().split("T")[0]);
+      form.setValue("departureDate", formatDateLocal(singleDate));
       form.setValue("returnDate", "");
     }
   };

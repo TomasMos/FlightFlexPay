@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, Check, Loader2, Tag, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Check, Loader2, Tag, X, Lock, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import StripePaymentForm from "@/components/StripePaymentForm";
@@ -26,17 +26,35 @@ import { trackPurchase } from "@/lib/metaPixel";
 import { trackPurchaseGTM } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
   const { currencySymbol, currency } = useCurrency();
   const { toast } = useToast();
-  const { signInWithToken } = useAuth();
+  const { signInWithToken, currentUser } = useAuth();
   const [flight, setFlight] = useState<EnhancedFlightWithPaymentPlan | null>(
     null,
   );
   const [passengerData, setPassengerData] = useState<any>(null);
-  const [selectedDeposit, setSelectedDeposit] = useState(30); // Default to 30%
+  
+  // Check if user has bookings
+  const { data: userBookings = [] } = useQuery({
+    queryKey: ['/api/bookings/user', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser?.email) return [];
+      const response = await fetch(`/api/bookings/user?email=${encodeURIComponent(currentUser.email)}`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!currentUser?.email,
+  });
+
+  const hasBookings = (userBookings as any[]).length > 0;
+  const canAccessLowerDeposits = currentUser && hasBookings;
+  
+  // Default to 50% if user doesn't have access to lower deposits, otherwise 30%
+  const [selectedDeposit, setSelectedDeposit] = useState(canAccessLowerDeposits ? 30 : 50);
   const [selectedInstallment, setSelectedInstallment] = useState<
     "weekly" | "bi-weekly"
   >("weekly");
@@ -70,6 +88,20 @@ export default function FlightBooking() {
     }
   }, []);
 
+  // Update default deposit when user status changes
+  useEffect(() => {
+    if (!canAccessLowerDeposits && selectedDeposit < 50) {
+      setSelectedDeposit(50);
+    }
+  }, [canAccessLowerDeposits, selectedDeposit]);
+
+  // If payment plan is not eligible, force 100% deposit
+  useEffect(() => {
+    if (flight && !flight.paymentPlanEligible && selectedDeposit < 100) {
+      setSelectedDeposit(100);
+    }
+  }, [flight, selectedDeposit]);
+
   if (!flight) {
     return (
       <div className="min-h-screen bg-splickets-slate-50 flex items-center justify-center">
@@ -86,9 +118,6 @@ export default function FlightBooking() {
   }
 
   const ppEligible = flight?.paymentPlanEligible;
-    if (!ppEligible && selectedDeposit < 100) {
-      setSelectedDeposit(100)
-    }
 
   // Payment calculations - use promo code amount if applied
   const originalFlightTotal = parseFloat(flight.price.total);
@@ -258,11 +287,14 @@ export default function FlightBooking() {
     };
   };
 
+  // Define all deposit options - always show all options
   const depositOptions = [
     { value: 20, label: "20%" },
     { value: 30, label: "30%" },
     { value: 40, label: "40%" },
     { value: 50, label: "50%" },
+    { value: 75, label: "75%" },
+    { value: 100, label: "100%" },
   ];
 
   const handlePaymentSuccess = async (paymentResult: any) => {
@@ -431,34 +463,51 @@ export default function FlightBooking() {
                         <h2 className="text-xl font-semibold text-splickets-slate-900 mb-4">
                           Choose a Deposit Amount
                         </h2>
-                        <div className="grid grid-cols-4 gap-3">
-                          {depositOptions.map((option) => (
-                            <Button
-                              key={option.value}
-                              variant={
-                                selectedDeposit === option.value
-                                  ? "default"
-                                  : "outline"
-                              }
-                              className={cn(
-                                "h-12 text-base font-semibold",
-                                selectedDeposit === option.value
-                                  ? "bg-primary text-white "
-                                  : "border-splickets-slate-300 text-splickets-slate-700 hover:bg-splickets-hover hover:text-splickets-slate-700",
-                              )}
-                              onClick={() => setSelectedDeposit(option.value)}
-                              data-testid={`button-deposit-${option.value}`}
-                            >
-                              {option.label}
-                            </Button>
-                          ))}
+                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                          {depositOptions.map((option) => {
+                            const isLocked = !canAccessLowerDeposits && option.value < 50;
+                            return (
+                              <div key={option.value} className="relative">
+                                <Button
+                                  variant={
+                                    selectedDeposit === option.value
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  className={cn(
+                                    "h-12 text-base font-semibold w-full",
+                                    selectedDeposit === option.value
+                                      ? "bg-primary text-white "
+                                      : "border-splickets-slate-300 text-splickets-slate-700 hover:bg-splickets-hover hover:text-splickets-slate-700",
+                                    isLocked && "opacity-60 cursor-not-allowed"
+                                  )}
+                                  onClick={() => !isLocked && setSelectedDeposit(option.value)}
+                                  disabled={isLocked}
+                                  data-testid={`button-deposit-${option.value}`}
+                                >
+                                  {option.label}
+                                </Button>
+                                {isLocked && (
+                                  <div className="absolute inset-0 bg-black/20 bg-splickets-slate-900 bg-opacity-60 rounded-md pointer-events-none">
+                                  <Lock className="absolute top-2 right-2 w-5 h-5 text-white opacity-80" />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
+                        {!canAccessLowerDeposits && (
+                          <p className="text-sm text-splickets-slate-600 mt-3">
+                            You can unlock smaller deposits the more you use Splickets. If you have a Splickets account, sign in to get access.
+                          </p>
+                        )}
                       </div>
-                      <div>
-                        <h2 className="text-xl font-semibold text-splickets-slate-900 mb-4">
-                          Choose an Installment Plan
-                        </h2>
-                        <div className="grid grid-cols-2 gap-4 ">
+                      {selectedDeposit < 100 && (
+                        <div>
+                          <h2 className="text-xl font-semibold text-splickets-slate-900 mb-4">
+                            Choose an Installment Plan
+                          </h2>
+                          <div className="grid grid-cols-2 gap-4 ">
                           <div
                             className={cn(
                               "relative border-2 rounded-lg p-4 cursor-pointer transition-colors",
@@ -533,15 +582,18 @@ export default function FlightBooking() {
                             </div>
                           </div>
                         </div>
-                      </div>
-                      <div
-                        className=" text-sm text-splickets-slate-600"
-                        data-testid="text-installment-schedule"
-                      >
-                        {installmentCount} installments, starting{" "}
-                        {formatDate(String(firstInstallmentDate))} and ending{" "}
-                        {formatDate(String(lastInstallmentDate))}
-                      </div>
+                        </div>
+                      )}
+                      {selectedDeposit < 100 && (
+                        <div
+                          className=" text-sm text-splickets-slate-600"
+                          data-testid="text-installment-schedule"
+                        >
+                          {installmentCount} installments, starting{" "}
+                          {formatDate(String(firstInstallmentDate))} and ending{" "}
+                          {formatDate(String(lastInstallmentDate))}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 
@@ -582,50 +634,57 @@ export default function FlightBooking() {
                         </span>
                       </div>
 
-                      <Collapsible
-                        open={installmentDetailsOpen}
-                        onOpenChange={setInstallmentDetailsOpen}
-                      >
-                        <CollapsibleTrigger
-                          className="flex justify-between items-center w-full hover:bg-splickets-slate-50 rounded "
-                          data-testid="button-toggle-installments"
+                      {selectedDeposit < 100 && (
+                        <Collapsible
+                          open={installmentDetailsOpen}
+                          onOpenChange={setInstallmentDetailsOpen}
                         >
-                          <span className="text-splickets-slate-700">
-                            Installments ({installmentCount})
-                          </span>
-                          <div className="flex items-center gap-2 ">
-                            <span className="font-semibold text-splickets-slate-900">
-                              {formatCurrency(remainingAmount)}
+                          <CollapsibleTrigger
+                            className="flex justify-between items-center w-full hover:bg-splickets-slate-50 rounded "
+                            data-testid="button-toggle-installments"
+                          >
+                            <span className="text-splickets-slate-700">
+                              Installments ({installmentCount})
                             </span>
-                            {installmentDetailsOpen ? (
-                              <ChevronUp className="h-4 w-4 text-splickets-slate-500" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4 text-splickets-slate-500" />
-                            )}
-                          </div>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="space-y-2 pt-2">
-                          {installmentDates.map((date, index) => (
-                            <div
-                              key={index}
-                              className="flex justify-between items-center py-1 text-sm border-l-2 border-splickets-slate-200 pl-4"
-                            >
-                              <span
-                                className="text-splickets-slate-600"
-                                data-testid={`text-installment-date-${index + 1}`}
-                              >
-                                {formatDate(String(date))}
+                            <div className="flex items-center gap-2 ">
+                              <span className="font-semibold text-splickets-slate-900">
+                                {formatCurrency(remainingAmount)}
                               </span>
-                              <span
-                                className="text-splickets-slate-900"
-                                data-testid={`text-installment-amount-${index + 1}`}
-                              >
-                                {formatCurrency(installmentAmount)}
-                              </span>
+                              {installmentDetailsOpen ? (
+                                <ChevronUp className="h-4 w-4 text-splickets-slate-500" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4 text-splickets-slate-500" />
+                              )}
                             </div>
-                          ))}
-                        </CollapsibleContent>
-                      </Collapsible>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="space-y-2 pt-2">
+                            {installmentDates.map((date, index) => (
+                              <div
+                                key={index}
+                                className="flex justify-between items-center py-1 text-sm border-l-2 border-splickets-slate-200 pl-4"
+                              >
+                                <span
+                                  className="text-splickets-slate-600"
+                                  data-testid={`text-installment-date-${index + 1}`}
+                                >
+                                  {formatDate(String(date))}
+                                </span>
+                                <span
+                                  className="text-splickets-slate-900"
+                                  data-testid={`text-installment-amount-${index + 1}`}
+                                >
+                                  {formatCurrency(installmentAmount)}
+                                </span>
+                              </div>
+                            ))}
+                          </CollapsibleContent>
+                        </Collapsible>
+                      )}
+                      {selectedDeposit === 100 && (
+                        <div className="text-sm text-splickets-slate-600 pt-2">
+                          Full payment - no payment plan required
+                        </div>
+                      )}
                       
                       {/* Promo Code Section */}
                       <div className="border-t pt-4 mt-4">
@@ -696,6 +755,39 @@ export default function FlightBooking() {
            <>
            
            </>
+              )}
+
+              {/* Payment Plan Not Eligible Notice */}
+              {!ppEligible && (
+                <Card className="border-yellow-200 bg-yellow-50">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-yellow-900 mb-1">
+                          Payment Plan Not Available
+                        </h3>
+                        <p className="text-sm text-yellow-800">
+                          {(() => {
+                            const departureDate = new Date(
+                              flight.itineraries[0].segments[0].departure.at,
+                            );
+                            const today = new Date();
+                            const daysUntilDeparture = Math.ceil(
+                              (departureDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+                            );
+                            
+                            if (daysUntilDeparture < 21) {
+                              return `Payment plans are only available for flights more than 21 days away. Your flight departs in ${daysUntilDeparture} day${daysUntilDeparture !== 1 ? 's' : ''}, so full payment is required.`;
+                            } else {
+                              return "Payment plans are only available for flights more than 21 days away. Full payment is required for this booking.";
+                            }
+                          })()}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {/* StripePaymentForm */}
