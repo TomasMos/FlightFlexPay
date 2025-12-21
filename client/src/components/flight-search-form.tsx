@@ -348,7 +348,7 @@ export function FlightSearchForm({
                       data-testid="select-currency"
                     >
                       <SelectValue>
-                        <span className="flex items-center gap-4">
+                        <span className="flex items-center gap-8">
                           <span>{getCurrencyFlag(selectedCurrency)}</span>
                           <span>{selectedCurrency}</span>
                         </span>
