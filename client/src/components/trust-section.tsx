@@ -247,7 +247,7 @@ export function TrustSection() {
                   <img
                     src={airline.logo}
                     alt={airline.name}
-                    className="h-16 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity"
+                    className="h-16 w-auto object-contain"
                   />
                 </div>
               ))}
@@ -261,7 +261,7 @@ export function TrustSection() {
                   <img
                     src={airline.logo}
                     alt={airline.name}
-                    className="h-16 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity"
+                    className="h-16 w-auto object-contain"
                   />
                 </div>
               ))}
