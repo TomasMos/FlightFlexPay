@@ -447,7 +447,7 @@ export function FlightResults({
       )}
 
       {/* Clear Filters Button - Desktop Only (Mobile version is in modal footer) */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block space-y-6">
         <Separator />
         <Button
           variant="outline"

@@ -17,7 +17,7 @@ import { AirportAutocomplete } from "./airport-autocomplete.tsx";
 import { DatePickerModal } from "./date-picker-modal.tsx";
 import { Calendar, User, Search, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SUPPORTED_CURRENCIES, determineUserCurrency, saveCurrencyToStorage, type CurrencyCode } from "@/utils/currency";
+import { SUPPORTED_CURRENCIES, determineUserCurrency, saveCurrencyToStorage, getCurrencyFlag, type CurrencyCode } from "@/utils/currency";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackFlightSearch } from "@/lib/metaPixel";
@@ -215,17 +215,17 @@ export function FlightSearchForm({
   };
 
   return (
-    <section className="bg-cover bg-no-repeat bg-center border-b border-splickets-slate-200 min-h-dvh flex flex-col gap-20 py-20 lg:py-0"
+    <section className=" bg-cover bg-no-repeat bg-center border-b border-splickets-slate-200 min-h-dvh flex flex-col gap-20 py-10 md:py-20"
       
       style={{ backgroundImage: `url(${plane})` }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow flex flex-col justify-center gap-20 " ref={sectionRef}>
+        <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow flex flex-col justify-center gap-10 md:gap-20 " ref={sectionRef}>
           <div
-            className="rounded-2xl backdrop-blur-md bg-white/30 p-20 shadow-lg"
+            className=" rounded-2xl backdrop-blur-md bg-white/30 p-5 md:p-20 shadow-lg"
             data-testid="glass-container"
           >
             <div className="text-center">
               <h1
-                className="text-5xl md:text-6xl font-bold text-splickets-slate-900 mb-8"
+                className="text-4xl md:text-6xl font-bold text-splickets-slate-900 mb-8"
                 data-testid="title-main"
               >
                 Book Now, Pay Later
@@ -239,17 +239,17 @@ export function FlightSearchForm({
             </div>
           </div>
   
-          <div className=" bg-splickets-slate-50 rounded-2xl p-10 shadow-sm border border-splickets-slate-200 ">
+          <div className=" bg-splickets-slate-50 rounded-2xl p-5 md:p-10 shadow-sm border border-splickets-slate-200 ">
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4"
             data-testid="form-flight-search"
           >
-            <div className="flex flex-wrap justify-between items-center mb-6">
+            <div className="flex flex-nowrap justify-between items-center gap-2 mb-6">
             <Tabs
               value={tripType}
               onValueChange={(value) => setTripType(value as typeof tripType)}
-              className="w-auto"
+              className="w-auto flex-shrink-0"
               data-testid="tabs-trip-type"
             >
               <TabsList className="bg-transparent p-0 h-auto flex gap-0 border-0">
@@ -257,7 +257,8 @@ export function FlightSearchForm({
   value="return"
   className="
     relative
-    px-4 py-2
+    px-3 py-2
+    sm:px-4
     rounded-none
 
     bg-transparent
@@ -294,7 +295,8 @@ export function FlightSearchForm({
   value="one_way"
   className="
     relative
-    px-4 py-2
+    px-3 py-2
+    sm:px-4
     rounded-none
 
     bg-transparent
@@ -335,8 +337,8 @@ export function FlightSearchForm({
 
               
               {/* Currency Dropdown */}
-              <div className="flex items-center space-x-2">
-                <div className="relative  w-24">
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                <div className="relative w-28">
                   <Select
                     value={selectedCurrency}
                     onValueChange={(value) => setCurrency(value as CurrencyCode)}
@@ -345,12 +347,20 @@ export function FlightSearchForm({
                       className=" pl-4 pr-4 py-2 border-splickets-slate-300 focus:ring-2 focus:ring-splickets-primary focus:border-splickets-primary bg-white"
                       data-testid="select-currency"
                     >
-                      <SelectValue />
+                      <SelectValue>
+                        <span className="flex items-center gap-2">
+                          <span>{getCurrencyFlag(selectedCurrency)}</span>
+                          <span>{selectedCurrency}</span>
+                        </span>
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="min-w-[var(--radix-select-trigger-width)] w-auto">
                       {SUPPORTED_CURRENCIES.map((currency) => (
                         <SelectItem key={currency.code} value={currency.code}>
-                          {currency.code}
+                          <span className="flex items-center gap-2">
+                            <span>{currency.flag}</span>
+                            <span>{currency.code}</span>
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>

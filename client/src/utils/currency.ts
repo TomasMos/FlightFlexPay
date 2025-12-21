@@ -1,14 +1,14 @@
 // Supported currencies in the specified order
 export const SUPPORTED_CURRENCIES = [
-  { code: 'USD', symbol: '$', name: 'US Dollar' },
-  { code: 'GBP', symbol: '£', name: 'British Pound' },
-  { code: 'EUR', symbol: '€', name: 'Euro' },
-  { code: 'ZAR', symbol: 'R', name: 'South African Rand' },
-  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
-  { code: 'NZD', symbol: 'NZ$', name: 'New Zealand Dollar' },
-  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
-  { code: 'AED', symbol: 'AED', name: 'UAE Dirham' },
-  { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' },
+  { code: 'USD', symbol: '$', name: 'US Dollar', flag: '🇺🇸' },
+  { code: 'GBP', symbol: '£', name: 'British Pound', flag: '🇬🇧' },
+  { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺' },
+  { code: 'ZAR', symbol: 'R', name: 'South African Rand', flag: '🇿🇦' },
+  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar', flag: '🇦🇺' },
+  { code: 'NZD', symbol: 'NZ$', name: 'New Zealand Dollar', flag: '🇳🇿' },
+  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar', flag: '🇨🇦' },
+  { code: 'AED', symbol: 'AED', name: 'UAE Dirham', flag: '🇦🇪' },
+  { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar', flag: '🇸🇬' },
 ] as const;
 
 export type CurrencyCode = typeof SUPPORTED_CURRENCIES[number]['code'];
@@ -66,6 +66,12 @@ export function getCurrencySymbol(currencyCode: CurrencyCode): string {
 export function getCurrencyName(currencyCode: CurrencyCode): string {
   const currency = SUPPORTED_CURRENCIES.find(c => c.code === currencyCode);
   return currency?.name || currencyCode;
+}
+
+// Get currency flag for display
+export function getCurrencyFlag(currencyCode: CurrencyCode): string {
+  const currency = SUPPORTED_CURRENCIES.find(c => c.code === currencyCode);
+  return currency?.flag || '';
 }
 
 // Currency selection logic according to spec

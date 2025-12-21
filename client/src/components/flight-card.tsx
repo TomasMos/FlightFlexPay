@@ -138,16 +138,16 @@ export function FlightCard({
                 data-testid={`payment-plan-preview-${flight.id}`}
               >
                 <div className="flex  items-center gap-2 mb-2">
-                  <Shield className="w-4 h-4 text-splickets-secondary" />
-                  <span className="text-sm font-medium text-splickets-secondary">
+                  <Shield className="w-4 h-4 text-splickets-primary" />
+                  <span className="text-sm text-center font-medium text-splickets-primary">
                     Payment Plan Available
                   </span>
                 </div>
-                <div className="text-sm text-splickets-slate-600">
+                <div className="text-sm text-center text-splickets-slate-600">
                   Pay {currencySymbol}
-                  {flight.paymentPlan.depositAmount.toFixed(0)} today, from{" "}
+                  {formattedPrice(Number(flight.paymentPlan.depositAmount))} today, and{" "}
                   {currencySymbol}
-                  {flight.paymentPlan.installmentAmount.toFixed(0)} per week
+                  {formattedPrice(Number(flight.paymentPlan.installmentAmount))} per week
                 </div>
               </div>
             ) : (

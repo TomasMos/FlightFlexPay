@@ -12,18 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { User, Mail, Shield, Globe, Phone, LogOut, Check, Send } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
-
-const SUPPORTED_CURRENCIES = [
-  { code: 'USD', name: 'US Dollar', symbol: '$' },
-  { code: 'GBP', name: 'British Pound', symbol: '£' },
-  { code: 'EUR', name: 'Euro', symbol: '€' },
-  { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
-  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
-  { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' },
-  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
-  { code: 'AED', name: 'UAE Dirham', symbol: 'AED' },
-  { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
-];
+import { SUPPORTED_CURRENCIES, getCurrencyFlag } from '@/utils/currency';
 
 export function AccountTab() {
   const { currentUser, logout } = useAuth();
@@ -246,12 +235,20 @@ export function AccountTab() {
             <Label htmlFor="currency">Preferred Currency</Label>
             <Select value={currency} onValueChange={handleCurrencyChange}>
               <SelectTrigger data-testid="select-currency">
-                <SelectValue />
+                <SelectValue>
+                  <span className="flex items-center gap-2">
+                    <span>{getCurrencyFlag(currency)}</span>
+                    <span>{SUPPORTED_CURRENCIES.find(c => c.code === currency)?.name} ({currency})</span>
+                  </span>
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {SUPPORTED_CURRENCIES.map((curr) => (
                   <SelectItem key={curr.code} value={curr.code}>
-                    {curr.name} ({curr.code})
+                    <span className="flex items-center gap-2">
+                      <span>{curr.flag}</span>
+                      <span>{curr.name} ({curr.code})</span>
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
