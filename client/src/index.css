@@ -170,3 +170,19 @@
     border-color: var(--splickets-slate-300);
   }
 }
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  /* Duration is set dynamically via CSS variable for constant speed */
+  animation: scroll var(--scroll-duration, 80s) linear infinite;
+  display: flex;
+  width: fit-content;
+}

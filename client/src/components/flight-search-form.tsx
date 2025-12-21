@@ -234,7 +234,7 @@ export function FlightSearchForm({
                 className="text-xl md:text-2xl text-gray-900 leading-relaxed"
                 data-testid="text-subtitle"
               >
-                Lock in early prices with a 20% deposit and spread the rest over flexible installments
+                Lock in early prices with a 20% deposit and spread the rest over flexible instalments
               </p>
             </div>
           </div>

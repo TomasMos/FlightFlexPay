@@ -243,7 +243,7 @@ export function PaymentPlanModal({
                     </div>
                   </div>
                   <div className="text-sm text-splickets-slate-600">
-                    {installmentCount} installments, starting{" "}
+                    {installmentCount} instalments, starting{" "}
                     {formatDate(String(firstInstallmentDate))} and ending{" "}
                     {formatDate(String(lastInstallmentDate))}
                   </div>
@@ -278,7 +278,7 @@ export function PaymentPlanModal({
                     >
                       <CollapsibleTrigger className="flex justify-between items-center w-full hover:bg-splickets-slate-50 rounded">
                         <span className="text-splickets-slate-700">
-                          Installments ({installmentCount})
+                          Instalments ({installmentCount})
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-splickets-slate-900">
