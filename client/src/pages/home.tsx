@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   FlightSearchRequest,
@@ -16,6 +16,11 @@ interface FlightSearchResponse {
 
 export default function Home() {
   const [searchParams, setSearchParams] = useState<FlightSearchRequest | null>(null);
+
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const {
     data: flightData,

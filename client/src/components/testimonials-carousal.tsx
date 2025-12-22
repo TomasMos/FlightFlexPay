@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import TrustpilotStar from "@/assets/Trustpilot.svg";
 
 type Testimonial = {
   id: string | number;
@@ -13,13 +12,14 @@ type Testimonial = {
   savings: string;
   rating: number;
   quote: string;
+  photo?: string;
 };
 
-  interface TestimonialCarouselProps {
-    testimonials: Testimonial[];
-  }
+interface TestimonialCarouselProps {
+  testimonials: Testimonial[];
+}
 
-  const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials }) => {
+const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials }) => {
   const [current, setCurrent] = useState(0);
 
   const prev = () =>
@@ -27,103 +27,110 @@ type Testimonial = {
   const next = () =>
     setCurrent((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
 
-  // Auto rotate every 6s
+  // Auto rotate every 5s
   useEffect(() => {
-    const timer = setInterval(next, 6000);
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
+    }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [testimonials.length]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-white" data-testid="section-testimonials">
       <div className="container mx-auto px-4">
         {/* Heading */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4" data-testid="title-testimonials">
             What Our Customers Say
           </h2>
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto" data-testid="text-subtitle-testimonials">
             Real feedback from travelers who've used Splickets to make their dream trips possible
           </p>
         </div>
 
         {/* Carousel */}
-        <div className="relative max-w-5xl  mx-auto ">
-          <div className="overflow-hidden border-0 rounded-2xl shadow-2xl">
+        <div className="relative max-w-4xl mx-auto">
+          <div className="overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={current}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 0.5 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
               >
-                <Card className="bg-white border-0 rounded-2xl">
-                  <CardContent className="p-8 sm:p-12">
-                    <div className="text-center">
-                      {/* Rating */}
-                      <div className="flex justify-center items-center mb-6">
-                        {Array.from({ length: testimonials[current].rating }).map((_, i) => (
-                          <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
+                <div className="bg-white rounded-2xl p-8 md:p-12 text-center">
+                  {/* Customer Photo */}
+                  <div className="flex justify-center mb-8">
+                    <Avatar className="w-24 h-24 border-4 border-gray-100">
+                      <AvatarImage 
+                        src={testimonials[current].photo} 
+                        alt={testimonials[current].name}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-primary text-white text-2xl font-semibold">
+                        {getInitials(testimonials[current].name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
 
-                      {/* Quote */}
-                      <blockquote className="text-lg sm:text-xl text-gray-700 mb-8 italic leading-relaxed">
-                        “{testimonials[current].quote}”
-                      </blockquote>
+                  {/* Rating */}
+                  <div className="flex justify-center items-center mb-6 gap-1">
+                    {Array.from({ length: testimonials[current].rating }).map((_, i) => (
+                      <img 
+                        key={i} 
+                        src={TrustpilotStar} 
+                        alt="Trustpilot star" 
+                        className="w-6 h-6"
+                      />
+                    ))}
+                  </div>
 
-                      {/* Person */}
-                      <div className="space-y-3">
-                        <div className="font-bold text-xl text-gray-900">
-                          {testimonials[current].name}
-                        </div>
-                        <div className="text-gray-600 text-lg">
-                          {testimonials[current].location}
-                        </div>
-                        <div className="flex flex-wrap justify-center gap-3">
-                          <Badge variant="outline" className="text-blue-600 border-blue-600 px-4 py-2">
-                            {testimonials[current].route}
-                          </Badge>
-                          <Badge variant="outline" className="text-green-600 border-green-600 px-4 py-2">
-                            Saved {testimonials[current].savings}
-                          </Badge>
-                        </div>
+                  {/* Quote */}
+                  <blockquote className="text-xl md:text-2xl text-gray-900 mb-8 leading-relaxed font-medium max-w-3xl mx-auto">
+                    "{testimonials[current].quote}"
+                  </blockquote>
+
+                  {/* Customer Info */}
+                  <div className="space-y-2">
+                    <div className="font-bold text-lg text-gray-900">
+                      {testimonials[current].name}
+                    </div>
+                    <div className="text-gray-600 text-base mb-4">
+                      {testimonials[current].location}
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-4 text-sm">
+                      <div className="text-gray-700">
+                        <span className="font-semibold">Route:</span> {testimonials[current].route}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Navigation Arrows (desktop only) */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 bg-splickets-slate-100 shadow-xl  w-12 h-12"
-            onClick={prev}
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 bg-splickets-slate-100 shadow-xl w-12 h-12"
-            onClick={next}
-          >
-            <ChevronRight className="w-6 h-6" />
-          </Button>
-
-          {/* Dots */}
-          <div className="flex justify-center mt-8 space-x-3">
+          {/* Navigation Dots */}
+          <div className="flex justify-center mt-8 space-x-2">
             {testimonials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrent(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === current ? "bg-primary scale-125" : "bg-gray-300 hover:bg-gray-400"
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  index === current 
+                    ? "bg-primary w-8 scale-100" 
+                    : "bg-gray-300 hover:bg-gray-400"
                 }`}
+                aria-label={`Go to testimonial ${index + 1}`}
               />
             ))}
           </div>

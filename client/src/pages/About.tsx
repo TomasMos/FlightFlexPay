@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 import about1 from "../assets/About-1.jpg";
 import about2 from "../assets/About-2.jpg";
@@ -299,6 +299,11 @@ export default function About() {
   const globalSectionRef = useRef<HTMLElement>(null);
   const visionSectionRef = useRef<HTMLElement>(null);
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -338,13 +343,13 @@ export default function About() {
       {/* The Splickets Story */}
       <section
         ref={storySectionRef}
-        className="py-16 bg-white relative overflow-x-hidden overflow-y-visible"
+        className="py-16 bg-white relative overflow-hidden"
       >
         <WatermarkLogo sectionRef={storySectionRef} />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
             <ScrollAnimation variant={fadeInUp}>
-              <div className="text-center mb-12">
+              <div className="text-left md:text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                   The Splickets Story
                 </h2>
@@ -393,11 +398,11 @@ export default function About() {
             {/* Mission & Values */}
             <div className="mb-16">
               <ScrollAnimation variant={fadeInUp}>
-                <div className="text-center mb-12">
+                <div className="text-left md:text-center mb-12">
                   <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                     Our Mission & Values
                   </h3>
-                  <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  <p className="text-lg text-gray-600 max-w-2xl md:mx-auto">
                     Our mission is to make international travel more accessible
                     by removing the burden of upfront flight costs, while
                     maintaining transparency, simplicity, and trust.
@@ -475,7 +480,7 @@ export default function About() {
       {/* Global Presence */}
       <section
         ref={globalSectionRef}
-        className="py-16 bg-gray-50 relative overflow-x-hidden overflow-y-visible"
+        className="py-16 bg-gray-50 relative overflow-hidden"
       >
         <WatermarkImage
           src={frame2}
@@ -527,7 +532,7 @@ export default function About() {
       {/* Vision for the Future */}
       <section
         ref={visionSectionRef}
-        className="py-16 bg-white relative overflow-x-hidden overflow-y-visible"
+        className="py-16 bg-white relative overflow-hidden"
       >
         <WatermarkImageLeft
           src={frame3}
@@ -635,27 +640,29 @@ export default function About() {
               </ScrollAnimation>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 text-center">
               <p className="text-lg text-blue-100">
                 We're hiring across engineering, product, marketing, and
                 customer success.
               </p>
-              <Button
-                size="lg"
-                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3"
-                data-testid="button-explore-roles"
-                asChild
-              >
-                <a
-                  href="https://www.notion.so/Join-Our-Team-at-Splickets-28fc8bbc8fbf81a6bd56f35acb900eb1?source=copy_link"
-                  target="_blank"
-                  rel="noopener noreferrer"
+              <div className="flex justify-center">
+                <Button
+                  size="lg"
+                  className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3"
+                  data-testid="button-explore-roles"
+                  asChild
                 >
-                  <Briefcase className="w-5 h-5 mr-2" />
-                  Explore Open Roles
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </a>
-              </Button>
+                  <a
+                    href="https://www.notion.so/Join-Our-Team-at-Splickets-28fc8bbc8fbf81a6bd56f35acb900eb1?source=copy_link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Briefcase className="w-5 h-5 mr-2" />
+                    Explore Open Roles
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </a>
+                </Button>
+              </div>
               <p className="text-sm text-blue-200">
                 Or send us your CV at careers@splickets.app
               </p>

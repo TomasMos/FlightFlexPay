@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useSwipeable } from "react-swipeable";
 import { 
-  ChevronLeft, 
-  ChevronRight, 
   Lock,
   CreditCard,
   Headphones, 
-  ArrowRight
+  ArrowRight,
+  MapPin
 } from "lucide-react";
 import TestimonialCarousel from '@/components/testimonials-carousal';
 
@@ -31,6 +29,7 @@ const testimonials = [
     savings: "£320",
     rating: 5,
     quote: "Splickets is easy, reliable, and saves money - it's a no brainer!",
+    photo: "https://i.pravatar.cc/150?img=1",
   },
   {
     id: 2,
@@ -39,7 +38,8 @@ const testimonials = [
     route: "DBN → CPT",
     savings: "R875",
     rating: 5,
-    quote: "I didn’t think instalment payments for flights were possible. Huge help!",
+    quote: "I didn't think instalment payments for flights were possible. Huge help!",
+    photo: "https://i.pravatar.cc/150?img=12",
   },
   {
     id: 3,
@@ -48,7 +48,18 @@ const testimonials = [
     route: "NYC → BJS",
     savings: "$560",
     rating: 5,
-    quote: "Super smooth process. I’ll be using this again for my next holiday.",
+    quote: "Super smooth process. I'll be using this again for my next holiday.",
+    photo: "https://i.pravatar.cc/150?img=5",
+  },
+  {
+    id: 4,
+    name: "Michael Chen",
+    location: "Sydney, Australia",
+    route: "SYD → LHR",
+    savings: "A$890",
+    rating: 5,
+    quote: "Finally, a way to travel without breaking the bank upfront. Game changer!",
+    photo: "https://i.pravatar.cc/150?img=33",
   },
 ];
 
@@ -104,26 +115,34 @@ const destinations = [
 ];
 
 export function TrustSection() {
-  const [current, setCurrent] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const prev = () =>
-    setCurrent((current - 1 + destinations.length) % destinations.length);
-  const next = () => setCurrent((current + 1) % destinations.length);
-
+  // Position carousel between New York and Sydney on mobile load
   useEffect(() => {
-    destinations.forEach(dest => {
-      const img = new Image();
-      img.src = dest.image; // preload each background image
-    });
-  }, []);
+    const container = scrollContainerRef.current;
+    if (!container || window.innerWidth >= 768) return;
 
-  const handlers = useSwipeable({
-    onSwipedLeft: next,
-    onSwipedRight: prev,
-    preventScrollOnSwipe: true,
-    trackMouse: true, // allows drag with mouse too
-  });
+    // Wait for layout to calculate proper scroll position
+    const timer = setTimeout(() => {
+      // New York is index 2, Sydney is index 3
+      // We want to position between them - calculate based on card width and gap
+      const viewportWidth = window.innerWidth;
+      const cardWidth = viewportWidth * 0.85; // 85vw
+      const gap = 24; // gap-6 = 1.5rem = 24px
+      const cardWithGap = cardWidth + gap;
+      
+      // Position to show Sydney centered (index 3)
+      // Sydney starts at: 3 * cardWithGap
+      // To center it: scroll to Sydney's start - half viewport + half card
+      const sydneyStart = 3 * cardWithGap;
+      const scrollPosition = sydneyStart - (viewportWidth / 2) + (cardWidth / 2);
+      
+      container.scrollLeft = Math.max(0, scrollPosition);
+    }, 150);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Handle video autoplay for iOS - use Intersection Observer
   useEffect(() => {
@@ -323,8 +342,8 @@ export function TrustSection() {
             ))}
           </div>
 
-          {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center items-center gap-8 mt-16 pt-20 border-t border-gray-200" data-testid="section-trust-badges">
+         
+          {/* <div className="flex flex-wrap justify-center items-center gap-8 mt-16 pt-20 border-t border-gray-200" data-testid="section-trust-badges">
             <div className="flex items-center gap-3 text-gray-600" data-testid="badge-ssl">
               <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
                 <Lock className="h-5 w-5 text-green-600" />
@@ -337,101 +356,99 @@ export function TrustSection() {
               </div>
               <span className="font-medium">PCI Compliant</span>
             </div>
-            {/* <div className="flex items-center gap-3 text-gray-600" data-testid="badge-iata">
+            <div className="flex items-center gap-3 text-gray-600" data-testid="badge-iata">
               <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center">
                 <Building className="h-5 w-5 text-purple-600" />
               </div>
               <span className="font-medium">IATA Certified</span>
-            </div> */}
+            </div>
             <div className="flex items-center gap-3 text-gray-600" data-testid="badge-support">
               <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center">
                 <Headphones className="h-5 w-5 text-orange-600" />
               </div>
               <span className="font-medium">24/7 Support</span>
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
 
       <TestimonialCarousel testimonials={testimonials} />
 
 
-      {/* Dream Destinations Carousel */}
-      <section className="py-20 bg-white">
+      {/* Dream Destinations Grid */}
+      <section className="py-20 bg-gradient-to-b from-white via-gray-50 to-white">
         <div className="container mx-auto px-4">
           {/* Heading */}
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Dream Destinations Await
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Explore Dream Destinations
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Explore the world's most beautiful destinations with Splickets' flexible payment plans
+              Discover the world's most beautiful places. Book now and pay over time with flexible plans.
             </p>
           </div>
 
-          {/* Destination Carousel */}
-          <div
-            {...handlers} // 👈 swipe handlers applied here
-            className="relative max-w-5xl  mx-auto touch-pan-y"
+          {/* Destinations Grid - Horizontal scroll on mobile, grid on desktop */}
+          <div 
+            ref={scrollContainerRef}
+            className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto overflow-x-auto md:overflow-x-visible scrollbar-hide pb-4 md:pb-0"
+            style={{
+              scrollBehavior: 'smooth',
+              WebkitOverflowScrolling: 'touch',
+            }}
           >
-            <Card className="bg-white shadow-2xl border-0 overflow-hidden">
-              <CardContent className="p-0">
-                {/* Top section with background image */}
-                <div
-                  className="relative h-[700px] flex items-center justify-center bg-cover bg-center"
-                  style={{
-                    backgroundImage: `url(${destinations[current].image})`,
-                  }}
-                >
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 " />
-
-                  {/* Text content */}
-                  <div className="relative text-center text-white px-6 backdrop-blur-md rounded-3xl p-4">
-                    <h3 className="text-3xl font-bold mb-2 drop-shadow-md">
-                      {destinations[current].name}
-                    </h3>
-                    <p className="text-xl text-blue-100 drop-shadow-md">
-                      {destinations[current].description}
-                    </p>
+            {/* Destinations */}
+            {destinations.map((destination, index) => (
+              <Card
+                key={`${destination.name}-${index}`}
+                className="group relative overflow-hidden rounded-2xl border-0 shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer bg-white flex-shrink-0 w-[85vw] md:w-auto"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              >
+                <div className="relative h-[400px] overflow-hidden">
+                  {/* Image */}
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                    style={{
+                      backgroundImage: `url(${destination.image})`,
+                    }}
+                  >
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
+                    
+                    {/* Content */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin className="w-5 h-5 text-white/90" />
+                        <span className="text-sm font-medium text-white/90 uppercase tracking-wide">
+                          {destination.name.split(',')[1]?.trim() || destination.name.split(',')[0]}
+                        </span>
+                      </div>
+                      <h3 className="text-2xl md:text-3xl font-bold mb-2 leading-tight">
+                        {destination.name.split(',')[0]}
+                      </h3>
+                      <p className="text-white/90 text-base font-medium">
+                        {destination.description}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Bottom section */}
-                <div className="p-8 text-center">
-                  <p className="text-gray-600 mb-6">
-                    Book your flight to {destinations[current].name} today and pay over time
-                  </p>
-                  <Button   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
- size="lg" data-testid="button-book-destination"   className="w-72 justify-between">
-                    Book Flight to {destinations[current].name.split(",")[0]}
-                    <ArrowRight className="w-5 h-5 ml-2" />
+                {/* Bottom Action Bar */}
+                <div className="p-5 bg-white border-t border-gray-100">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-between group-hover:bg-gray-50 transition-colors duration-300"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                  >
+                    <span className="font-semibold text-gray-900">Book Flight</span>
+                    <ArrowRight className="w-5 h-5 text-gray-600 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-
-
-            {/* Navigation Buttons */}
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white shadow-xl border-2 w-12 h-12"
-              onClick={prev}
-              data-testid="button-prev-destination"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white shadow-xl border-2 w-12 h-12"
-              onClick={next}
-              data-testid="button-next-destination"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </Button>
+              </Card>
+            ))}
           </div>
         </div>
       </section>

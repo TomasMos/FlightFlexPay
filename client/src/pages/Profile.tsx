@@ -15,6 +15,9 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState("referrals");
 
   useEffect(() => {
+    // Scroll to top on page load
+    window.scrollTo(0, 0);
+    
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get("tab");
     if (tab && ["referrals", "bookings", "billing", "account"].includes(tab)) {

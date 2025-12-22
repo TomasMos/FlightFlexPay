@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Link } from "wouter";
+import { useEffect } from "react";
 import {
   Gift,
   Users,
@@ -127,6 +128,11 @@ const faqs = [
 ];
 
 export default function ReferralProgram() {
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
