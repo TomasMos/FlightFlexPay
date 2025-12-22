@@ -17,6 +17,8 @@ import HowItWorks from "@/pages/HowItWorks";
 import ReferralProgram from "@/pages/ReferralProgram";
 import Contact from "@/pages/Contact";
 import AdminPanel from "@/pages/AdminPanel";
+import TermsOfService from "@/pages/TermsOfService";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import NotFound from "@/pages/not-found";
 import { Layout } from '@/pages/Layout';
 import { useEffect } from "react";
@@ -42,6 +44,8 @@ function Router() {
       <Route path="/how-it-works" component={HowItWorks}/>
       <Route path="/referral-program" component={ReferralProgram}/>
       <Route path="/contact" component={Contact}/>
+      <Route path="/terms-of-service" component={TermsOfService}/>
+      <Route path="/privacy-policy" component={PrivacyPolicy}/>
       <Route path="/email-test" component={EmailTestPage}/>
       <Route path="/admin" component={AdminPanel}/>
       <Route component={NotFound} />

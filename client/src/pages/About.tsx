@@ -10,15 +10,14 @@ import {
   MapPin, 
   Briefcase, 
   TrendingUp,
-  CheckCircle,
   ArrowRight,
   Building2,
-  Rocket,
   Shield
 } from 'lucide-react';
 
-import tom from '../assets/Tom.jpg'
-import bright from '../assets/bright.jpg'
+import about1 from '../assets/About-1.jpg'
+import about2 from '../assets/About-2.jpg'
+import about3 from '../assets/About-3.jpg'
 import paris from '../assets/paris.avif'
 import canada from '../assets/canada.avif'
 import newZealand from '../assets/newZealand.avif'
@@ -43,24 +42,25 @@ const values = [
   {
     icon: Heart,
     title: "Customer First",
-    description: "Every decision we make starts with how it impacts our travelers"
+    description: "Every decision is guided by what delivers the best outcome for our travellers"
   },
   {
     icon: Shield,
     title: "Transparency",
-    description: "No hidden fees, no surprises - just honest, upfront pricing"
+    description: "Clear pricing, no hidden fees, and full visibility into how payments work"
   },
   {
     icon: Users,
     title: "Accessibility",
-    description: "Making travel accessible to everyone, regardless of financial situation"
+    description: "Flexible payment options designed to fit real-world financial situations"
   },
   {
     icon: Target,
     title: "Innovation",
-    description: "Continuously improving how people book and pay for travel"
+    description: "Continuously improving how people discover, book, and pay for travel"
   }
 ];
+
 
 const milestones = [
   {
@@ -92,13 +92,14 @@ export default function About() {
       <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6" data-testid="text-about-title">
-              Making Travel Dreams Reality
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
-              We believe everyone deserves to explore the world. That's why we created Splickets - 
-              to break down financial barriers and make travel accessible to all.
-            </p>
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6" data-testid="text-about-title">
+  Making Travel More Accessible
+</h1>
+<p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
+  Splickets is a flight booking platform that lets travellers spread the cost of flights over time, 
+  without debt, credit cards, or hidden fees.
+</p>
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Badge variant="outline" className="text-lg px-4 py-2">
                 <Globe className="w-5 h-5 mr-2" />
@@ -126,29 +127,33 @@ export default function About() {
                 The Splickets Story
               </h2>
               <p className="text-xl text-gray-600">
-                Born from personal experience, built for global impact
+              Solving a real problem in global travel
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
               <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-6">
-                Hello Traveller                </h3>
-                <div className="space-y-4 text-gray-600 leading-relaxed">
-                  
-                  <p> I started Splickets to make travel more affordable and accessible. My hope is that by providing flexible payment options, Splickets can help people live a richer life through travel. As a South African, I experienced firsthand how disproportionately expensive international flights can be. 
-                  </p>
-                  <p>That’s why I created Splickets. We don’t believe in debt or credit. Instead, we offer a simple lay-by system that allows you to pay for your flights in manageable installments. This way, your dream destination is always within reach, and you can focus on the adventure, not the payment.
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">
+  Designed for Real-World Travel
+</h3>
+<div className="space-y-4 text-gray-600 leading-relaxed">
+  <p>
+    International travel often requires large upfront payments, making flights inaccessible
+    for many travellers — even when they can comfortably afford the trip over time.
+  </p>
+  <p>
+    Splickets was created to address this gap. Our platform allows travellers to secure
+    their flights and pay in manageable instalments before departure.
+  </p>
+  <p>
+    There is no interest, no revolving credit, and no long-term debt — just a simple,
+    transparent way to plan and pay for travel with confidence.
+  </p>
+</div>
 
- </p>
-                  <p>
-                    Tom - that's me, in Corfu with my fiancé. 
-                  </p>
-                  
-                </div>
               </div>
               <div className="relative">
-                <div className="aspect-square bg-cover bg-no-repeat bg-center rounded-2xl flex items-center justify-center" style={{ backgroundImage: `url(${tom})` }}>
+                <div className="aspect-square bg-cover bg-no-repeat bg-center rounded-2xl flex items-center justify-center" style={{ backgroundImage: `url(${about1})` }}>
                   
                 </div>
               </div>
@@ -161,9 +166,10 @@ export default function About() {
                   Our Mission & Values
                 </h3>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  We're not just a travel booking platform - we're on a mission to democratize travel 
-                  and make the world more accessible to everyone.
-                </p>
+  Our mission is to make international travel more accessible by removing the burden of
+  upfront flight costs, while maintaining transparency, simplicity, and trust.
+</p>
+
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -224,107 +230,60 @@ export default function About() {
         </div>
       </section>
 
-      {/* Global Presence & Future Plans */}
+      {/* Global Presence */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Global Presence & Future Plans
-              </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                We're already helping travelers across 5 countries, with ambitious plans to expand our reach
-              </p>
-            </div>
-
-            {/* Current Presence */}
-            <div className="mb-16">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-8 text-center">
-                Where We Are Today
-              </h3>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {countries.map((country, index) => (
-                  <Card
-                    key={index}
-                    className={`relative h-40 text-center rounded-lg overflow-hidden group`}
-                    data-testid={`country-card-${index}`}
-                    style={{
-                      backgroundImage: `url(${country.flag})`, // Use a flag image URL
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }}
-                  >
-                    {/* Transparent overlay for text legibility */}
-                    <div className="absolute inset-0 bg-black bg-opacity-10 group-hover:bg-opacity-40 transition-all duration-300"></div>
-
-                    {/* Status Ribbon */}
-                    <div
-                      className={`absolute top-0 left-0 w-full text-center text-xs font-semibold py-1
-                        ${country.status === 'Live' ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'}`}
-                    >
-                      {country.status === 'Live' ? 'Live' : 'Coming Soon'}
-                    </div>
-
-                    {/* Content */}
-                    <div className="absolute inset-0 flex flex-col justify-end p-2 text-white">
-                      <div className="text-base font-semibold">{country.name}</div>
-                    </div>
-                  </Card>
-                ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+              <div className="relative">
+                <div className="aspect-square bg-cover bg-no-repeat bg-center rounded-2xl" style={{ backgroundImage: `url(${about2})` }}>
+                </div>
+              </div>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                  A World of Possibilities for Splicketeers
+                </h2>
+                <div className="space-y-4 text-gray-600 leading-relaxed text-lg">
+                  <p>
+                    We're already helping Splicketeers across five countries unlock the travel experiences they've always dreamed of. Whether it's reuniting with family across continents, exploring new cultures, or simply taking that trip you've been putting off — we're here to make it happen.
+                  </p>
+                  <p>
+                    Our presence in the United Kingdom, Australia, South Africa, Canada, and New Zealand means more Splicketeers can book flights in their local currency, with payment plans that fit their lives.
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Future Vision */}
+            {/* Countries Grid */}
+            
+          </div>
+        </div>
+      </section>
+
+      {/* Vision for the Future */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-6">
-                  Our Vision for the Future
-                </h3>
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Global Expansion</h4>
-                      <p className="text-gray-600">
-                        Launching in the United States, Germany, and France by 2025, 
-                        bringing our flexible payment solutions to even more travelers.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Product Innovation</h4>
-                      <p className="text-gray-600">
-                        Developing new travel financing products including hotels, 
-                        car rentals, and complete vacation packages.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Technology Leadership</h4>
-                      <p className="text-gray-600">
-                        Building the most advanced travel payment platform with AI-powered 
-                        personalization and seamless user experiences.
-                      </p>
-                    </div>
-                  </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                  Living the Life You've Always Wanted
+                </h2>
+                <div className="space-y-6 text-gray-600 leading-relaxed">
+                  <p className="text-lg">
+                    At Splickets, we believe travel shouldn't be a luxury reserved for those who can pay everything upfront. We want every Splicketeer to live the life they've always wanted — filled with adventures, connections, and experiences that shape who you are.
+                  </p>
+                  <p className="text-lg">
+                    That's why we're expanding to new countries, bringing our flexible payment solutions to even more travelers. Soon, Splicketeers in the United States, Germany, and France will be able to book their dream trips and pay over time, just like travelers in our current markets.
+                  </p>
+                  <p className="text-lg">
+                    Our vision is simple: remove the financial barriers that stand between you and the experiences that matter most. Whether that's visiting family, exploring new destinations, or finally taking that bucket-list trip — we're here to help you make it happen, on your terms.
+                  </p>
                 </div>
               </div>
               
               <div className="relative">
-                <div className="aspect-square bg-cover bg-no-repeat bg-center rounded-2xl flex items-center justify-center" style={{ backgroundImage: `url(${bright})` }}>
-                  
+                <div className="aspect-square bg-cover bg-no-repeat bg-center rounded-2xl" style={{ backgroundImage: `url(${about3})` }}>
                 </div>
               </div>
             </div>
@@ -381,10 +340,13 @@ export default function About() {
                 size="lg" 
                 className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3"
                 data-testid="button-explore-roles"
+                asChild
               >
-                <Briefcase className="w-5 h-5 mr-2" />
-                Explore Open Roles
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <a href="https://www.notion.so/Join-Our-Team-at-Splickets-28fc8bbc8fbf81a6bd56f35acb900eb1?source=copy_link" target="_blank" rel="noopener noreferrer">
+                  <Briefcase className="w-5 h-5 mr-2" />
+                  Explore Open Roles
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </a>
               </Button>
               <p className="text-sm text-blue-200">
                 Or send us your CV at careers@splickets.app

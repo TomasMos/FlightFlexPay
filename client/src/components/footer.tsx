@@ -1,5 +1,5 @@
-import { Plane, TicketsPlane } from "lucide-react";
-import { SiX, SiFacebook, SiInstagram } from "react-icons/si";
+import { Plane, TicketsPlane, MapPin } from "lucide-react";
+import { SiInstagram } from "react-icons/si";
 import { Link } from "wouter";
 
 export function Footer() {
@@ -18,21 +18,10 @@ export function Footer() {
                 <p className="text-orange-100 text-sm">Book Now, Pay Later</p>
               </div>
             </div>
+
             <p className="text-orange-100 text-sm mb-6 leading-relaxed">
-              Making travel accessible with flexible payment plans. Lock in today's prices, 
-              pay over time with no credit checks or hidden fees.
+              For booking emergencies, use the contact details within the profile section or the chat widget in the bottom right. For non-urgent enquiries, send us an email at <a href="mailto:support@splickets.app" className="underline hover:text-white transition-colors">support@splickets.app</a>.
             </p>
-            <div className="flex space-x-4 justify-center md:justify-start ">
-              <a href="#" className="text-orange-200 hover:text-white transition-colors" data-testid="link-twitter">
-                <SiX className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-orange-200 hover:text-white transition-colors" data-testid="link-facebook">
-                <SiFacebook className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-orange-200 hover:text-white transition-colors" data-testid="link-instagram">
-                <SiInstagram className="h-6 w-6" />
-              </a>
-            </div>
           </div>
 
           {/* Company Links */}
@@ -43,7 +32,7 @@ export function Footer() {
                 <Link href="/about" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-about">About Us</Link>
               </li>
               <li>
-                <Link href="/how-it-works" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-how-works">How It Works</Link>
+                <a href="https://www.notion.so/Join-Our-Team-at-Splickets-28fc8bbc8fbf81a6bd56f35acb900eb1?source=copy_link" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" data-testid="link-careers">Careers</a>
               </li>
               <li>
                 <Link href="/about" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-testimonials">Testimonials</Link>
@@ -62,13 +51,13 @@ export function Footer() {
                 <Link href="/contact" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-contact">Contact Us</Link>
               </li>
               <li>
-                <Link href="/how-it-works" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-help">Help Center</Link>
+                <Link href="/profile?tab=account" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-help">Help Center</Link>
               </li>
               <li>
-                <Link href="/how-it-works" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-payment-plans">Payment Plans</Link>
+                <Link href="/profile?tab=bookings" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-payment-plans">Payment Plans</Link>
               </li>
               <li>
-                <Link href="/profile" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-my-bookings">My Bookings</Link>
+                <Link href="/profile?tab=bookings" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-my-bookings">My Bookings</Link>
               </li>
             </ul>
           </div>
@@ -77,11 +66,27 @@ export function Footer() {
           <div data-testid="footer-legal">
             <h4 className="font-bold mb-4 text-lg">Legal</h4>
             <ul className="space-y-3 text-sm text-orange-100">
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="link-terms">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="link-privacy">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="link-cookies">Cookie Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="link-disclaimer">Disclaimer</a></li>
+              <li>
+                <Link href="/terms-of-service" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-terms">Terms of Service</Link>
+              </li>
+              <li>
+                <Link href="/privacy-policy" onClick={() => window.scrollTo(0, 0)} className="hover:text-white transition-colors" data-testid="link-privacy">Privacy Policy</Link>
+              </li>
             </ul>
+          </div>
+        </div>
+
+        {/* Location and Instagram */}
+        <div className="flex flex-col md:flex-row items-center md:items-center justify-center md:justify-between gap-4 md:gap-0 mt-8 pt-8 border-t border-orange-400 text-orange-100 text-xs">
+          <div className="flex items-center space-x-2">
+            <MapPin className="h-4 w-4 flex-shrink-0" />
+            <span>7 Bell Yard, London, W2CA 2JR</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <p className="text-orange-100 text-xs">Follow us on Instagram</p>
+            <a href="https://www.instagram.com/splickets/" target="_blank" rel="noopener noreferrer" className="text-orange-200 hover:text-white transition-colors" data-testid="link-instagram">
+              <SiInstagram className="h-6 w-6" />
+            </a>
           </div>
         </div>
 

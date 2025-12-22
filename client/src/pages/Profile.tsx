@@ -7,10 +7,20 @@ import { SupportTab } from "@/components/profile/SupportTab";
 import { AccountTab } from "@/components/profile/AccountTab";
 import { ReferralsTab } from "@/components/profile/ReferralsTab";
 import { useLocation } from "wouter";
+import { useEffect, useState } from "react";
 
 export default function Profile() {
   const { currentUser } = useAuth();
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState("referrals");
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get("tab");
+    if (tab && ["referrals", "bookings", "billing", "account"].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, []);
 
   if (!currentUser) {
     setLocation("/signin");
@@ -27,7 +37,7 @@ export default function Profile() {
           Your Profile
         </h1>
 
-        <Tabs defaultValue="referrals" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-8">
             <TabsTrigger value="referrals" data-testid="tab-referrals">
               Referrals

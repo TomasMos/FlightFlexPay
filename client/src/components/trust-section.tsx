@@ -54,17 +54,17 @@ const testimonials = [
 
 const videoFeatures = [
   {
-    title: "Lock in Today's Prices",
-    description: "Secure current flight prices and pay later with our flexible instalment plans. No price increases, guaranteed.",
+    title: ["Lock in Today's", "Prices"],
+    description: "Secure current flight prices with a small deposit. No price increases, guaranteed.",
     video: lockInPricesVideo
   },
   {
-    title: "Flexible Payment Plans",
+    title: ["Flexible Payment", "Plans"],
     description: "Choose from weekly or bi-weekly payment schedules that work with your budget and lifestyle.",
     video: flexiblePaymentsVideo
   },
   {
-    title: "Fly with Lay-by",
+    title: ["Fly with", "Lay-By"],
     description: "Complete your payments before your departure date. No surprises, just peace of mind.",
     video: payInFullVideo
   }
@@ -305,7 +305,16 @@ export function TrustSection() {
                 </div>
                 
                 <h3 className="text-xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                  {feature.title}
+                  {Array.isArray(feature.title) ? (
+                    <>
+                      {feature.title[0]}
+                      <span className="lg:hidden"> </span>
+                      <br className="hidden lg:block" />
+                      {feature.title[1]}
+                    </>
+                  ) : (
+                    feature.title
+                  )}
                 </h3>
                 <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-lg">
                   {feature.description}
