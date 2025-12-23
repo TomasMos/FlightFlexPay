@@ -76,7 +76,7 @@ const ZA_AIRPORTS = [
   "ZAA", // Timbavati Private Nature Reserve Airport
 ];
 
-const extrasOptions = [
+export const extrasOptions = [
   {
     id: "additionalBaggage" as const,
     title: "Additional Checked Baggage",
@@ -182,14 +182,18 @@ export default function Extras() {
       const parsed = JSON.parse(passengerInfo);
       setPassengerData(parsed);
       
-      // Initialize seat selections (empty, not defaulted to random)
-      const passengerCount = parsed.passengerCount || parsed.passengers?.length || 1;
-      const initialSeatSelection: SeatSelection = {};
-      // Don't set default values - leave empty
-      setExtras((prev) => ({
-        ...prev,
-        seatSelection: initialSeatSelection,
-      }));
+      // Restore extras selections from localStorage if they exist
+      if (parsed.extrasSelections) {
+        setExtras(parsed.extrasSelections);
+      } else {
+        // Initialize seat selections (empty, not defaulted to random) if no previous selections
+        const passengerCount = parsed.passengerCount || parsed.passengers?.length || 1;
+        const initialSeatSelection: SeatSelection = {};
+        setExtras((prev) => ({
+          ...prev,
+          seatSelection: initialSeatSelection,
+        }));
+      }
     }
   }, []);
 
@@ -512,9 +516,9 @@ export default function Extras() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <BookingWizard currentStep="extras" />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mt-8">
           {/* Left Section - Extras Options */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             {extrasOptions
               .filter((option) => {
                 // Hide travel insurance for domestic flights
@@ -798,7 +802,7 @@ export default function Extras() {
           </div>
 
           {/* Right Section - Summary */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <div className="sticky top-[98px] space-y-6">
               {/* Flight Summary Header */}
               <div className="bg-white rounded-lg shadow-sm border border-splickets-slate-200 p-6 mb-8">
@@ -1179,7 +1183,7 @@ export default function Extras() {
               <Card>
                 <CardContent className="p-6 space-y-4">
                   <h3 className="text-lg font-bold text-splickets-slate-900 mb-4">
-                    Summary
+                    Price Details
                   </h3>
                   
                   <div className="flex justify-between items-center">

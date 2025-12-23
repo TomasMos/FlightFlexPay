@@ -416,17 +416,18 @@ export default function About() {
                     key={index}
                     variant={scaleIn}
                     delay={index * 0.1}
+                    className="h-full"
                   >
                     <Card
-                      className="p-6 border-2 hover:shadow-lg transition-shadow"
+                      className="p-6 border-2 hover:shadow-lg transition-shadow h-full flex flex-col"
                       data-testid={`value-card-${index}`}
                     >
-                      <CardContent className="pt-6">
-                        <div className="flex items-start gap-4">
+                      <CardContent className="pt-6 flex-1 flex flex-col">
+                        <div className="flex items-start gap-4 flex-1">
                           <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <value.icon className="w-6 h-6 text-blue-600" />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <h4 className="text-lg font-semibold text-gray-900 mb-2">
                               {value.title}
                             </h4>

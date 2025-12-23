@@ -19,17 +19,20 @@ import newYork from '../assets/newYork.avif'
 import lockInPricesVideo from '../assets/Booked.mp4'
 import flexiblePaymentsVideo from '../assets/Installments2.mp4'
 import payInFullVideo from '../assets/Takeoff.mp4'
+import alex from '../assets/Alex.png'
+import zanne from '../assets/Zanne.png'
+import jacques from '../assets/Jacques.png'
 
 const testimonials = [
   {
     id: 1,
-    name: "Marzanne Dijkstra",
+    name: "Zanne Dijkstra",
     location: "London, England",
     route: "LHR → CPT",
     savings: "£320",
     rating: 5,
-    quote: "Splickets is easy, reliable, and saves money - it's a no brainer!",
-    photo: "https://i.pravatar.cc/150?img=1",
+    quote: "I've used Splickets twice to book flights between London and Cape Town, and it really takes the sting out of booking expensive international flights.",
+    photo: zanne,
   },
   {
     id: 2,
@@ -38,29 +41,29 @@ const testimonials = [
     route: "DBN → CPT",
     savings: "R875",
     rating: 5,
-    quote: "I didn't think instalment payments for flights were possible. Huge help!",
-    photo: "https://i.pravatar.cc/150?img=12",
+    quote: "It's a seamless experience! Would highly recommend it to anyone looking for easy access to flights that seem unaffordable.",
+    photo: alex,
   },
   {
     id: 3,
-    name: "Sarah Williams",
-    location: "New York, USA",
-    route: "NYC → BJS",
+    name: "Jacques Geldenhuys",
+    location: "Cape Town, South Africa",
+    route: "MNL → BKK",
     savings: "$560",
     rating: 5,
-    quote: "Super smooth process. I'll be using this again for my next holiday.",
-    photo: "https://i.pravatar.cc/150?img=5",
+    quote: "Splickets provides a beautiful down payment option, I've used it once, I'll use it again.",
+    photo: jacques,
   },
-  {
-    id: 4,
-    name: "Michael Chen",
-    location: "Sydney, Australia",
-    route: "SYD → LHR",
-    savings: "A$890",
-    rating: 5,
-    quote: "Finally, a way to travel without breaking the bank upfront. Game changer!",
-    photo: "https://i.pravatar.cc/150?img=33",
-  },
+  // {
+  //   id: 4,
+  //   name: "Michael Chen",
+  //   location: "Sydney, Australia",
+  //   route: "SYD → LHR",
+  //   savings: "A$890",
+  //   rating: 5,
+  //   quote: "Finally, a way to travel without breaking the bank upfront. Game changer!",
+  //   photo: "https://i.pravatar.cc/150?img=33",
+  // },
 ];
 
 const videoFeatures = [

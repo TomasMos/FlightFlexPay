@@ -31,7 +31,7 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
-    }, 5000);
+    }, 7000);
     return () => clearInterval(timer);
   }, [testimonials.length]);
 
@@ -71,13 +71,13 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
                 <div className="bg-white rounded-2xl p-8 md:p-12 text-center">
                   {/* Customer Photo */}
                   <div className="flex justify-center mb-8">
-                    <Avatar className="w-24 h-24 border-4 border-gray-100">
+                    <Avatar className="w-50 h-60 md:w-36 md:h-36 border-4 border-gray-100">
                       <AvatarImage 
                         src={testimonials[current].photo} 
                         alt={testimonials[current].name}
                         className="object-cover"
                       />
-                      <AvatarFallback className="bg-primary text-white text-2xl font-semibold">
+                      <AvatarFallback className="bg-primary text-white text-2xl md:text-3xl font-semibold">
                         {getInitials(testimonials[current].name)}
                       </AvatarFallback>
                     </Avatar>
@@ -90,7 +90,7 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
                         key={i} 
                         src={TrustpilotStar} 
                         alt="Trustpilot star" 
-                        className="w-6 h-6"
+                        className="w-8 h-8 md:w-10 md:h-10"
                       />
                     ))}
                   </div>

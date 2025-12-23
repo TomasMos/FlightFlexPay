@@ -29,6 +29,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { BookingWizard } from "@/components/booking-wizard";
 import { motion, AnimatePresence } from "framer-motion";
+import { extrasOptions } from "./Extras";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
@@ -131,6 +132,64 @@ export default function FlightBooking() {
   const baseFlightTotal = appliedPromo ? appliedPromo.newTotal : originalFlightTotal;
   const flightTotal = baseFlightTotal + extrasTotal;
   const discountAmount = appliedPromo ? appliedPromo.discount : 0;
+  
+  // Calculate extras breakdown for display
+  const calculateExtrasBreakdown = () => {
+    if (!passengerData?.extrasSelections || extrasTotal === 0) {
+      return {};
+    }
+    
+    const breakdown: Record<string, { count: number; total: number }> = {};
+    const passengerCount = passengerData.passengerCount || passengerData.passengers?.length || 1;
+    const perPassengerCost = originalFlightTotal / passengerCount;
+    const extrasSelections = passengerData.extrasSelections;
+    
+    extrasOptions.forEach((option) => {
+      // Skip travel insurance if not international (check if it exists in selections)
+      if (option.id === "travelInsurance") {
+        // Check if flight is international by checking if travel insurance is in selections
+        if (!extrasSelections[option.id]) return;
+      }
+      
+      const selection = extrasSelections[option.id];
+      if (!selection || selection.type === "none") return;
+      
+      let count = 0;
+      if (selection.type === "all") {
+        count = passengerCount;
+      } else if (selection.type === "specific") {
+        count = selection.passengers.length;
+      }
+      
+      if (count > 0) {
+        const basePrice = option.perPassenger ? perPassengerCost : originalFlightTotal;
+        const optionTotal = basePrice * option.pricePercentage * count;
+        breakdown[option.id] = {
+          count,
+          total: optionTotal,
+        };
+      }
+    });
+    
+    // Handle seat selection separately
+    if (extrasSelections.seatSelection) {
+      let seatCount = 0;
+      let seatTotal = 0;
+      Object.entries(extrasSelections.seatSelection).forEach(([passengerIdx, seatType]) => {
+        if (seatType && seatType !== "random" && seatType !== undefined) {
+          seatCount += 1;
+          seatTotal += perPassengerCost * 0.05;
+        }
+      });
+      if (seatCount > 0) {
+        breakdown.seatSelection = { count: seatCount, total: seatTotal };
+      }
+    }
+    
+    return breakdown;
+  };
+  
+  const extrasBreakdown = calculateExtrasBreakdown();
   
   // Promo code validation and application
   const handleApplyPromo = async () => {
@@ -462,10 +521,10 @@ export default function FlightBooking() {
         <div className="mt-8">
           {/* Flight Summary Header */}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             {/* Left Section - Payment Plan Calculator */}
 
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-3 space-y-6">
               {ppEligible ? (
                 <>
                   <Card>
@@ -642,6 +701,17 @@ export default function FlightBooking() {
                           </span>
                           <span className="font-semibold text-splickets-slate-900 mr-6">
                             {formatCurrency(extrasTotal)}
+                          </span>
+                        </div>
+                      )}
+
+                      {discountAmount > 0 && (
+                        <div className="flex justify-between items-center ">
+                          <span className="text-splickets-slate-700">
+                            Discount
+                          </span>
+                          <span className="font-semibold text-green-600 mr-6">
+                            -{formatCurrency(discountAmount)}
                           </span>
                         </div>
                       )}
@@ -871,7 +941,7 @@ export default function FlightBooking() {
             </div>
 
             {/* Right Section - Flight Summary */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-2">
               <div className=" sticky top-[98px] space-y-6">
                 <div className="bg-white rounded-lg shadow-sm border border-splickets-slate-200 p-6 mb-8">
                   <h1
@@ -1268,6 +1338,84 @@ export default function FlightBooking() {
                     </div>
                   )}
                 </div>
+                
+                {/* Price Details Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle data-testid="title-price-details">
+                      Price Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-splickets-slate-700">Flight Total</span>
+                      <span className="font-semibold text-splickets-slate-900">
+                        {formatCurrency(baseFlightTotal)}
+                      </span>
+                    </div>
+
+                    {extrasTotal > 0 && Object.keys(extrasBreakdown).length > 0 && (
+                      <>
+                        {Object.entries(extrasBreakdown).map(([key, value]) => {
+                          const option = extrasOptions.find((o) => o.id === key);
+                          if (!option || value.count === 0) {
+                            if (key === "seatSelection") {
+                              return (
+                                <div
+                                  key={key}
+                                  className="flex justify-between items-center text-sm"
+                                >
+                                  <span className="text-splickets-slate-600">
+                                    Seat Selection ({value.count})
+                                  </span>
+                                  <span className="text-splickets-slate-900">
+                                    {formatCurrency(value.total)}
+                                  </span>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }
+                          return (
+                            <div
+                              key={key}
+                              className="flex justify-between items-center text-sm"
+                            >
+                              <span className="text-splickets-slate-600">
+                                {option.title} ({value.count})
+                              </span>
+                              <span className="text-splickets-slate-900">
+                                {formatCurrency(value.total)}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </>
+                    )}
+
+                    {discountAmount > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-splickets-slate-600">
+                          Promo Code ({appliedPromo?.code})
+                        </span>
+                        <span className="text-green-600 font-semibold">
+                          -{formatCurrency(discountAmount)}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="border-t border-splickets-slate-200 pt-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold text-splickets-slate-900">
+                          Total
+                        </span>
+                        <span className="text-lg font-bold text-splickets-slate-900">
+                          {formatCurrency(flightTotal)}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>

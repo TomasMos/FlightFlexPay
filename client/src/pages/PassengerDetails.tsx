@@ -404,9 +404,9 @@ export default function PassengerDetails() {
     <div className="min-h-screen bg-splickets-slate-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <BookingWizard currentStep="passenger" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mt-8">
           {/* Left Section - Passenger and Contact Forms */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             {/* Contact Details Form */}
             <Card>
               <CardHeader>
@@ -617,7 +617,7 @@ export default function PassengerDetails() {
           </div>
 
           {/* Right Section - Price Details */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <div className="sticky top-[98px] space-y-6">
               {/* Flight Summary Header */}
               <div className="bg-white rounded-lg shadow-sm border border-splickets-slate-200 p-6 mb-8">
