@@ -209,7 +209,28 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">8. Spam Legislation</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">8. Email Marketing</h2>
+            <p className="mb-4">
+              By providing your email address during registration, checkout, or when subscribing to our newsletter, you agree that we may send 
+              you email notifications (for your order, including, without limitation, booking confirmations, payment reminders, and abandoned cart 
+              reminders) and email marketing offers (collectively, "Email Marketing"). We will not exceed reasonable frequency limits for Email 
+              Marketing communications. You can unsubscribe from further Email Marketing at any time by clicking the unsubscribe link in any email 
+              we send you, or by contacting us at{" "}
+              <a href="mailto:support@splickets.app" className="text-blue-600 hover:underline">
+                support@splickets.app
+              </a>.
+            </p>
+            <p className="mb-4">
+              We will only use information you provide through the Site to transmit the Email Marketing and respond to you, if necessary. This includes, 
+              but is not limited to, sharing information with email service providers, marketing platform providers, and other vendors who assist us in 
+              the delivery of Email Marketing. WE DO NOT SELL, RENT, LOAN, TRADE, LEASE, OR OTHERWISE TRANSFER FOR PROFIT ANY EMAIL ADDRESSES OR CUSTOMER 
+              INFORMATION COLLECTED THROUGH THE SITE TO ANY THIRD PARTY. Nonetheless, we reserve the right at all times to disclose any information as 
+              necessary to satisfy any law, regulation or governmental request, to avoid liability, or to protect our rights or property.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">9. Spam Legislation</h2>
             <p className="mb-4">
               Legislation in various jurisdictions prohibits the sending of unsolicited commercial electronic messages. We will never knowingly 
               send you messages or notices electronically without your consent.
@@ -217,7 +238,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">9. Access and Correction of Information</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">10. Access and Correction of Information</h2>
             <p className="mb-4">
               You may request access to Personal Information about you that we hold and you may ask us to correct your Personal Information if 
               you find that it is not accurate, up-to-date or complete. You may also make a complaint about our handling of your Personal Information.
@@ -238,7 +259,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">10. Report of Data Breaches</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">11. Report of Data Breaches</h2>
             <p className="mb-4">
               Privacy laws require anyone who collects sensitive information to assess any data breaches and report to relevant privacy authorities 
               and to the individuals to whom the information relates.
@@ -257,7 +278,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">11. Contact Us</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">12. Contact Us</h2>
             <p className="mb-4">
               If you have any concerns regarding your privacy or wish to discuss this policy, please contact us at{" "}
               <a href="mailto:support@splickets.app" className="text-blue-600 hover:underline">
