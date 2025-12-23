@@ -389,6 +389,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create booking
+      // Extract extras data - check both extrasSelections and extras for backward compatibility
+      const extrasData = passengerData?.extrasSelections || passengerData?.extras || null;
+      
       const [booking] = await db
         .insert(bookings)
         .values({
@@ -397,6 +400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           paymentPlanId: paymentPlanRecord.id,
           promoCodeId: promoCode?.promoCodeId || null,
           passengers: passengerData.passengers,
+          extras: extrasData, // Save extras selections as JSON
           status: "paid",
           originalPrice: promoCode?.originalPrice?.toString() || null,
           discountAmount: promoCode?.discount?.toString() || null,

@@ -181,6 +181,7 @@ export const bookings = pgTable("bookings", {
     .notNull(),
   promoCodeId: integer("promo_code_id").references(() => promoCodes.id), // nullable - tracks which promo code was used
   passengers: json("passengers"), // JSON containing passenger details (nullable for existing bookings)
+  extras: json("extras"), // JSON containing extras selections and details (nullable)
   status: bookingStatusEnum("status").default("payment_pending"),
   originalPrice: decimal("original_price", { precision: 10, scale: 2 }), // Price before discount
   discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }), // Amount discounted

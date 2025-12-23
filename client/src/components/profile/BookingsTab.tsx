@@ -16,6 +16,7 @@ interface Booking {
   flightId: number;
   paymentPlanId: number;
   passengers: any;
+  extras?: any; // JSON containing extras selections and details
   status: string;
   totalPrice: string;
   currency: string;
