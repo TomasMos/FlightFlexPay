@@ -797,7 +797,7 @@ export default function AdminPanel() {
                     }, 0);
                     
                     // Calculate flight/base price (original price minus extras)
-                    const flightPrice = originalPrice - extrasTotal;
+                    const flightPrice = originalPrice;
                     
                     
                     // Extras labels mapping
@@ -845,7 +845,7 @@ export default function AdminPanel() {
                         {/* Subtotal */}
                         <div className="flex justify-between items-center pt-3 border-t border-gray-300">
                           <span className="text-sm font-semibold text-gray-800">Subtotal</span>
-                          <span className="text-sm font-semibold text-gray-800">{formatCurrency(originalPrice, currency)}</span>
+                          <span className="text-sm font-semibold text-gray-800">{formatCurrency(originalPrice + extrasTotal, currency)}</span>
                         </div>
                         
                         {/* Discount */}
