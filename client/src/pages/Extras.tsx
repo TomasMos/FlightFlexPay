@@ -16,12 +16,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Shield, Plane, CheckCircle, Activity, ChevronDown, Luggage, Calendar, Users } from "lucide-react";
+import { Loader2, Shield, Plane, CheckCircle, Activity, ChevronDown, Luggage, Calendar, Users, Check, AlertTriangle, Clock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import { BookingWizard } from "@/components/booking-wizard";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { formattedPrice } from "@/utils/formatters";
+import { formattedPrice, formatTime, formatDuration, formatDate, toTitleCase, stopoverDuration } from "@/utils/formatters";
+import { motion, AnimatePresence } from "framer-motion";
 
 type ProtectionSelection = 
   | { type: "none" }
@@ -162,6 +163,9 @@ export default function Extras() {
   const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [expandedDetails, setExpandedDetails] = useState<{
+    [key: number]: boolean;
+  }>({});
 
   // Load flight and passenger data from localStorage
   useEffect(() => {
@@ -243,10 +247,19 @@ export default function Extras() {
     }).format(amount);
   };
 
+  const toggleDetails = (itineraryIndex: number) => {
+    setExpandedDetails((prev) => ({
+      ...prev,
+      [itineraryIndex]: !prev[itineraryIndex],
+    }));
+  };
+
   const getDisplayText = (selection: ProtectionSelection | null): string => {
     if (!selection) return "Select an option *";
     if (selection.type === "none") return "No thanks";
-    if (selection.type === "all") return "All Passengers";
+    if (selection.type === "all") {
+      return passengerCount === 1 ? "Add to cart" : "All Passengers";
+    }
     if (selection.type === "specific") {
       if (selection.passengers.length === 0) return "Select an option *";
       if (selection.passengers.length === 1) {
@@ -338,6 +351,15 @@ export default function Extras() {
         [passengerIndex]: seatType,
       },
     }));
+    
+    // Clear validation error when seat selection is made
+    if (validationErrors.seatSelection) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.seatSelection;
+        return newErrors;
+      });
+    }
   };
 
   // Calculate totals
@@ -395,11 +417,11 @@ export default function Extras() {
     // Clear previous validation errors
     setValidationErrors({});
     
-    // Validate that all required extras have a selection (except travel insurance for domestic and seatSelection which is always initialized)
+    // Validate that all required extras have a selection (except travel insurance for domestic)
     const requiredOptions = extrasOptions.filter(
       (opt) => 
         !(opt.id === "travelInsurance" && !isInternational) &&
-        opt.id !== "seatSelection" // Seat selection is always initialized, skip validation
+        opt.id !== "seatSelection" // Seat selection is validated separately
     );
     
     const errors: Record<string, string> = {};
@@ -412,6 +434,19 @@ export default function Extras() {
         hasErrors = true;
       }
     });
+
+    // Validate seat selection - ensure all passengers have a seat selection
+    const missingSeatSelections: number[] = [];
+    for (let i = 0; i < passengerCount; i++) {
+      if (!extras.seatSelection[i] || extras.seatSelection[i] === undefined) {
+        missingSeatSelections.push(i);
+      }
+    }
+    
+    if (missingSeatSelections.length > 0) {
+      errors.seatSelection = `Please select a seat preference for all ${passengerCount === 1 ? 'passenger' : 'passengers'}`;
+      hasErrors = true;
+    }
 
     if (hasErrors) {
       setValidationErrors(errors);
@@ -498,7 +533,7 @@ export default function Extras() {
                 // Special handling for seat selection
                 if (option.id === "seatSelection") {
                   return (
-                    <Card key={option.id} className="overflow-hidden">
+                    <Card key={option.id} id="extras-seatSelection" className="overflow-hidden">
                       <CardContent className="p-6">
                         <div className="flex gap-6">
                           {/* Icon Section */}
@@ -525,9 +560,10 @@ export default function Extras() {
                                   const seatOptions = passengerCount > 1
                                     ? ["window", "aisle", "next_to_passenger", "random"]
                                     : ["window", "aisle", "random"];
+                                  const hasError = validationErrors.seatSelection && !currentSeat;
 
                                   return (
-                                    <div key={idx} className="border border-splickets-slate-200 rounded-lg p-4">
+                                    <div key={idx} className={hasError ? "border border-red-500 rounded-lg p-4" : "border border-splickets-slate-200 rounded-lg p-4"}>
                                       <Label className="text-sm font-medium text-splickets-slate-700 mb-3 block">
                                         {passenger.title} {passenger.firstName} {passenger.lastName}
                                       </Label>
@@ -540,7 +576,7 @@ export default function Extras() {
                                           )
                                         }
                                       >
-                                        <SelectTrigger className="w-full">
+                                        <SelectTrigger className={hasError ? "w-full border-red-500" : "w-full"}>
                                           <SelectValue placeholder="Select seat preference" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -570,6 +606,11 @@ export default function Extras() {
                                 </div>
                               )}
                             </div>
+                            {validationErrors.seatSelection && (
+                              <p className="text-red-500 text-sm mt-2">
+                                {validationErrors.seatSelection}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </CardContent>
@@ -698,7 +739,9 @@ export default function Extras() {
                                           <div className="w-2 h-2 rounded-full bg-white" />
                                         )}
                                       </div>
-                                      <span className="text-sm">All Passengers</span>
+                                      <span className="text-sm">
+                                        {passengerCount === 1 ? "Add to cart" : "All Passengers"}
+                                      </span>
                                     </div>
 
                                     {/* Multiselect for individual passengers */}
@@ -757,6 +800,382 @@ export default function Extras() {
           {/* Right Section - Summary */}
           <div className="lg:col-span-1">
             <div className="sticky top-[98px] space-y-6">
+              {/* Flight Summary Header */}
+              <div className="bg-white rounded-lg shadow-sm border border-splickets-slate-200 p-6 mb-8">
+                <h1
+                  className="text-2xl font-bold text-splickets-slate-900 mb-4"
+                  data-testid="title-flight-summary"
+                >
+                  Flight Summary
+                </h1>
+                {/* Render each itinerary */}
+                {flight.itineraries.map((itinerary, itineraryIndex) => {
+                  const isOutbound = itineraryIndex === 0;
+                  const firstSegment = itinerary.segments[0];
+                  const lastSegment =
+                    itinerary.segments[itinerary.segments.length - 1];
+                  const stops = itinerary.segments.length - 1;
+
+                  return (
+                    <div
+                      key={itineraryIndex}
+                      className="bg-splickets-slate-50 rounded-lg p-6 border border-splickets-slate-200 mb-4"
+                      data-testid={`itinerary-section-${itineraryIndex}`}
+                    >
+                      {/* Route Overview */}
+                      <div className="flex items-center justify-between mb-6">
+                        {/* Origin */}
+                        <div className="text-left">
+                          <div className="text-xl font-bold text-splickets-slate-900">
+                            {firstSegment.departure.iataCode}
+                          </div>
+                          <div className="text-sm text-splickets-slate-600">
+                            {toTitleCase(firstSegment.departure.cityName)}
+                            
+                          </div>
+                          <div className="text-sm font-medium text-splickets-slate-900 mt-1">
+                            {formatTime(firstSegment.departure.at)}
+                          </div>
+                        </div>
+
+                        {/* Flight info */}
+                        <div className="flex-1 mx-8 text-center">
+                          <div className="flex items-center justify-center mb-2">
+                            <div className="w-2 h-2 bg-splickets-slate-300 rounded-full"></div>
+                            <div className="flex-1 h-px bg-splickets-slate-300 mx-2"></div>
+                            <Plane className="w-4 h-4 text-green-600" />
+                            <div className="flex-1 h-px bg-splickets-slate-300 mx-2"></div>
+                            <div className="w-2 h-2 bg-splickets-slate-300 rounded-full"></div>
+                          </div>
+                          <div className="text-sm text-splickets-slate-600 mb-1">
+                            {stops === 0
+                              ? "Nonstop"
+                              : `${stops} stop${stops > 1 ? "s" : ""}`}
+                          </div>
+                          <div className="text-sm text-splickets-slate-500">
+                            {formatDuration(itinerary.duration)}
+                          </div>
+                        </div>
+
+                        {/* Destination */}
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-splickets-slate-900">
+                            {lastSegment.arrival.iataCode}
+                          </div>
+                          <div className="text-sm text-splickets-slate-600">
+                            {toTitleCase(lastSegment.arrival.cityName)}
+                            {/* {lastSegment.arrival.cityName} */}
+                          </div>
+                          <div className="text-sm font-medium text-splickets-slate-900 mt-1">
+                            {formatTime(lastSegment.arrival.at)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Flight Details Collapsible */}
+                      <div className="border-t border-splickets-slate-200 pt-4">
+                        <button
+                          onClick={() => toggleDetails(itineraryIndex)}
+                          className="flex items-center justify-between w-full p-3 hover:bg-splickets-slate-100 rounded-lg"
+                          data-testid={`button-toggle-details-${itineraryIndex}`}
+                        >
+                          <span className="text-sm font-medium text-splickets-slate-700">
+                            Details
+                          </span>
+                          <motion.div
+                            animate={{
+                              rotate: expandedDetails[itineraryIndex] ? -180 : 0,
+                            }}
+                            transition={{ duration: 0.5 }}
+                          >
+                            {expandedDetails[itineraryIndex] ? (
+                              <ChevronDown className="w-4 h-4" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4" />
+                            )}
+                          </motion.div>
+                        </button>
+
+                        <AnimatePresence initial={false}>
+                          {expandedDetails[itineraryIndex] && (
+                            <motion.div
+                              key={`details-${itineraryIndex}`}
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.5, ease: "easeInOut" }}
+                              className="overflow-hidden"
+                              data-testid={`details-content-${itineraryIndex}`}
+                            >
+                              {itinerary.segments.map((segment, segmentIndex) => (
+                                <div key={segment.id} className="flex flex-col gap-4 mt-4">
+                                  {/* Segment details */}
+                                  <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-splickets-slate-200">
+                                    <div className="flex-1">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Departure */}
+                                        <div>
+                                          <div className="flex items-center gap-2 mb-2">
+                                            <div className=" font-medium text-splickets-slate-900">
+                                              {formatTime(segment.departure.at)} -{" "}
+                                                {formatDate(segment.departure.at)}
+                                            </div>
+                                          </div>
+                                          <div className="text-sm text-splickets-slate-900">
+                                            <p>
+                                              {" "}
+                                              {toTitleCase(segment.departure.airportName)} (
+                                              {segment.departure.iataCode})
+                                            </p>
+                                            {segment.departure.terminal && (
+                                              <p>
+                                                Terminal{" "}
+                                                {segment.departure.terminal}{" "}
+                                              </p>
+                                            )}
+                                            <p>
+                                              {" "}
+                                              {toTitleCase(segment.airline)} -{" "}
+                                              {segment.number}
+                                            </p>
+                                            <p>
+                                              {formatDuration(segment.duration)}
+                                            </p>
+                                            <p>{toTitleCase(segment.cabin)}</p>
+                                          </div>
+                                        </div>
+
+                                        {/* Arrival */}
+                                        <div>
+                                          <div className="flex items-center gap-2 mb-2">
+                                            <div className=" font-medium text-splickets-slate-900">
+                                              {formatTime(segment.arrival.at)} -{" "}
+                                                {formatDate(segment.arrival.at)}
+                                            </div>
+                                          </div>
+                                          <div className="text-sm text-splickets-slate-900">
+                                            <p>
+                                              {" "}
+                                              {toTitleCase(segment.arrival.airportName)} (
+                                              {segment.arrival.iataCode})
+                                            </p>
+                                            {segment.arrival.terminal && (
+                                              <p>
+                                                Terminal{" "}
+                                                {segment.arrival.terminal}{" "}
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                  </div>
+                                  <div
+                                    className="p-4 bg-white rounded-lg border border-splickets-slate-200"
+                                  >
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      {/* Baggage */}
+                                      <div>
+                                        <h5 className="text-sm font-medium text-splickets-slate-900 mb-2">
+                                          Baggage
+                                        </h5>
+                                        <div className="space-y-1">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-sm text-splickets-slate-600">
+                                              {segment.includedCabinBags
+                                                ?.quantity &&
+                                              segment.includedCabinBags?.weight &&
+                                              segment.includedCabinBags
+                                                ?.weightUnit ? (
+                                                  <div className="flex flex-row gap-2">
+                                                    <Check className="w-4 h-4 text-green-600" />
+                                                    <span className="text-sm text-splickets-slate-600">
+                                                      {
+                                                        segment.includedCabinBags
+                                                          ?.weight
+                                                      }{" "}
+                                                      {segment.includedCabinBags?.weightUnit.toLowerCase()}{" "}
+                                                      x{" "}
+                                                      {
+                                                        segment.includedCabinBags
+                                                          ?.quantity
+                                                      }{" "}
+                                                      piece(s) carry-on
+                                                    </span>
+                                                  </div>
+                                                ) : segment.includedCabinBags
+                                                    ?.weightUnit &&
+                                                  segment.includedCabinBags
+                                                    ?.weight ? (
+                                                  <div className="flex flex-row gap-2">
+                                                    <Check className="w-4 h-4 text-green-600" />
+                                                    <span className="text-sm text-splickets-slate-600">
+                                                      {
+                                                        segment.includedCabinBags
+                                                          ?.weight
+                                                      }{" "}
+                                                      {segment.includedCabinBags?.weightUnit.toLowerCase()}{" "}
+                                                      carry-on
+                                                    </span>
+                                                  </div>
+                                                ) : segment.includedCabinBags
+                                                    ?.quantity ? (
+                                                  <div className="flex flex-row gap-2">
+                                                    <Check className="w-4 h-4 text-green-600" />
+                                                    <span className="text-sm text-splickets-slate-600">
+                                                      {
+                                                        segment.includedCabinBags
+                                                          ?.quantity
+                                                      }{" "}
+                                                      piece(s) carry-on
+                                                    </span>
+                                                  </div>
+                                                ) : (
+                                                  <></>
+                                                )}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            {segment.includedCheckedBags
+                                              ?.quantity &&
+                                            segment.includedCheckedBags?.weight &&
+                                            segment.includedCheckedBags
+                                              ?.weightUnit ? (
+                                              <div className="flex flex-row gap-2">
+                                                <Check className="w-4 h-4 text-green-600" />
+                                                <span className="text-sm text-splickets-slate-600">
+                                                  {
+                                                    segment.includedCheckedBags
+                                                      ?.weight
+                                                  }{" "}
+                                                  {segment.includedCheckedBags?.weightUnit.toLowerCase()}{" "}
+                                                  x{" "}
+                                                  {
+                                                    segment.includedCheckedBags
+                                                      ?.quantity
+                                                  }{" "}
+                                                  piece(s) checked
+                                                </span>
+                                              </div>
+                                            ) : segment.includedCheckedBags
+                                                ?.weightUnit &&
+                                              segment.includedCheckedBags
+                                                ?.weight ? (
+                                              <div className="flex flex-row gap-2">
+                                                <Check className="w-4 h-4 text-green-600" />
+                                                <span className="text-sm text-splickets-slate-600">
+                                                  {
+                                                    segment.includedCheckedBags
+                                                      ?.weight
+                                                  }{" "}
+                                                  {segment.includedCheckedBags?.weightUnit.toLowerCase()}{" "}
+                                                  checked
+                                                </span>
+                                              </div>
+                                            ) : segment.includedCheckedBags
+                                                ?.quantity ? (
+                                              <div className="flex flex-row gap-2">
+                                                <Check className="w-4 h-4 text-green-600" />
+                                                <span className="text-sm text-splickets-slate-600">
+                                                  {
+                                                    segment.includedCheckedBags
+                                                      ?.quantity
+                                                  }{" "}
+                                                  piece(s) checked
+                                                </span>
+                                              </div>
+                                            ) : (
+                                              <></>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Flexibility */}
+                                      <div>
+                                        <h5 className="text-sm font-medium text-splickets-slate-900 mb-2">
+                                          Flexibility
+                                        </h5>
+                                        <div className="space-y-2">
+                                          <div className="flex items-center gap-2">
+                                            {flight.pricingOptions
+                                              ?.refundableFare ? (
+                                              <>
+                                                <Check className="w-4 h-4 text-green-600" />
+                                                <span className="text-sm text-green-600">
+                                                  Refundable
+                                                </span>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <X className="w-4 h-4 text-red-600" />
+                                                <span className="text-sm text-red-600">
+                                                  Non-refundable
+                                                </span>
+                                              </>
+                                            )}
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            {flight.pricingOptions
+                                              ?.noPenaltyFare ? (
+                                              <>
+                                                <Check className="w-4 h-4 text-green-600" />
+                                                <span className="text-sm text-green-600">
+                                                  Free changes
+                                                </span>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                                                <span className="text-sm text-yellow-600">
+                                                  Changes with a fee
+                                                </span>
+                                              </>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Stopover indicator */}
+                                  {segmentIndex < itinerary.segments.length - 1 && (
+                                    <div className="flex items-center justify-center   ">
+                                      <div className=" flex items-center gap-2 px-3 py-1 bg-splickets-slate-100 rounded-full">
+                                        <Clock className="w-3 h-3 text-splickets-slate-500" />
+                                        <span className="text-xs text-splickets-slate-600">
+                                          {toTitleCase(itinerary.segments[segmentIndex + 1]
+                                                       .departure.airportName)} (
+                                          {
+                                            itinerary.segments[segmentIndex + 1]
+                                              .departure.iataCode
+                                          }
+                                          ) -{" "}
+                                          {stopoverDuration(
+                                            new Date(segment.arrival.at),
+                                            new Date(
+                                              itinerary.segments[
+                                                segmentIndex + 1
+                                              ].departure.at,
+                                            ),
+                                          )}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                     
+                      
+                    </div>
+                  );
+                })}
+              </div>
               <Card>
                 <CardContent className="p-6 space-y-4">
                   <h3 className="text-lg font-bold text-splickets-slate-900 mb-4">

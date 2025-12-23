@@ -64,8 +64,8 @@ export function ItineraryModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 sm:p-10">
-      <div className="bg-white w-full h-full sm:max-w-4xl sm:rounded-xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50 sm:p-10 sm:pt-[calc(4rem+2.5rem)]">
+      <div className="bg-white w-full h-full sm:max-w-4xl sm:max-h-[calc(100vh-4rem-5rem)] sm:rounded-xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className=" flex flex-row items-spread justify-between h-md:p-6 h-md:py-3 px-6 border-b border-splickets-slate-200">
           <Carrier flight={flight} textSize="xl" />

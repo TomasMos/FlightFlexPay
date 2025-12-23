@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, Check, Loader2, Tag, X, Lock, AlertCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, Check, Loader2, Tag, X, Lock, AlertCircle, Plane, AlertTriangle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EnhancedFlightWithPaymentPlan } from "@shared/schema";
 import StripePaymentForm from "@/components/StripePaymentForm";
@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { BookingWizard } from "@/components/booking-wizard";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
@@ -74,6 +75,9 @@ export default function FlightBooking() {
   } | null>(null);
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoError, setPromoError] = useState("");
+  const [expandedDetails, setExpandedDetails] = useState<{
+    [key: number]: boolean;
+  }>({});
 
   // Load flight and passenger data from localStorage
   useEffect(() => {
@@ -257,6 +261,13 @@ export default function FlightBooking() {
       style: "currency",
       currency: currency,
     }).format(amount);
+  };
+
+  const toggleDetails = (itineraryIndex: number) => {
+    setExpandedDetails((prev) => ({
+      ...prev,
+      [itineraryIndex]: !prev[itineraryIndex],
+    }));
   };
 
   // Flight summary calculation
@@ -862,13 +873,14 @@ export default function FlightBooking() {
             {/* Right Section - Flight Summary */}
             <div className="lg:col-span-1">
               <div className=" sticky top-[98px] space-y-6">
-                <div className=" bg-white rounded-lg shadow-sm border border-splickets-slate-200 p-6 mb-8">
+                <div className="bg-white rounded-lg shadow-sm border border-splickets-slate-200 p-6 mb-8">
                   <h1
                     className="text-2xl font-bold text-splickets-slate-900 mb-4"
                     data-testid="title-passenger-details"
                   >
                     Flight Summary
                   </h1>
+                  {/* Render each itinerary */}
                   {flight.itineraries.map((itinerary, itineraryIndex) => {
                     const isOutbound = itineraryIndex === 0;
                     const firstSegment = itinerary.segments[0];
@@ -879,52 +891,364 @@ export default function FlightBooking() {
                     return (
                       <div
                         key={itineraryIndex}
+                        className="bg-splickets-slate-50 rounded-lg p-6 border border-splickets-slate-200 mb-4"
                         data-testid={`itinerary-section-${itineraryIndex}`}
-                        className="text-splickets-slate-900 text-sm grid grid-cols-3 mb-8"
                       >
-                        {/* Origin */}
-                        <div className="text-left col-span-1">
-                          <div>
-                            {toTitleCase(firstSegment.departure.cityName)}
+                        {/* Route Overview */}
+                        <div className="flex items-center justify-between mb-6">
+                          {/* Origin */}
+                          <div className="text-left">
+                            <div className="text-xl font-bold text-splickets-slate-900">
+                              {firstSegment.departure.iataCode}
+                            </div>
+                            <div className="text-sm text-splickets-slate-600">
+                              {toTitleCase(firstSegment.departure.cityName)}
+                              
+                            </div>
+                            <div className="text-sm font-medium text-splickets-slate-900 mt-1">
+                              {formatTime(firstSegment.departure.at)}
+                            </div>
                           </div>
-                          <div className="  mt-1">
-                            {formatTime(firstSegment.departure.at)}
+
+                          {/* Flight info */}
+                          <div className="flex-1 mx-8 text-center">
+                            <div className="flex items-center justify-center mb-2">
+                              <div className="w-2 h-2 bg-splickets-slate-300 rounded-full"></div>
+                              <div className="flex-1 h-px bg-splickets-slate-300 mx-2"></div>
+                              <Plane className="w-4 h-4 text-green-600" />
+                              <div className="flex-1 h-px bg-splickets-slate-300 mx-2"></div>
+                              <div className="w-2 h-2 bg-splickets-slate-300 rounded-full"></div>
+                            </div>
+                            <div className="text-sm text-splickets-slate-600 mb-1">
+                              {stops === 0
+                                ? "Nonstop"
+                                : `${stops} stop${stops > 1 ? "s" : ""}`}
+                            </div>
+                            <div className="text-sm text-splickets-slate-500">
+                              {formatDuration(itinerary.duration)}
+                            </div>
                           </div>
-                          <div className="  mt-1">
-                            {formatDateShort(firstSegment.departure.at)}
+
+                          {/* Destination */}
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-splickets-slate-900">
+                              {lastSegment.arrival.iataCode}
+                            </div>
+                            <div className="text-sm text-splickets-slate-600">
+                              {toTitleCase(lastSegment.arrival.cityName)}
+                              {/* {lastSegment.arrival.cityName} */}
+                            </div>
+                            <div className="text-sm font-medium text-splickets-slate-900 mt-1">
+                              {formatTime(lastSegment.arrival.at)}
+                            </div>
                           </div>
                         </div>
 
-                        {/* Flight info */}
-                        <div className=" text-center flex flex-col justify-center col-span-1 ">
-                          <div className="   mb-1">
-                            {stops === 0
-                              ? "Nonstop"
-                              : `${stops} stop${stops > 1 ? "s" : ""}`}
-                          </div>
-                          <div className=" ">
-                            {formatDuration(itinerary.duration)}
-                          </div>
-                        </div>
+                        {/* Flight Details Collapsible */}
+                        <div className="border-t border-splickets-slate-200 pt-4">
+                          <button
+                            onClick={() => toggleDetails(itineraryIndex)}
+                            className="flex items-center justify-between w-full p-3 hover:bg-splickets-slate-100 rounded-lg"
+                            data-testid={`button-toggle-details-${itineraryIndex}`}
+                          >
+                            <span className="text-sm font-medium text-splickets-slate-700">
+                              Details
+                            </span>
+                            <motion.div
+                              animate={{
+                                rotate: expandedDetails[itineraryIndex] ? -180 : 0,
+                              }}
+                              transition={{ duration: 0.5 }}
+                            >
+                              {expandedDetails[itineraryIndex] ? (
+                                <ChevronDown className="w-4 h-4" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4" />
+                              )}
+                            </motion.div>
+                          </button>
 
-                        {/* Destination */}
-                        <div className="text-right col-span-1">
-                          <div className="">
-                            {toTitleCase(lastSegment.arrival.cityName)}
-                            {/* {lastSegment.arrival.cityName} */}
-                          </div>
-                          <div className=" mt-1">
-                            {formatTime(lastSegment.arrival.at)}
-                          </div>
-                          <div className="mt-1">
-                            {formatDateShort(lastSegment.arrival.at)}
-                          </div>
+                          <AnimatePresence initial={false}>
+                            {expandedDetails[itineraryIndex] && (
+                              <motion.div
+                                key={`details-${itineraryIndex}`}
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.5, ease: "easeInOut" }}
+                                className="overflow-hidden"
+                                data-testid={`details-content-${itineraryIndex}`}
+                              >
+                                {itinerary.segments.map((segment, segmentIndex) => (
+                                  <div key={segment.id} className="flex flex-col gap-4 mt-4">
+                                    {/* Segment details */}
+                                    <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-splickets-slate-200">
+                                      <div className="flex-1">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          {/* Departure */}
+                                          <div>
+                                            <div className="flex items-center gap-2 mb-2">
+                                              <div className=" font-medium text-splickets-slate-900">
+                                                {formatTime(segment.departure.at)} -{" "}
+                                                  {formatDate(segment.departure.at)}
+                                              </div>
+                                            </div>
+                                            <div className="text-sm text-splickets-slate-900">
+                                              <p>
+                                                {" "}
+                                                {toTitleCase(segment.departure.airportName)} (
+                                                {segment.departure.iataCode})
+                                              </p>
+                                              {segment.departure.terminal && (
+                                                <p>
+                                                  Terminal{" "}
+                                                  {segment.departure.terminal}{" "}
+                                                </p>
+                                              )}
+                                              <p>
+                                                {" "}
+                                                {toTitleCase(segment.airline)} -{" "}
+                                                {segment.number}
+                                              </p>
+                                              <p>
+                                                {formatDuration(segment.duration)}
+                                              </p>
+                                              <p>{toTitleCase(segment.cabin)}</p>
+                                            </div>
+                                          </div>
+
+                                          {/* Arrival */}
+                                          <div>
+                                            <div className="flex items-center gap-2 mb-2">
+                                              <div className=" font-medium text-splickets-slate-900">
+                                                {formatTime(segment.arrival.at)} -{" "}
+                                                  {formatDate(segment.arrival.at)}
+                                              </div>
+                                            </div>
+                                            <div className="text-sm text-splickets-slate-900">
+                                              <p>
+                                                {" "}
+                                                {toTitleCase(segment.arrival.airportName)} (
+                                                {segment.arrival.iataCode})
+                                              </p>
+                                              {segment.arrival.terminal && (
+                                                <p>
+                                                  Terminal{" "}
+                                                  {segment.arrival.terminal}{" "}
+                                                </p>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                    </div>
+                                    <div
+                                      className="p-4 bg-white rounded-lg border border-splickets-slate-200"
+                                    >
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Baggage */}
+                                        <div>
+                                          <h5 className="text-sm font-medium text-splickets-slate-900 mb-2">
+                                            Baggage
+                                          </h5>
+                                          <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-sm text-splickets-slate-600">
+                                                {segment.includedCabinBags
+                                                  ?.quantity &&
+                                                segment.includedCabinBags?.weight &&
+                                                segment.includedCabinBags
+                                                  ?.weightUnit ? (
+                                                    <div className="flex flex-row gap-2">
+                                                      <Check className="w-4 h-4 text-green-600" />
+                                                      <span className="text-sm text-splickets-slate-600">
+                                                        {
+                                                          segment.includedCabinBags
+                                                            ?.weight
+                                                        }{" "}
+                                                        {segment.includedCabinBags?.weightUnit.toLowerCase()}{" "}
+                                                        x{" "}
+                                                        {
+                                                          segment.includedCabinBags
+                                                            ?.quantity
+                                                        }{" "}
+                                                        piece(s) carry-on
+                                                      </span>
+                                                    </div>
+                                                  ) : segment.includedCabinBags
+                                                      ?.weightUnit &&
+                                                    segment.includedCabinBags
+                                                      ?.weight ? (
+                                                    <div className="flex flex-row gap-2">
+                                                      <Check className="w-4 h-4 text-green-600" />
+                                                      <span className="text-sm text-splickets-slate-600">
+                                                        {
+                                                          segment.includedCabinBags
+                                                            ?.weight
+                                                        }{" "}
+                                                        {segment.includedCabinBags?.weightUnit.toLowerCase()}{" "}
+                                                        carry-on
+                                                      </span>
+                                                    </div>
+                                                  ) : segment.includedCabinBags
+                                                      ?.quantity ? (
+                                                    <div className="flex flex-row gap-2">
+                                                      <Check className="w-4 h-4 text-green-600" />
+                                                      <span className="text-sm text-splickets-slate-600">
+                                                        {
+                                                          segment.includedCabinBags
+                                                            ?.quantity
+                                                        }{" "}
+                                                        piece(s) carry-on
+                                                      </span>
+                                                    </div>
+                                                  ) : (
+                                                    <></>
+                                                  )}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              {segment.includedCheckedBags
+                                                ?.quantity &&
+                                              segment.includedCheckedBags?.weight &&
+                                              segment.includedCheckedBags
+                                                ?.weightUnit ? (
+                                                <div className="flex flex-row gap-2">
+                                                  <Check className="w-4 h-4 text-green-600" />
+                                                  <span className="text-sm text-splickets-slate-600">
+                                                    {
+                                                      segment.includedCheckedBags
+                                                        ?.weight
+                                                    }{" "}
+                                                    {segment.includedCheckedBags?.weightUnit.toLowerCase()}{" "}
+                                                    x{" "}
+                                                    {
+                                                      segment.includedCheckedBags
+                                                        ?.quantity
+                                                    }{" "}
+                                                    piece(s) checked
+                                                  </span>
+                                                </div>
+                                              ) : segment.includedCheckedBags
+                                                  ?.weightUnit &&
+                                                segment.includedCheckedBags
+                                                  ?.weight ? (
+                                                <div className="flex flex-row gap-2">
+                                                  <Check className="w-4 h-4 text-green-600" />
+                                                  <span className="text-sm text-splickets-slate-600">
+                                                    {
+                                                      segment.includedCheckedBags
+                                                        ?.weight
+                                                    }{" "}
+                                                    {segment.includedCheckedBags?.weightUnit.toLowerCase()}{" "}
+                                                    checked
+                                                  </span>
+                                                </div>
+                                              ) : segment.includedCheckedBags
+                                                  ?.quantity ? (
+                                                <div className="flex flex-row gap-2">
+                                                  <Check className="w-4 h-4 text-green-600" />
+                                                  <span className="text-sm text-splickets-slate-600">
+                                                    {
+                                                      segment.includedCheckedBags
+                                                        ?.quantity
+                                                    }{" "}
+                                                    piece(s) checked
+                                                  </span>
+                                                </div>
+                                              ) : (
+                                                <></>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Flexibility */}
+                                        <div>
+                                          <h5 className="text-sm font-medium text-splickets-slate-900 mb-2">
+                                            Flexibility
+                                          </h5>
+                                          <div className="space-y-2">
+                                            <div className="flex items-center gap-2">
+                                              {flight.pricingOptions
+                                                ?.refundableFare ? (
+                                                <>
+                                                  <Check className="w-4 h-4 text-green-600" />
+                                                  <span className="text-sm text-green-600">
+                                                    Refundable
+                                                  </span>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <X className="w-4 h-4 text-red-600" />
+                                                  <span className="text-sm text-red-600">
+                                                    Non-refundable
+                                                  </span>
+                                                </>
+                                              )}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              {flight.pricingOptions
+                                                ?.noPenaltyFare ? (
+                                                <>
+                                                  <Check className="w-4 h-4 text-green-600" />
+                                                  <span className="text-sm text-green-600">
+                                                    Free changes
+                                                  </span>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                                                  <span className="text-sm text-yellow-600">
+                                                    Changes with a fee
+                                                  </span>
+                                                </>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Stopover indicator */}
+                                    {segmentIndex < itinerary.segments.length - 1 && (
+                                      <div className="flex items-center justify-center   ">
+                                        <div className=" flex items-center gap-2 px-3 py-1 bg-splickets-slate-100 rounded-full">
+                                          <Clock className="w-3 h-3 text-splickets-slate-500" />
+                                          <span className="text-xs text-splickets-slate-600">
+                                            {toTitleCase(itinerary.segments[segmentIndex + 1]
+                                                         .departure.airportName)} (
+                                            {
+                                              itinerary.segments[segmentIndex + 1]
+                                                .departure.iataCode
+                                            }
+                                            ) -{" "}
+                                            {stopoverDuration(
+                                              new Date(segment.arrival.at),
+                                              new Date(
+                                                itinerary.segments[
+                                                  segmentIndex + 1
+                                                ].departure.at,
+                                              ),
+                                            )}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
+                       
+                        
                       </div>
                     );
                   })}
                   {passengerData && (
-                    <div className="border-t border-splickets-slate-200 pt-4">
+                    <div className="border-t border-splickets-slate-200 pt-4 mt-4">
                       <h4 className="font-medium text-splickets-slate-900 mb-2">
                         Passengers ({passengerData.passengerCount || 1})
                       </h4>
