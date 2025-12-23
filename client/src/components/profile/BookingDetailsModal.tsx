@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { X, Plane, Check, AlertTriangle, Clock, FileText } from "lucide-react";
+import { X, Plane, Check, AlertTriangle, Clock, FileText, Users, Luggage, Shield, Calendar, Activity } from "lucide-react";
 import {
   formatTime,
   formatDuration,
@@ -42,8 +42,8 @@ export function BookingDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-4xl rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50 sm:p-10 sm:pt-[calc(4rem+2.5rem)]">
+      <div className="bg-white w-full h-full sm:max-w-4xl sm:max-h-[calc(100vh-4rem-5rem)] sm:rounded-xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <div>
@@ -382,6 +382,305 @@ export function BookingDetailsModal({
               )}
             </CardContent>
           </Card>
+
+          {/* Passengers Section */}
+          {booking.passengers && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Passengers
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(Array.isArray(booking.passengers)
+                  ? booking.passengers
+                  : [booking.passengers]
+                ).map((passenger: any, idx: number) => (
+                  <div key={idx} className="border rounded-lg p-4">
+                    <div className="font-medium text-lg mb-2">
+                      {passenger.title} {passenger.firstName} {passenger.lastName}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-500">Date of Birth:</span>{" "}
+                        <span className="font-medium">
+                          {passenger.dateOfBirth || passenger.dob || "N/A"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Passport Country:</span>{" "}
+                        <span className="font-medium">
+                          {passenger.passportCountry || "N/A"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Extras Section */}
+          {booking.extras && booking.passengers && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Extras</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(() => {
+                  const passengers = Array.isArray(booking.passengers)
+                    ? booking.passengers
+                    : [booking.passengers];
+
+                  // Determine the selections object - could be nested or direct
+                  let selections: any = null;
+                  if (booking.extras.extrasSelections) {
+                    // Nested format: booking.extras.extrasSelections
+                    selections = booking.extras.extrasSelections;
+                  } else if (booking.extras.additionalBaggage || 
+                             booking.extras.travelInsurance || 
+                             booking.extras.flexibleTicket || 
+                             booking.extras.airlineInsolvency ||
+                             booking.extras.seatSelection) {
+                    // Direct format: booking.extras is the extrasSelections object
+                    selections = booking.extras;
+                  }
+
+                  // Normalize extras data to per-passenger format with prices
+                  const getPassengerExtras = (passengerIndex: number): any => {
+                    // Check if it's per-passenger format (e.g., { 0: {...}, 1: {...} })
+                    const firstKey = Object.keys(booking.extras)[0];
+                    if (firstKey && typeof firstKey === 'string' && !isNaN(Number(firstKey))) {
+                      // Per-passenger format
+                      return booking.extras[passengerIndex] || {};
+                    }
+
+                    if (!selections) {
+                      return {};
+                    }
+
+                    const passengerExtras: any = {};
+
+                    // Helper function to check if passenger has this extra and get price
+                    const getExtraInfo = (extraSelection: any, extraId: string): { has: boolean; price?: number } => {
+                      if (!extraSelection) return { has: false };
+                      
+                      if (extraSelection.type === "all") {
+                        // Calculate per-passenger price from total price and count
+                        const totalPrice = extraSelection.price || 0;
+                        const count = extraSelection.count || passengers.length;
+                        const perPassengerPrice = count > 0 ? totalPrice / count : 0;
+                        return { has: true, price: perPassengerPrice };
+                      }
+                      
+                      if (extraSelection.type === "specific" && 
+                          Array.isArray(extraSelection.passengers) &&
+                          extraSelection.passengers.includes(passengerIndex)) {
+                        // Calculate per-passenger price from total price and count
+                        const totalPrice = extraSelection.price || 0;
+                        const count = extraSelection.count || extraSelection.passengers.length;
+                        const perPassengerPrice = count > 0 ? totalPrice / count : 0;
+                        return { has: true, price: perPassengerPrice };
+                      }
+                      
+                      return { has: false };
+                    };
+
+                    // Additional Baggage
+                    const baggageInfo = getExtraInfo(selections.additionalBaggage, "additionalBaggage");
+                    if (baggageInfo.has) {
+                      passengerExtras.additionalBaggage = { 
+                        has: true, 
+                        price: baggageInfo.price 
+                      };
+                    }
+
+                    // Travel Insurance
+                    const insuranceInfo = getExtraInfo(selections.travelInsurance, "travelInsurance");
+                    if (insuranceInfo.has) {
+                      passengerExtras.travelInsurance = { 
+                        has: true, 
+                        price: insuranceInfo.price 
+                      };
+                    }
+
+                    // Flexible Ticket
+                    const flexibleInfo = getExtraInfo(selections.flexibleTicket, "flexibleTicket");
+                    if (flexibleInfo.has) {
+                      passengerExtras.flexibleTicket = { 
+                        has: true, 
+                        price: flexibleInfo.price 
+                      };
+                    }
+
+                    // Airline Insolvency
+                    const insolvencyInfo = getExtraInfo(selections.airlineInsolvency, "airlineInsolvency");
+                    if (insolvencyInfo.has) {
+                      passengerExtras.airlineInsolvency = { 
+                        has: true, 
+                        price: insolvencyInfo.price 
+                      };
+                    }
+
+                    // Seat Selection (always per-passenger, price stored directly)
+                    if (selections.seatSelection && selections.seatSelection[passengerIndex]) {
+                      const seatData = selections.seatSelection[passengerIndex];
+                      if (seatData.type && seatData.type !== "random") {
+                        passengerExtras.seatSelection = {
+                          type: seatData.type,
+                          price: seatData.price || 0
+                        };
+                      }
+                    }
+
+                    return passengerExtras;
+                  };
+
+                  const extrasDefinitions = [
+                    {
+                      id: "additionalBaggage",
+                      title: "Additional Checked Baggage",
+                      icon: Luggage,
+                      iconColor: "text-blue-500",
+                      iconBg: "bg-blue-50",
+                    },
+                    {
+                      id: "travelInsurance",
+                      title: "Travel Insurance (Medical)",
+                      icon: Activity,
+                      iconColor: "text-red-500",
+                      iconBg: "bg-red-50",
+                    },
+                    {
+                      id: "flexibleTicket",
+                      title: "Flexible Ticket",
+                      icon: Calendar,
+                      iconColor: "text-green-500",
+                      iconBg: "bg-green-50",
+                    },
+                    {
+                      id: "airlineInsolvency",
+                      title: "Airline Insolvency Protection",
+                      icon: Shield,
+                      iconColor: "text-orange-500",
+                      iconBg: "bg-orange-50",
+                    },
+                    {
+                      id: "seatSelection",
+                      title: "Seat Selection",
+                      icon: Users,
+                      iconColor: "text-purple-500",
+                      iconBg: "bg-purple-50",
+                      formatValue: (value: any) => {
+                        if (!value || value === "random") return null;
+                        const seatMap: Record<string, string> = {
+                          window: "Window",
+                          aisle: "Aisle",
+                          next_to_passenger: "Next to Other Passenger",
+                        };
+                        return seatMap[value] || value;
+                      },
+                    },
+                  ];
+
+                  // Format price with currency
+                  const formatPrice = (amount: number): string => {
+                    return `${currencySymbol}${amount.toFixed(2)}`;
+                  };
+
+                  return (
+                    <div className="space-y-4">
+                      {passengers.map((passenger: any, passengerIndex: number) => {
+                        const passengerExtras = getPassengerExtras(passengerIndex);
+                        const hasAnyExtras = Object.keys(passengerExtras).some((key) => {
+                          const extraData = passengerExtras[key];
+                          if (key === "seatSelection") {
+                            return extraData && extraData.type && extraData.type !== "random";
+                          }
+                          return extraData && extraData.has;
+                        });
+
+                        return (
+                          <div key={passengerIndex} className="border rounded-lg p-4">
+                            <div className="font-medium text-lg mb-3">
+                              {passenger.title} {passenger.firstName} {passenger.lastName}
+                            </div>
+                            {hasAnyExtras ? (
+                              <div className="space-y-2">
+                                {extrasDefinitions.map((extraDef) => {
+                                  const extraData = passengerExtras[extraDef.id];
+                                  
+                                  // Handle different data formats
+                                  let hasExtra = false;
+                                  let extraPrice = 0;
+                                  let displayValue = null;
+                                  
+                                  if (extraDef.id === "seatSelection") {
+                                    // Seat selection format: { type: "aisle", price: 561.5585 }
+                                    if (extraData && extraData.type && extraData.type !== "random") {
+                                      hasExtra = true;
+                                      extraPrice = extraData.price || 0;
+                                      displayValue = extraDef.formatValue
+                                        ? extraDef.formatValue(extraData.type)
+                                        : null;
+                                    }
+                                  } else {
+                                    // Other extras format: { has: true, price: 123.45 }
+                                    if (extraData && extraData.has) {
+                                      hasExtra = true;
+                                      extraPrice = extraData.price || 0;
+                                    }
+                                  }
+                                  
+                                  if (!hasExtra) {
+                                    return null;
+                                  }
+
+                                  const Icon = extraDef.icon;
+
+                                  return (
+                                    <div
+                                      key={extraDef.id}
+                                      className="flex items-center gap-3 p-2 bg-gray-50 rounded"
+                                    >
+                                      <div className={`w-8 h-8 rounded-lg ${extraDef.iconBg} flex items-center justify-center flex-shrink-0`}>
+                                        <Icon className={`w-4 h-4 ${extraDef.iconColor}`} />
+                                      </div>
+                                      <div className="flex-1">
+                                        <div className="text-sm font-medium">
+                                          {extraDef.title}
+                                          {displayValue && (
+                                            <span className="text-gray-500 ml-1">
+                                              ({displayValue})
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium text-gray-700">
+                                          {formatPrice(extraPrice)} {booking.currency}
+                                        </span>
+                                        <Check className="w-4 h-4 text-green-600" />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-500">
+                                No extras selected for this passenger.
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Tickets Section */}
           <Card>

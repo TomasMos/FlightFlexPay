@@ -106,10 +106,10 @@ export const parseDurationToMinutes = (duration: string): number => {
     return hours * 60 + minutes;
   };
 
-export const formattedPrice = (amount: number): string => {
+export const formattedPrice = (amount: number, decimals: number = 0): string => {
   return amount.toLocaleString('en-US', {
     style: 'decimal',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   });
 };

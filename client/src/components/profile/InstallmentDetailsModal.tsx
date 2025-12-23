@@ -17,8 +17,8 @@ export function InstallmentDetailsModal({ paymentPlan, isOpen, onClose }: Instal
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-2xl rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50 sm:p-10 sm:pt-[calc(4rem+2.5rem)]">
+      <div className="bg-white w-full h-full sm:max-w-2xl sm:max-h-[calc(100vh-4rem-5rem)] sm:rounded-xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <div>

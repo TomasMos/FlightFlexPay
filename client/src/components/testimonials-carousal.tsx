@@ -71,13 +71,13 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
                 <div className="bg-white rounded-2xl p-8 md:p-12 text-center">
                   {/* Customer Photo */}
                   <div className="flex justify-center mb-8">
-                    <Avatar className="w-50 h-60 md:w-36 md:h-36 border-4 border-gray-100">
+                    <Avatar className="w-60 h-60 md:w-48 md:h-48 lg:w-56 lg:h-56 border-4 border-gray-100 rounded-full">
                       <AvatarImage 
                         src={testimonials[current].photo} 
                         alt={testimonials[current].name}
-                        className="object-cover"
+                        className="object-cover object-center"
                       />
-                      <AvatarFallback className="bg-primary text-white text-2xl md:text-3xl font-semibold">
+                      <AvatarFallback className="bg-primary text-white text-xl md:text-2xl lg:text-3xl font-semibold">
                         {getInitials(testimonials[current].name)}
                       </AvatarFallback>
                     </Avatar>

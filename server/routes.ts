@@ -1188,7 +1188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const token = authHeader.split(" ")[1];
       const decodedToken = await safeAdminAuth.verifyIdToken(token);
-      const email = decodedToken.email;
+      const email = decodedToken.email?.toLowerCase().trim();
 
       if (!email) {
         return res.status(401).json({ error: "Invalid token" });
@@ -1223,7 +1223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const token = authHeader.split(" ")[1];
       const decodedToken = await safeAdminAuth.verifyIdToken(token);
-      const email = decodedToken.email;
+      const email = decodedToken.email?.toLowerCase().trim();
 
       if (!email) {
         return res.json({ isAdmin: false });

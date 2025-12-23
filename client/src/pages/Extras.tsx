@@ -25,21 +25,43 @@ import { formattedPrice, formatTime, formatDuration, formatDate, toTitleCase, st
 import { motion, AnimatePresence } from "framer-motion";
 
 type ProtectionSelection = 
-  | { type: "none" }
-  | { type: "all" }
-  | { type: "specific"; passengers: number[] };
+  | { type: "none"; price?: number }
+  | { type: "all"; price?: number; count?: number } // Price and count added when saving
+  | { type: "specific"; passengers: number[]; price?: number; count?: number }; // Price and count added when saving
 
 interface SeatSelection {
   [passengerIndex: number]: "window" | "aisle" | "next_to_passenger" | "random" | undefined;
+}
+
+interface SeatSelectionWithPricing {
+  [passengerIndex: number]: {
+    type: "window" | "aisle" | "next_to_passenger" | "random" | undefined;
+    price?: number; // Price is only set for non-random selections
+  };
 }
 
 interface ExtrasSelections {
   additionalBaggage: ProtectionSelection | null;
   travelInsurance: ProtectionSelection | null;
   flexibleTicket: ProtectionSelection | null;
-  seatSelection: SeatSelection;
+  seatSelection: SeatSelection | SeatSelectionWithPricing; // Support both formats for backward compatibility
   airlineInsolvency: ProtectionSelection | null;
+  pricing?: {
+    // Store pricing breakdown for reference
+    [key: string]: { count: number; total: number; perItem?: number };
+  };
 }
+
+// Helper function to get seat type from either format
+const getSeatType = (seatValue: string | { type: string; price?: number } | undefined | unknown): string | undefined => {
+  if (!seatValue) return undefined;
+  if (typeof seatValue === "string") return seatValue;
+  if (typeof seatValue === "object" && seatValue !== null && "type" in seatValue) {
+    const seatObj = seatValue as { type: string; price?: number };
+    return seatObj.type || undefined;
+  }
+  return undefined;
+};
 
 // South African airport IATA codes (from amadeus service)
 const ZA_AIRPORTS = [
@@ -184,7 +206,19 @@ export default function Extras() {
       
       // Restore extras selections from localStorage if they exist
       if (parsed.extrasSelections) {
-        setExtras(parsed.extrasSelections);
+        // Normalize seatSelection format if needed (convert from pricing format back to simple format for editing)
+        const normalizedExtras: ExtrasSelections = { ...parsed.extrasSelections };
+        if (normalizedExtras.seatSelection) {
+          const normalizedSeatSelection: SeatSelection = {};
+          Object.entries(normalizedExtras.seatSelection).forEach(([idx, seatValue]) => {
+            const seatType = getSeatType(seatValue);
+            if (seatType) {
+              normalizedSeatSelection[parseInt(idx)] = seatType as "window" | "aisle" | "next_to_passenger" | "random";
+            }
+          });
+          normalizedExtras.seatSelection = normalizedSeatSelection;
+        }
+        setExtras(normalizedExtras);
       } else {
         // Initialize seat selections (empty, not defaulted to random) if no previous selections
         const passengerCount = parsed.passengerCount || parsed.passengers?.length || 1;
@@ -348,13 +382,24 @@ export default function Extras() {
     passengerIndex: number,
     seatType: "window" | "aisle" | "next_to_passenger" | "random"
   ) => {
-    setExtras((prev) => ({
-      ...prev,
-      seatSelection: {
-        ...prev.seatSelection,
-        [passengerIndex]: seatType,
-      },
-    }));
+    setExtras((prev) => {
+      // Normalize seatSelection to simple format for editing
+      const currentSeatSelection: SeatSelection = {};
+      Object.entries(prev.seatSelection).forEach(([idx, seatValue]) => {
+        const normalizedType = getSeatType(seatValue);
+        if (normalizedType) {
+          currentSeatSelection[parseInt(idx)] = normalizedType as "window" | "aisle" | "next_to_passenger" | "random";
+        }
+      });
+      
+      return {
+        ...prev,
+        seatSelection: {
+          ...currentSeatSelection,
+          [passengerIndex]: seatType,
+        },
+      };
+    });
     
     // Clear validation error when seat selection is made
     if (validationErrors.seatSelection) {
@@ -399,7 +444,8 @@ export default function Extras() {
     });
 
     // Calculate seat selection costs (only for selected seats, not random or undefined)
-    Object.entries(extras.seatSelection).forEach(([passengerIdx, seatType]) => {
+    Object.entries(extras.seatSelection).forEach(([passengerIdx, seatValue]) => {
+      const seatType = getSeatType(seatValue);
       if (seatType && seatType !== "random" && seatType !== undefined) {
         const seatCost = perPassengerCost * 0.05;
         extrasTotal += seatCost;
@@ -442,7 +488,9 @@ export default function Extras() {
     // Validate seat selection - ensure all passengers have a seat selection
     const missingSeatSelections: number[] = [];
     for (let i = 0; i < passengerCount; i++) {
-      if (!extras.seatSelection[i] || extras.seatSelection[i] === undefined) {
+      const seatValue = extras.seatSelection[i];
+      const seatType = getSeatType(seatValue);
+      if (!seatType || seatType === undefined) {
         missingSeatSelections.push(i);
       }
     }
@@ -467,7 +515,8 @@ export default function Extras() {
     const passengerExtras: Record<number, any> = {};
     for (let i = 0; i < passengerCount; i++) {
       // Default to "random" if no selection was made (for backward compatibility)
-      const seatSelection = extras.seatSelection[i] || "random";
+      const seatValue = extras.seatSelection[i];
+      const seatSelection = getSeatType(seatValue) || "random";
       passengerExtras[i] = {
         additionalBaggage: false,
         travelInsurance: false,
@@ -477,31 +526,78 @@ export default function Extras() {
       };
     }
 
+    // Calculate pricing for each extra and enrich selections with pricing data
+    const enrichedExtrasSelections: ExtrasSelections = { ...extras };
+    
     extrasOptions.forEach((option) => {
       if (option.id === "travelInsurance" && !isInternational) return;
       if (option.id === "seatSelection") return; // Handled separately
 
       const selection = extras[option.id as keyof ExtrasSelections] as ProtectionSelection | null;
-      if (!selection || selection.type === "none") return;
+      if (!selection || selection.type === "none") {
+        // Keep the selection as-is (with type: "none")
+        return;
+      }
+
+      const basePrice = option.perPassenger ? perPassengerCost : flightTotal;
+      const perItemPrice = basePrice * option.pricePercentage; // Price per passenger/item
 
       if (selection.type === "all") {
+        const count = passengerCount;
         // Apply to all passengers
         for (let i = 0; i < passengerCount; i++) {
           passengerExtras[i][option.id] = true;
         }
+        // Enrich selection with pricing (price is per item, count tells how many)
+        (enrichedExtrasSelections[option.id as keyof ExtrasSelections] as ProtectionSelection) = {
+          type: "all",
+          price: perItemPrice, // Price per passenger/item
+          count: count,
+        };
       } else if (selection.type === "specific") {
+        const count = selection.passengers.length;
         // Apply to selected passengers
         selection.passengers.forEach((idx) => {
           passengerExtras[idx][option.id] = true;
         });
+        // Enrich selection with pricing (price is per item, count tells how many)
+        (enrichedExtrasSelections[option.id as keyof ExtrasSelections] as ProtectionSelection) = {
+          type: "specific",
+          passengers: selection.passengers,
+          price: perItemPrice, // Price per passenger/item
+          count: count,
+        };
       }
     });
+
+    // Handle seat selection pricing
+    const seatSelectionWithPricing: SeatSelectionWithPricing = {};
+    Object.entries(extras.seatSelection).forEach(([passengerIdx, seatValue]) => {
+      const idx = parseInt(passengerIdx);
+      const seatType = getSeatType(seatValue);
+      if (seatType && seatType !== "random" && seatType !== undefined) {
+        const seatPrice = perPassengerCost * 0.05;
+        seatSelectionWithPricing[idx] = {
+          type: seatType as "window" | "aisle" | "next_to_passenger" | "random",
+          price: seatPrice,
+        };
+      } else {
+        seatSelectionWithPricing[idx] = {
+          type: seatType as "window" | "aisle" | "next_to_passenger" | "random" | undefined,
+          // No price for random seats
+        };
+      }
+    });
+    enrichedExtrasSelections.seatSelection = seatSelectionWithPricing;
+
+    // Add pricing breakdown to extrasSelections
+    enrichedExtrasSelections.pricing = totals.breakdown;
 
     // Save extras data to localStorage
     const updatedPassengerData = {
       ...passengerData,
       extras: passengerExtras,
-      extrasSelections: extras,
+      extrasSelections: enrichedExtrasSelections,
       extrasTotal: totals.extrasTotal,
       grandTotal,
     };
@@ -560,7 +656,8 @@ export default function Extras() {
                             <div className="space-y-4">
                               {passengers.length > 0 ? (
                                 passengers.map((passenger: any, idx: number) => {
-                                  const currentSeat = extras.seatSelection[idx];
+                                  const seatValue = extras.seatSelection[idx];
+                                  const currentSeat = getSeatType(seatValue);
                                   const seatOptions = passengerCount > 1
                                     ? ["window", "aisle", "next_to_passenger", "random"]
                                     : ["window", "aisle", "random"];

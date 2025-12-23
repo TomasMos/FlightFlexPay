@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -47,9 +48,14 @@ import {
   Send,
   Plus,
   Copy,
-  Check
+  Check,
+  Luggage,
+  Shield,
+  Activity,
+  DollarSign
 } from "lucide-react";
 import { format } from "date-fns";
+import { formattedPrice } from "@/utils/formatters";
 import type { User, Lead, Booking } from "@shared/schema";
 import { queryClient } from "@/lib/queryClient";
 
@@ -67,8 +73,15 @@ interface LeadAttempt {
 
 export default function AdminPanel() {
   const { currentUser, getIdToken } = useAuth();
+  const { currencySymbol } = useCurrency();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // Format currency helper function using formattedPrice
+  const formatCurrency = (amount: number | string, currency?: string) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return `${currencySymbol}${formattedPrice(numAmount, 2)}`;
+  };
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null);
@@ -545,7 +558,7 @@ export default function AdminPanel() {
                           {item.flight?.originIata} → {item.flight?.destinationIata}
                         </TableCell>
                         <TableCell>
-                          {item.booking.currency} {item.booking.totalPrice}
+                          {formatCurrency(item.booking.totalPrice, item.booking.currency)}
                         </TableCell>
                         <TableCell>
                           {item.paymentPlan?.type === 'full' ? 'Full' : 'Installments'}
@@ -623,7 +636,7 @@ export default function AdminPanel() {
                         <div key={booking.id} className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
                           <div>
                             <p className="font-medium">Booking #{booking.id}</p>
-                            <p className="text-sm text-gray-600">{booking.currency} {booking.totalPrice}</p>
+                            <p className="text-sm text-gray-600">{formatCurrency(booking.totalPrice, booking.currency)}</p>
                           </div>
                           {getStatusBadge(booking.status || 'payment_pending')}
                         </div>
@@ -757,8 +770,102 @@ export default function AdminPanel() {
                 <div>
                   <p className="text-sm text-gray-500">Total Amount</p>
                   <p className="font-medium text-lg">
-                    {bookingDetail.booking.currency} {bookingDetail.booking.totalPrice}
+                    {formatCurrency(bookingDetail.booking.totalPrice, bookingDetail.booking.currency)}
                   </p>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Price Breakdown Section */}
+              <div>
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" /> Price Breakdown
+                </h3>
+                <div className="bg-gray-50 p-5 rounded-lg">
+                  {(() => {
+                    const booking = bookingDetail.booking;
+                    const currency = booking.currency || 'USD';
+                    const originalPrice = parseFloat(booking.originalPrice || booking.totalPrice);
+                    const discountAmount = parseFloat(booking.discountAmount || '0');
+                    const totalPrice = parseFloat(booking.totalPrice);
+                    
+                    // Get extras pricing
+                    const extrasPricing = booking.extras?.pricing || {};
+                    const extrasTotal = Object.values(extrasPricing).reduce((sum: number, item: any) => {
+                      return sum + (parseFloat(item.total || '0'));
+                    }, 0);
+                    
+                    // Calculate flight/base price (original price minus extras)
+                    const flightPrice = originalPrice - extrasTotal;
+                    
+                    
+                    // Extras labels mapping
+                    const extrasLabels: Record<string, string> = {
+                      travelInsurance: "Travel Insurance",
+                      flexibleTicket: "Flexible Ticket",
+                      airlineInsolvency: "Airline Insolvency Protection",
+                      seatSelection: "Seat Selection",
+                      additionalBaggage: "Additional Baggage"
+                    };
+                    
+                    return (
+                      <div className="space-y-3">
+                        {/* Flight Price */}
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-sm text-gray-600">Flight Price</span>
+                          <span className="text-sm font-medium">{formatCurrency(flightPrice, currency)}</span>
+                        </div>
+                        
+                        {/* Extras Breakdown */}
+                        {Object.keys(extrasPricing).length > 0 && (
+                          <>
+                            <div className="border-t border-gray-200 pt-3 space-y-2">
+                              {Object.entries(extrasPricing).map(([key, value]: [string, any]) => (
+                                <div key={key} className="flex justify-between items-center">
+                                  <span className="text-sm text-gray-600">
+                                    {extrasLabels[key] || key}
+                                    {value.count > 1 && (
+                                      <span className="text-gray-400 ml-1">({value.count}x)</span>
+                                    )}
+                                  </span>
+                                  <span className="text-sm font-medium">
+                                    {formatCurrency(parseFloat(value.total || '0'), currency)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                              <span className="text-sm font-medium text-gray-700">Extras Subtotal</span>
+                              <span className="text-sm font-medium">{formatCurrency(extrasTotal, currency)}</span>
+                            </div>
+                          </>
+                        )}
+                        
+                        {/* Subtotal */}
+                        <div className="flex justify-between items-center pt-3 border-t border-gray-300">
+                          <span className="text-sm font-semibold text-gray-800">Subtotal</span>
+                          <span className="text-sm font-semibold text-gray-800">{formatCurrency(originalPrice, currency)}</span>
+                        </div>
+                        
+                        {/* Discount */}
+                        {discountAmount > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Discount</span>
+                            <span className="text-sm font-medium text-green-600">
+                              -{formatCurrency(discountAmount, currency)}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Total */}
+                        <div className="flex justify-between items-center pt-3 border-t-2 border-gray-400">
+                          <span className="text-base font-bold text-gray-900">Total</span>
+                          <span className="text-base font-bold text-gray-900">{formatCurrency(totalPrice, currency)}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -815,7 +922,7 @@ export default function AdminPanel() {
                     <div>
                       <p className="text-sm text-gray-500">Total Amount</p>
                       <p className="font-medium">
-                        {bookingDetail.paymentPlan?.currency} {bookingDetail.paymentPlan?.totalAmount}
+                        {formatCurrency(bookingDetail.paymentPlan?.totalAmount || 0, bookingDetail.paymentPlan?.currency)}
                       </p>
                     </div>
                     {bookingDetail.paymentPlan?.depositAmount && (
@@ -823,7 +930,7 @@ export default function AdminPanel() {
                         <div>
                           <p className="text-sm text-gray-500">Deposit</p>
                           <p className="font-medium">
-                            {bookingDetail.paymentPlan.currency} {bookingDetail.paymentPlan.depositAmount}
+                            {formatCurrency(bookingDetail.paymentPlan.depositAmount, bookingDetail.paymentPlan.currency)}
                           </p>
                         </div>
                         <div>
@@ -860,7 +967,7 @@ export default function AdminPanel() {
                         <TableRow key={inst.id}>
                           <TableCell>{idx + 1}</TableCell>
                           <TableCell>{formatDate(inst.dueDate)}</TableCell>
-                          <TableCell>{inst.currency} {inst.amount}</TableCell>
+                          <TableCell>{formatCurrency(inst.amount, inst.currency)}</TableCell>
                           <TableCell>{getStatusBadge(inst.status)}</TableCell>
                           <TableCell>{inst.paidAt ? formatDate(inst.paidAt) : '-'}</TableCell>
                         </TableRow>
@@ -872,22 +979,287 @@ export default function AdminPanel() {
 
               {bookingDetail.booking.passengers && (
                 <div>
-                  <h3 className="font-semibold mb-3">Passengers</h3>
-                  <div className="grid gap-2">
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Users className="h-4 w-4" /> Passengers
+                  </h3>
+                  <div className="space-y-3">
                     {(Array.isArray(bookingDetail.booking.passengers) 
                       ? bookingDetail.booking.passengers 
                       : [bookingDetail.booking.passengers]
                     ).map((passenger: any, idx: number) => (
-                      <div key={idx} className="p-3 bg-gray-50 rounded-lg">
-                        <p className="font-medium">
+                      <div key={idx} className="border rounded-lg p-4">
+                        <div className="font-medium text-lg mb-2">
                           {passenger.title} {passenger.firstName} {passenger.lastName}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          DOB: {passenger.dob || '-'} | Passport: {passenger.passportCountry || '-'}
-                        </p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-500">Date of Birth:</span>{" "}
+                            <span className="font-medium">
+                              {passenger.dateOfBirth || passenger.dob || "N/A"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Passport Country:</span>{" "}
+                            <span className="font-medium">
+                              {passenger.passportCountry || "N/A"}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {bookingDetail.booking.extras && bookingDetail.booking.passengers && (
+                <div>
+                  <h3 className="font-semibold mb-3">Extras</h3>
+                  {(() => {
+                    const passengers = Array.isArray(bookingDetail.booking.passengers)
+                      ? bookingDetail.booking.passengers
+                      : [bookingDetail.booking.passengers];
+
+                    // Determine the selections object - could be nested or direct
+                    let selections: any = null;
+                    if (bookingDetail.booking.extras.extrasSelections) {
+                      // Nested format: booking.extras.extrasSelections
+                      selections = bookingDetail.booking.extras.extrasSelections;
+                    } else if (bookingDetail.booking.extras.additionalBaggage || 
+                               bookingDetail.booking.extras.travelInsurance || 
+                               bookingDetail.booking.extras.flexibleTicket || 
+                               bookingDetail.booking.extras.airlineInsolvency ||
+                               bookingDetail.booking.extras.seatSelection) {
+                      // Direct format: booking.extras is the extrasSelections object
+                      selections = bookingDetail.booking.extras;
+                    }
+
+                    // Normalize extras data to per-passenger format with prices
+                    const getPassengerExtras = (passengerIndex: number): any => {
+                      // Check if it's per-passenger format (e.g., { 0: {...}, 1: {...} })
+                      const firstKey = Object.keys(bookingDetail.booking.extras)[0];
+                      if (firstKey && typeof firstKey === 'string' && !isNaN(Number(firstKey))) {
+                        // Per-passenger format
+                        return bookingDetail.booking.extras[passengerIndex] || {};
+                      }
+
+                      if (!selections) {
+                        return {};
+                      }
+
+                      const passengerExtras: any = {};
+
+                      // Helper function to check if passenger has this extra and get price
+                      const getExtraInfo = (extraSelection: any, extraId: string): { has: boolean; price?: number } => {
+                        if (!extraSelection) return { has: false };
+                        
+                        if (extraSelection.type === "all") {
+                          // Calculate per-passenger price from total price and count
+                          const totalPrice = extraSelection.price || 0;
+                          const count = extraSelection.count || passengers.length;
+                          const perPassengerPrice = count > 0 ? totalPrice / count : 0;
+                          return { has: true, price: perPassengerPrice };
+                        }
+                        
+                        if (extraSelection.type === "specific" && 
+                            Array.isArray(extraSelection.passengers) &&
+                            extraSelection.passengers.includes(passengerIndex)) {
+                          // Calculate per-passenger price from total price and count
+                          const totalPrice = extraSelection.price || 0;
+                          const count = extraSelection.count || extraSelection.passengers.length;
+                          const perPassengerPrice = count > 0 ? totalPrice / count : 0;
+                          return { has: true, price: perPassengerPrice };
+                        }
+                        
+                        return { has: false };
+                      };
+
+                      // Additional Baggage
+                      const baggageInfo = getExtraInfo(selections.additionalBaggage, "additionalBaggage");
+                      if (baggageInfo.has) {
+                        passengerExtras.additionalBaggage = { 
+                          has: true, 
+                          price: baggageInfo.price 
+                        };
+                      }
+
+                      // Travel Insurance
+                      const insuranceInfo = getExtraInfo(selections.travelInsurance, "travelInsurance");
+                      if (insuranceInfo.has) {
+                        passengerExtras.travelInsurance = { 
+                          has: true, 
+                          price: insuranceInfo.price 
+                        };
+                      }
+
+                      // Flexible Ticket
+                      const flexibleInfo = getExtraInfo(selections.flexibleTicket, "flexibleTicket");
+                      if (flexibleInfo.has) {
+                        passengerExtras.flexibleTicket = { 
+                          has: true, 
+                          price: flexibleInfo.price 
+                        };
+                      }
+
+                      // Airline Insolvency
+                      const insolvencyInfo = getExtraInfo(selections.airlineInsolvency, "airlineInsolvency");
+                      if (insolvencyInfo.has) {
+                        passengerExtras.airlineInsolvency = { 
+                          has: true, 
+                          price: insolvencyInfo.price 
+                        };
+                      }
+
+                      // Seat Selection (always per-passenger, price stored directly)
+                      if (selections.seatSelection && selections.seatSelection[passengerIndex]) {
+                        const seatData = selections.seatSelection[passengerIndex];
+                        if (seatData.type && seatData.type !== "random") {
+                          passengerExtras.seatSelection = {
+                            type: seatData.type,
+                            price: seatData.price || 0
+                          };
+                        }
+                      }
+
+                      return passengerExtras;
+                    };
+
+                    const extrasDefinitions = [
+                      {
+                        id: "additionalBaggage",
+                        title: "Additional Checked Baggage",
+                        icon: Luggage,
+                        iconColor: "text-blue-500",
+                        iconBg: "bg-blue-50",
+                      },
+                      {
+                        id: "travelInsurance",
+                        title: "Travel Insurance (Medical)",
+                        icon: Activity,
+                        iconColor: "text-red-500",
+                        iconBg: "bg-red-50",
+                      },
+                      {
+                        id: "flexibleTicket",
+                        title: "Flexible Ticket",
+                        icon: Calendar,
+                        iconColor: "text-green-500",
+                        iconBg: "bg-green-50",
+                      },
+                      {
+                        id: "airlineInsolvency",
+                        title: "Airline Insolvency Protection",
+                        icon: Shield,
+                        iconColor: "text-orange-500",
+                        iconBg: "bg-orange-50",
+                      },
+                      {
+                        id: "seatSelection",
+                        title: "Seat Selection",
+                        icon: Users,
+                        iconColor: "text-purple-500",
+                        iconBg: "bg-purple-50",
+                        formatValue: (value: any) => {
+                          if (!value || value === "random") return null;
+                          const seatMap: Record<string, string> = {
+                            window: "Window",
+                            aisle: "Aisle",
+                            next_to_passenger: "Next to Other Passenger",
+                          };
+                          return seatMap[value] || value;
+                        },
+                      },
+                    ];
+
+
+                    return (
+                      <div className="space-y-4">
+                        {passengers.map((passenger: any, passengerIndex: number) => {
+                          const passengerExtras = getPassengerExtras(passengerIndex);
+                          const hasAnyExtras = Object.keys(passengerExtras).some((key) => {
+                            const extraData = passengerExtras[key];
+                            if (key === "seatSelection") {
+                              return extraData && extraData.type && extraData.type !== "random";
+                            }
+                            return extraData && extraData.has;
+                          });
+
+                          return (
+                            <div key={passengerIndex} className="border rounded-lg p-4">
+                              <div className="font-medium text-lg mb-3">
+                                {passenger.title} {passenger.firstName} {passenger.lastName}
+                              </div>
+                              {hasAnyExtras ? (
+                                <div className="space-y-2">
+                                  {extrasDefinitions.map((extraDef) => {
+                                    const extraData = passengerExtras[extraDef.id];
+                                    
+                                    // Handle different data formats
+                                    let hasExtra = false;
+                                    let extraPrice = 0;
+                                    let displayValue = null;
+                                    
+                                    if (extraDef.id === "seatSelection") {
+                                      // Seat selection format: { type: "aisle", price: 561.5585 }
+                                      if (extraData && extraData.type && extraData.type !== "random") {
+                                        hasExtra = true;
+                                        extraPrice = extraData.price || 0;
+                                        displayValue = extraDef.formatValue
+                                          ? extraDef.formatValue(extraData.type)
+                                          : null;
+                                      }
+                                    } else {
+                                      // Other extras format: { has: true, price: 123.45 }
+                                      if (extraData && extraData.has) {
+                                        hasExtra = true;
+                                        extraPrice = extraData.price || 0;
+                                      }
+                                    }
+                                    
+                                    if (!hasExtra) {
+                                      return null;
+                                    }
+
+                                    const Icon = extraDef.icon;
+
+                                    return (
+                                      <div
+                                        key={extraDef.id}
+                                        className="flex items-center gap-3 p-2 bg-gray-50 rounded"
+                                      >
+                                        <div className={`w-8 h-8 rounded-lg ${extraDef.iconBg} flex items-center justify-center flex-shrink-0`}>
+                                          <Icon className={`w-4 h-4 ${extraDef.iconColor}`} />
+                                        </div>
+                                        <div className="flex-1">
+                                          <div className="text-sm font-medium">
+                                            {extraDef.title}
+                                            {displayValue && (
+                                              <span className="text-gray-500 ml-1">
+                                                ({displayValue})
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-sm font-medium text-gray-700">
+                                            {formatCurrency(extraPrice, bookingDetail.booking.currency)}
+                                          </span>
+                                          <Check className="w-4 h-4 text-green-600" />
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-500">
+                                  No extras selected for this passenger.
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>
