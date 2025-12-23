@@ -27,6 +27,7 @@ import { trackPurchaseGTM } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
+import { BookingWizard } from "@/components/booking-wizard";
 
 export default function FlightBooking() {
   const [, setLocation] = useLocation();
@@ -84,13 +85,14 @@ export default function FlightBooking() {
     }
 
     if (passengerInfo) {
-      setPassengerData(JSON.parse(passengerInfo));
+      const parsed = JSON.parse(passengerInfo);
+      setPassengerData(parsed);
     }
   }, []);
 
   // Update default deposit when user status changes
   useEffect(() => {
-    if (!canAccessLowerDeposits && selectedDeposit < 50) {
+    if (!canAccessLowerDeposits && selectedDeposit < 40) {
       setSelectedDeposit(50);
     }
   }, [canAccessLowerDeposits, selectedDeposit]);
@@ -119,9 +121,11 @@ export default function FlightBooking() {
 
   const ppEligible = flight?.paymentPlanEligible;
 
-  // Payment calculations - use promo code amount if applied
+  // Payment calculations - use promo code amount if applied, and include extras
   const originalFlightTotal = parseFloat(flight.price.total);
-  const flightTotal = appliedPromo ? appliedPromo.newTotal : originalFlightTotal;
+  const extrasTotal = passengerData?.extrasTotal || 0;
+  const baseFlightTotal = appliedPromo ? appliedPromo.newTotal : originalFlightTotal;
+  const flightTotal = baseFlightTotal + extrasTotal;
   const discountAmount = appliedPromo ? appliedPromo.discount : 0;
   
   // Promo code validation and application
@@ -140,7 +144,7 @@ export default function FlightBooking() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           code: promoCode.trim().toUpperCase(),
-          totalAmount: originalFlightTotal,
+          totalAmount: originalFlightTotal, // Promo applies to original flight cost only (before extras)
           currency: currency,
         }),
       });
@@ -443,7 +447,8 @@ export default function FlightBooking() {
   return (
     <div className="min-h-screen bg-splickets-slate-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div>
+        <BookingWizard currentStep="payment" />
+        <div className="mt-8">
           {/* Flight Summary Header */}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -465,7 +470,7 @@ export default function FlightBooking() {
                         </h2>
                         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                           {depositOptions.map((option) => {
-                            const isLocked = !canAccessLowerDeposits && option.value < 50;
+                            const isLocked = !canAccessLowerDeposits && option.value < 40;
                             return (
                               <div key={option.value} className="relative">
                                 <Button
@@ -605,6 +610,32 @@ export default function FlightBooking() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex justify-between items-center ">
+                        <span
+                          className="font-medium text-splickets-slate-900"
+                          data-testid="text-total-due"
+                        >
+                          Flight Total
+                        </span>
+                        <span
+                          className="font-semibold text-splickets-slate-900 mr-6 "
+                          data-testid="text-total-amount"
+                        >
+                          {formatCurrency(baseFlightTotal)}
+                        </span>
+                      </div>
+
+                      {extrasTotal > 0 && (
+                        <div className="flex justify-between items-center ">
+                          <span className="text-splickets-slate-700">
+                            Extras
+                          </span>
+                          <span className="font-semibold text-splickets-slate-900 mr-6">
+                            {formatCurrency(extrasTotal)}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center border-t border-splickets-slate-200 pt-4">
                         <span
                           className="font-medium text-splickets-slate-900"
                           data-testid="text-total-due"

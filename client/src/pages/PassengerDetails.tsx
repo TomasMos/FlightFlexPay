@@ -36,6 +36,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trackContactSubmit } from "@/lib/metaPixel";
 import { trackContactSubmitGTM } from "@/lib/analytics";
+import { BookingWizard } from "@/components/booking-wizard";
 
 // Passenger form schema
 const passengerSchema = z.object({
@@ -57,7 +58,12 @@ const contactSchema = z
     email: z.string().email("Valid email is required"),
     confirmEmail: z.string().email("Valid email is required"),
     diallingCode: z.string().min(1, "Dialling code is required"),
-    phoneNumber: z.string().min(1, "Phone number is required"),
+    phoneNumber: z
+      .string()
+      .min(1, "Phone number is required")
+      .regex(/^\d+$/, "Phone number must contain only numbers")
+      .min(8, "Phone number must be at least 8 digits")
+      .max(12, "Phone number must be at most 12 digits"),
   })
   .refine((data) => data.email === data.confirmEmail, {
     message: "Emails must match",
@@ -327,7 +333,7 @@ export default function PassengerDetails() {
         );
         localStorage.setItem("leadId", result.leadId.toString());
 
-        setLocation("/flight-search/book");
+        setLocation("/flight-search/extras");
       }
     } catch (error) {
       console.error("Error saving passenger details:", error);
@@ -387,7 +393,8 @@ export default function PassengerDetails() {
   return (
     <div className="min-h-screen bg-splickets-slate-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <BookingWizard currentStep="passenger" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
           {/* Left Section - Passenger and Contact Forms */}
           <div className="lg:col-span-2 space-y-6">
             {/* Contact Details Form */}
@@ -397,7 +404,7 @@ export default function PassengerDetails() {
                   Contact Details
                 </CardTitle>
                 <p className="text-sm text-splickets-slate-600">
-                  Confirmation and account details
+                We will send your booking confirmation to these contact details
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -458,6 +465,11 @@ export default function PassengerDetails() {
                       {...contactForm.register("phoneNumber")}
                       type="tel"
                       data-testid="input-phone-number"
+                      maxLength={12}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                        contactForm.setValue("phoneNumber", value);
+                      }}
                     />
                     {contactForm.formState.errors.phoneNumber && (
                       <p className="text-red-500 text-sm mt-1">
@@ -475,6 +487,9 @@ export default function PassengerDetails() {
                   <CardTitle data-testid={`title-passenger-${index + 1}`}>
                     Passenger {index + 1}
                   </CardTitle>
+                  <p className="text-sm text-splickets-slate-600">
+                The passenger’s name must be entered exactly as it appears on passport. All names must be entered in English.
+                </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

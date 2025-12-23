@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import Home from "@/pages/home";
 import PassengerDetails from "@/pages/PassengerDetails";
+import Extras from "@/pages/Extras";
 import FlightBooking from "@/pages/FlightBooking";
 import EmailTestPage from "@/pages/EmailTest";
 import SignIn from "@/pages/SignIn";
@@ -36,6 +37,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home}/>
       <Route path="/flight-search/passenger-details/:flightId" component={PassengerDetails}/>
+      <Route path="/flight-search/extras" component={Extras}/>
       <Route path="/flight-search/book" component={FlightBooking}/>
       <Route path="/signin" component={SignIn}/>
       <Route path="/profile" component={Profile}/>

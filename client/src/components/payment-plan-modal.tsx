@@ -54,7 +54,7 @@ export function PaymentPlanModal({
 
   // Update default deposit when user status changes
   useEffect(() => {
-    if (!canAccessLowerDeposits && selectedDeposit < 50) {
+    if (!canAccessLowerDeposits && selectedDeposit < 40) {
       setSelectedDeposit(50);
     }
   }, [canAccessLowerDeposits, selectedDeposit]);
@@ -175,7 +175,7 @@ export function PaymentPlanModal({
                     </h2>
                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                       {depositOptions.map((option) => {
-                        const isLocked = !canAccessLowerDeposits && option.value < 50;
+                        const isLocked = !canAccessLowerDeposits && option.value < 40;
                         return (
                           <div key={option.value} className="relative">
                             <Button
